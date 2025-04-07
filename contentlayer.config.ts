@@ -3,6 +3,9 @@ import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import rehypePrettyCode from "rehype-pretty-code";
 import rehypeSlug from "rehype-slug";
 import remarkGfm from "remark-gfm";
+import remarkMdxFrontmatter from "remark-mdx-frontmatter";
+import remarkParse from "remark-parse";
+import remarkRehype from "remark-rehype";
 
 /** @type {import('rehype-pretty-code').Options} */
 const rehypePrettyCodeOptions = {
@@ -60,7 +63,12 @@ export default makeSource({
   documentTypes: [Post, Doc],
   disableImportAliasWarning: true,
   mdx: {
-    remarkPlugins: [remarkGfm],
+    remarkPlugins: [
+      remarkParse,
+      remarkMdxFrontmatter,
+      remarkGfm,
+      remarkRehype
+    ],
     rehypePlugins: [
       rehypeSlug,
       [rehypeAutolinkHeadings, { behavior: "wrap" }],

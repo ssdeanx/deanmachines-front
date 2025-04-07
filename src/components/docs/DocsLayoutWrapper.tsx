@@ -1,3 +1,4 @@
+'use client'
 import * as React from "react"
 import { docsConfig } from "@/config/docs"
 import { DocsSidebar } from "./DocsSidebar"

@@ -23,7 +23,7 @@ interface MainNavProps {
 export function MainNav({ items }: MainNavProps) {
   return (
     <div className="flex items-center gap-6 md:gap-10">
-      <Link href="/" className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
+      <Link href="/" className="ml-4 flex items-center space-x-2 hover:opacity-80 transition-opacity">
         <span className="hidden font-bold text-xl md:inline-block">{siteConfig.name}</span>
         <span className="md:hidden font-bold text-xl">dm</span>
       </Link>
@@ -55,18 +55,17 @@ export function NavBar() {
   const [showMobileMenu, setShowMobileMenu] = React.useState<boolean>(false)
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 items-center justify-between">
+    <header className="sticky top-0 z-50 w-full border-b bg-background/90 backdrop-blur-lg shadow-md">
+      <div className="container flex h-16 items-center">
         <MainNav items={siteConfig.mainNav} />
-
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center ml-auto space-x-4">
           <nav className="flex items-center space-x-2">
             <SearchInput />
             <ThemeToggle />
             <Button
               variant="ghost"
               size="icon"
-              className="md:hidden"
+              className="md:hidden transition-transform hover:scale-110"
               onClick={() => setShowMobileMenu(!showMobileMenu)}
             >
               <Menu className="h-5 w-5" />

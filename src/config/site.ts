@@ -30,10 +30,6 @@ export const siteConfig: SiteConfig = {
   },
   mainNav: [
     {
-      title: "Home",
-      href: "/",
-    },
-    {
       title: "Features",
       href: "/features",
     },

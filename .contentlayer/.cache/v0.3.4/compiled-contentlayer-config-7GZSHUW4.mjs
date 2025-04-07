@@ -4,6 +4,9 @@ import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import rehypePrettyCode from "rehype-pretty-code";
 import rehypeSlug from "rehype-slug";
 import remarkGfm from "remark-gfm";
+import remarkMdxFrontmatter from "remark-mdx-frontmatter";
+import remarkParse from "remark-parse";
+import remarkRehype from "remark-rehype";
 var rehypePrettyCodeOptions = {
   theme: { dark: "one-dark-pro", light: "github-light" },
   keepBackground: false
@@ -56,7 +59,12 @@ var contentlayer_config_default = makeSource({
   documentTypes: [Post, Doc],
   disableImportAliasWarning: true,
   mdx: {
-    remarkPlugins: [remarkGfm],
+    remarkPlugins: [
+      remarkParse,
+      remarkMdxFrontmatter,
+      remarkGfm,
+      remarkRehype
+    ],
     rehypePlugins: [
       rehypeSlug,
       [rehypeAutolinkHeadings, { behavior: "wrap" }],
@@ -69,4 +77,4 @@ export {
   Post,
   contentlayer_config_default as default
 };
-//# sourceMappingURL=compiled-contentlayer-config-GAA25KWP.mjs.map
+//# sourceMappingURL=compiled-contentlayer-config-7GZSHUW4.mjs.map

@@ -14,26 +14,21 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-<html lang="en" suppressHydrationWarning className={GeistSans.variable}>
-  <body className="min-h-screen font-sans antialiased">
-    <ThemeProvider
-      attribute="class"
-      defaultTheme="system"
-      enableSystem
-      disableTransitionOnChange
-    >
-      <div className="relative flex min-h-screen flex-col">
-        <NavBar />
-        <main className="flex-1">{children}</main>
-      </div>
-      <Footer /> {/* Added Footer component */}
-      <Toaster />
-    </ThemeProvider>
-  </body>
+    <html lang="en" suppressHydrationWarning className={GeistSans.variable}>
+      <body className="min-h-screen bg-gray-900 text-gray-100 font-sans antialiased transition-colors duration-300">
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex min-h-screen flex-col">
+            <NavBar />
+            <main className="flex-1">{children}</main>
+          </div>
+          <Footer />
+          <Toaster />
+        </ThemeProvider>
+      </body>
     </html>
   );
 }

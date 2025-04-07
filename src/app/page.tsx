@@ -18,14 +18,14 @@ export default function Home() {
       <TeamSection />
       <FaqAccordion />
 
-      {/* CTA Section */}
-      <section className="bg-primary/5 py-24 sm:py-32">
-        <div className="container">
-          <div className="relative isolate overflow-hidden rounded-3xl bg-primary px-6 py-24 text-center shadow-2xl sm:px-16">
-            <h2 className="mx-auto max-w-2xl text-3xl font-bold tracking-tight text-background sm:text-4xl">
+      {/* Enhanced CTA Section with dark theme */}
+      <section className="bg-gradient-to-r from-indigo-700 to-purple-700 py-24 sm:py-32">
+        <div className="container mx-auto text-center">
+          <div className="relative isolate overflow-hidden rounded-3xl px-6 py-24 shadow-2xl bg-gray-800">
+            <h2 className="mx-auto max-w-2xl text-3xl font-bold tracking-tight text-white sm:text-4xl">
               Start Building with Mastra AI Today
             </h2>
-            <p className="mx-auto mt-6 max-w-xl text-lg leading-8 text-background/80">
+            <p className="mx-auto mt-6 max-w-xl text-lg leading-8 text-gray-300">
               Join thousands of developers creating the next generation of AI-powered applications.
             </p>
             <div className="mt-10 flex items-center justify-center gap-x-6">
@@ -33,14 +33,14 @@ export default function Home() {
                 href="/docs"
                 className={cn(
                   buttonVariants(),
-                  "bg-background text-primary hover:bg-background/90"
+                  "bg-white text-primary hover:bg-white/90"
                 )}
               >
                 Get Started
               </Link>
               <Link
                 href="/contact"
-                className="text-sm font-semibold leading-6 text-background hover:text-background/90"
+                className="text-sm font-semibold leading-6 text-white hover:text-white/90"
               >
                 Contact Sales <span aria-hidden="true">→</span>
               </Link>

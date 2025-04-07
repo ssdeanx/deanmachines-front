@@ -1,10 +1,9 @@
-'use client';
-import * as React from "react"
-import Link from "next/link"
-import { Github, Twitter, Linkedin } from "lucide-react"
+import * as React from "react";
+import Link from "next/link";
+import { Github, Twitter, Linkedin } from "lucide-react";
 
-import { siteConfig } from "@/config/site"
-import { IconWrapper } from "../common/IconWrapper"
+import { siteConfig } from "@/config/site";
+import { IconWrapper } from "@/components/common/IconWrapper";
 
 const footerLinks = [
   {
@@ -18,50 +17,53 @@ const footerLinks = [
   {
     title: "Company",
     items: [
-      { title: "About", href: "/about" },
-      { title: "Blog", href: "/blog" },
+      { title: "About Us", href: "/about" },
+      { title: "Careers", href: "/careers" },
       { title: "Contact", href: "/contact" },
     ],
   },
   {
-    title: "Legal",
+    title: "Support",
     items: [
-      { title: "Privacy", href: "/privacy" },
-      { title: "Terms", href: "/terms" },
+      { title: "Help Center", href: "/help" },
+      { title: "Terms of Service", href: "/terms" },
+      { title: "Privacy Policy", href: "/privacy" },
     ],
   },
-]
-
-const socialLinks = [
-  { title: "GitHub", href: siteConfig.links.github, icon: Github },
-  { title: "Twitter", href: siteConfig.links.twitter, icon: Twitter },
-  { title: "LinkedIn", href: siteConfig.links.linkedin, icon: Linkedin },
-]
+];
 
 export function Footer() {
   return (
-    <footer className="border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container py-12 md:py-16 lg:py-20">
-        <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-          <div>
-            <Link href="/" className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
-              <span className="font-bold text-xl">{siteConfig.name}</span>
+    <footer className="bg-gray-800 text-gray-300">
+      <div className="container mx-auto px-4 py-8">
+        {/* Top Section: Copyright & Social Links */}
+        <div className="flex flex-col md:flex-row justify-between items-center">
+          <p className="text-sm mb-4 md:mb-0">
+            {siteConfig.name} {new Date().getFullYear()}. All Rights Reserved.
+          </p>
+          <div className="flex space-x-4">
+            <Link href={siteConfig.links.github} aria-label="GitHub" target="_blank" rel="noopener noreferrer">
+              <IconWrapper icon={Github} className="w-5 h-5" />
             </Link>
-            <p className="mt-4 max-w-xs text-sm text-muted-foreground">
-              {siteConfig.description}
-            </p>
+            <Link href={siteConfig.links.twitter} aria-label="Twitter" target="_blank" rel="noopener noreferrer">
+              <IconWrapper icon={Twitter} className="w-5 h-5" />
+            </Link>
+            <Link href={siteConfig.links.linkedin} aria-label="LinkedIn" target="_blank" rel="noopener noreferrer">
+              <IconWrapper icon={Linkedin} className="w-5 h-5" />
+            </Link>
           </div>
-          {footerLinks.map((section) => (
-            <div key={section.title} className="space-y-3">
-              <h4 className="text-base font-medium">{section.title}</h4>
-              <ul className="space-y-3">
-                {section.items.map((item) => (
-                  <li key={item.title}>
-                    <Link
-                      href={item.href}
-                      className="text-sm text-muted-foreground transition-colors hover:text-primary"
-                    >
-                      {item.title}
+        </div>
+        <hr className="my-4 border-gray-700" />
+        {/* Bottom Section: Navigation Links */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+          {footerLinks.map((section, index) => (
+            <div key={index}>
+              <h4 className="font-semibold mb-2">{section.title}</h4>
+              <ul className="space-y-1">
+                {section.items.map((link, idx) => (
+                  <li key={idx}>
+                    <Link href={link.href} className="hover:text-white transition-colors">
+                      {link.title}
                     </Link>
                   </li>
                 ))}
@@ -69,26 +71,7 @@ export function Footer() {
             </div>
           ))}
         </div>
-        <div className="mt-12 flex flex-col items-center justify-between space-y-4 border-t pt-8 sm:flex-row sm:space-y-0">
-          <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} {siteConfig.name}. All rights reserved.
-          </p>
-          <div className="flex items-center space-x-4">
-            {socialLinks.map((link) => (
-              <Link
-                key={link.title}
-                href={link.href}
-                className="text-muted-foreground hover:text-primary transition-colors"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <IconWrapper icon={link.icon} className="h-5 w-5" />
-                <span className="sr-only">{link.title}</span>
-              </Link>
-            ))}
-          </div>
-        </div>
       </div>
     </footer>
-  )
+  );
 }
