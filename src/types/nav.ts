@@ -10,6 +10,17 @@ export interface NavItem {
   external?: boolean;
   label?: string;
   description?: string;
+  icon?: string;
+  children?: NavItemChild[];
+}
+
+export interface NavItemChild {
+  title: string;
+  href: string;
+  description?: string;
+  icon?: string;
+  disabled?: boolean;
+  external?: boolean;
 }
 
 export interface NavSection {
