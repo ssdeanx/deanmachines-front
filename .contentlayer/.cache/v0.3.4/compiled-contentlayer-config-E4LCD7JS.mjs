@@ -77,4 +77,4 @@ export {
   Post,
   contentlayer_config_default as default
 };
-//# sourceMappingURL=compiled-contentlayer-config-7GZSHUW4.mjs.map
+//# sourceMappingURL=compiled-contentlayer-config-E4LCD7JS.mjs.map

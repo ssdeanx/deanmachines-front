@@ -1,12 +1,16 @@
 import { toc } from "mdast-util-toc";
 import { remark } from "remark";
 import { visit } from "unist-util-visit";
+// Import unified AST types from 'mdast'
 import type {
-  Root,
-  Content,
-  Text,
+  RootContent,
   InlineCode,
+  ListItem,
   List,
+  Root,
+  Paragraph,
+  Link,
+  Text,
 } from "mdast";
 import type { Node } from "unist";
 
@@ -28,14 +32,14 @@ export interface TocEntry {
  * @param node - The MDast node (e.g., Paragraph, Heading).
  * @returns The extracted text content.
  */
-function extractText(node: Content | Root): string {
+function extractText(node: RootContent | Root): string {
   let text = "";
   // Visit only Text and InlineCode nodes within the provided node
   // Use a more general Node type for the visitor parameter and type guard inside
   visit(node, ["text", "inlineCode"], (visitedNode: Node) => {
     // Type guard ensures we only access 'value' on appropriate node types
     if (visitedNode.type === "text" || visitedNode.type === "inlineCode") {
-       text += (visitedNode as Text | InlineCode).value;
+      text += (visitedNode as Text | InlineCode).value;
     }
   });
   return text;
@@ -51,7 +55,7 @@ function extractText(node: Content | Root): string {
  */
 function transformToc(
   node: List | undefined | null,
-  currentDepth: number,
+  currentDepth: number
 ): TocEntry[] | undefined {
   if (!node || node.type !== "list" || !node.children) {
     return undefined;
@@ -114,7 +118,7 @@ function transformToc(
  * @throws Will throw an error if parsing fails.
  */
 export async function getTableOfContents(
-  content: string,
+  content: string
 ): Promise<TocEntry[] | undefined> {
   try {
     const processor = remark().use(() => (tree: Root) => {
@@ -128,7 +132,8 @@ export async function getTableOfContents(
       });
 
       // Replace the tree content with just the generated TOC list if found
-      if (result.map) { // result.map is List | undefined
+      if (result.map) {
+        // result.map is List | undefined
         // If a TOC list was generated, replace the tree's children with it.
         // Cast result.map to the List type imported in this file to resolve potential type conflicts.
         tree.children = [result.map as List];

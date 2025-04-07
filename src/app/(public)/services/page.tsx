@@ -1,5 +1,5 @@
 import { Metadata } from "next"
-import { Bot, Brain, Cpu, Network, Workflow, Lock } from "lucide-react"
+import * as icons from "lucide-react"
 
 import { siteConfig } from "@/config/site"
 import { ServiceCard } from "@/components/sections/ServiceCard"
@@ -10,11 +10,21 @@ export const metadata: Metadata = {
   description: "Explore our comprehensive AI development and deployment services.",
 }
 
-const services = [
+// Use the same type definition as ServiceCard component for consistency
+type IconName = keyof typeof icons;
+
+type Service = {
+  title: string
+  description: string
+  iconName: IconName
+  features: string[]
+}
+
+const services: Service[] = [
   {
     title: "AI Development",
     description: "Custom AI solutions tailored to your business needs",
-    icon: Brain,
+    iconName: "Brain",
     features: [
       "Custom model development",
       "Fine-tuning and optimization",
@@ -25,7 +35,7 @@ const services = [
   {
     title: "Intelligent Agents",
     description: "Build and deploy AI agents that adapt to your requirements",
-    icon: Bot,
+    iconName: "Bot",
     features: [
       "Autonomous agents",
       "Multi-agent systems",
@@ -36,7 +46,7 @@ const services = [
   {
     title: "Machine Learning Ops",
     description: "End-to-end MLOps solutions for your AI infrastructure",
-    icon: Cpu,
+    iconName: "Cpu",
     features: [
       "Model deployment",
       "Monitoring and logging",
@@ -47,7 +57,7 @@ const services = [
   {
     title: "AI Networks",
     description: "Create and manage networks of intelligent agents",
-    icon: Network,
+    iconName: "Network",
     features: [
       "Agent communication",
       "Network orchestration",
@@ -58,7 +68,7 @@ const services = [
   {
     title: "Workflow Automation",
     description: "Streamline processes with AI-powered automation",
-    icon: Workflow,
+    iconName: "Workflow",
     features: [
       "Process optimization",
       "Custom workflows",
@@ -69,7 +79,7 @@ const services = [
   {
     title: "Security & Compliance",
     description: "Ensure your AI systems are secure and compliant",
-    icon: Lock,
+    iconName: "Lock",
     features: [
       "Security audits",
       "Compliance checking",
@@ -100,7 +110,7 @@ export default function ServicesPage() {
               key={index}
               title={service.title}
               description={service.description}
-              icon={service.icon}
+              iconName={service.iconName}
               features={service.features}
             />
           ))}

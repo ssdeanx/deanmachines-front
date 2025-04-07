@@ -1,15 +1,19 @@
-'use client';
+'use client'
 import * as React from "react"
 import { LucideIcon } from "lucide-react"
+import * as icons from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { IconWrapper } from "@/components/common/IconWrapper"
 
+// Define the type for valid icon names based on the lucide-react export
+type IconName = keyof typeof icons;
+
 interface ServiceCardProps {
   title: string
   description: string
-  icon: LucideIcon
+  iconName: IconName // Use the specific type for icon names
   features?: string[]
   className?: string
 }
@@ -17,16 +21,18 @@ interface ServiceCardProps {
 export function ServiceCard({
   title,
   description,
-  icon,
+  iconName,
   features,
   className,
 }: ServiceCardProps) {
+  const Icon = icons[iconName] as LucideIcon
+
   return (
     <Card className={cn("transition-all hover:shadow-lg", className)}>
       <CardHeader>
         <div className="flex items-center space-x-4">
           <IconWrapper
-            icon={icon}
+            icon={Icon}
             size="lg"
             className="rounded-lg border bg-muted p-2"
           />

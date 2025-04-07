@@ -29,11 +29,13 @@ export const Post = defineDocumentType(() => ({
   computedFields: {
     slug: {
       type: "string",
-      resolve: (doc) => doc._raw.sourceFileName.replace(/\.mdx$/, ""),
+      resolve: (doc: { _raw: { sourceFileName: string } }) =>
+        doc._raw.sourceFileName.replace(/\.mdx$/, ""),
     },
     slugAsParams: {
       type: "string",
-      resolve: (doc) => doc._raw.sourceFileName.replace(/\.mdx$/, ""),
+      resolve: (doc: { _raw: { sourceFileName: string } }) =>
+        doc._raw.sourceFileName.replace(/\.mdx$/, ""),
     },
   },
 }));
@@ -49,11 +51,13 @@ export const Doc = defineDocumentType(() => ({
   computedFields: {
     slug: {
       type: "string",
-      resolve: (doc) => doc._raw.sourceFileName.replace(/\.mdx$/, ""),
+      resolve: (doc: { _raw: { sourceFileName: string } }) =>
+        doc._raw.sourceFileName.replace(/\.mdx$/, ""),
     },
     slugAsParams: {
       type: "string",
-      resolve: (doc) => doc._raw.sourceFileName.replace(/\.mdx$/, ""),
+      resolve: (doc: { _raw: { sourceFileName: string } }) =>
+        doc._raw.sourceFileName.replace(/\.mdx$/, ""),
     },
   },
 }));
