@@ -1,0 +1,195 @@
+---
+title: CI/CD Integration
+description: Learn how to integrate deanmachines AI into your CI/CD pipeline.
+---
+
+# CI/CD Integration
+
+This guide explains how to integrate deanmachines AI deployments into your continuous integration and continuous deployment (CI/CD) pipeline.
+
+## GitHub Actions Integration
+
+### Basic Workflow
+
+```yaml
+name: Deploy deanmachines AI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Install deanmachines CLI
+      run: npm install -g @deanmachines/cli
+
+    - name: Configure deanmachines
+      run: dean configure
+      env:
+        DEAN_API_KEY: ${{ secrets.DEAN_API_KEY }}
+
+    - name: Deploy
+      run: dean deploy --env production
+      env:
+        DEAN_ENV: production
+```
+
+## GitLab CI Integration
+
+```yaml
+stages:
+  - test
+  - deploy
+
+deploy_production:
+  stage: deploy
+  script:
+    - npm install -g @deanmachines/cli
+    - dean configure
+    - dean deploy --env production
+  environment:
+    name: production
+  only:
+    - main
+```
+
+## Jenkins Pipeline
+
+```groovy
+pipeline {
+    agent any
+
+    environment {
+        DEAN_API_KEY = credentials('dean-api-key')
+    }
+
+    stages {
+        stage('Deploy') {
+            steps {
+                sh 'npm install -g @deanmachines/cli'
+                sh 'dean configure'
+                sh 'dean deploy --env production'
+            }
+        }
+    }
+}
+```
+
+## Automated Testing
+
+### Pre-deployment Tests
+
+```typescript
+import { TestSuite } from '@deanmachines/testing'
+
+const suite = new TestSuite({
+  agents: ['support', 'analysis'],
+  environment: 'staging'
+})
+
+await suite.runTests({
+  parallel: true,
+  coverage: true,
+  report: true
+})
+```
+
+## Environment Management
+
+### Environment Variables
+
+```bash
+# Production
+DEAN_API_KEY=your_production_key
+DEAN_ENV=production
+DEAN_REGION=us-east-1
+
+# Staging
+DEAN_API_KEY=your_staging_key
+DEAN_ENV=staging
+DEAN_REGION=us-east-1
+```
+
+## Deployment Strategies
+
+### Blue-Green Deployment
+
+```typescript
+const deployment = await client.deploy({
+  strategy: 'blue-green',
+  version: '1.0.0',
+  smoke_test: true,
+  rollback: {
+    enabled: true,
+    threshold: 0.1
+  }
+})
+```
+
+### Canary Deployment
+
+```typescript
+const deployment = await client.deploy({
+  strategy: 'canary',
+  version: '1.0.0',
+  phases: [
+    { percentage: 10, duration: '1h' },
+    { percentage: 50, duration: '2h' },
+    { percentage: 100 }
+  ]
+})
+```
+
+## Monitoring & Alerts
+
+### Deployment Monitoring
+
+```typescript
+const monitor = new DeploymentMonitor({
+  metrics: ['health', 'errors', 'latency'],
+  threshold: {
+    error_rate: 0.01,
+    p95_latency: 500
+  },
+  alerts: ['slack', 'email']
+})
+```
+
+## Best Practices
+
+1. **Automated Testing**
+   - Run comprehensive test suites
+   - Include integration tests
+   - Validate deployment configs
+
+2. **Security**
+   - Secure API keys
+   - Use environment secrets
+   - Implement access controls
+
+3. **Monitoring**
+   - Monitor deployments
+   - Set up alerts
+   - Track metrics
+
+<Callout type="warning">
+  Never commit API keys or sensitive credentials to version control.
+</Callout>
+
+## Next Steps
+
+- [Monitoring Setup](/docs/deployment/monitoring)
+- [Security Configuration](/docs/deployment/security)
+- [Performance Testing](/docs/guides/performance-testing)

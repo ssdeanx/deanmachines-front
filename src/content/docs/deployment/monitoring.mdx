@@ -1,0 +1,256 @@
+---
+title: Monitoring Setup
+description: Configure comprehensive monitoring for your deanmachines AI deployments.
+---
+
+# Monitoring Setup
+
+Learn how to implement comprehensive monitoring for your deanmachines AI applications in production.
+
+## Metrics Configuration
+
+### Basic Setup
+
+```typescript
+interface MetricsConfig {
+  provider: 'prometheus' | 'datadog' | 'cloudwatch';
+  endpoints: {
+    scrape: string;
+    push?: string;
+  };
+  interval: string;
+  labels: Record<string, string>;
+}
+
+const metrics = await client.configureMetrics({
+  provider: 'prometheus',
+  endpoints: {
+    scrape: '/metrics',
+    push: 'https://metrics.deanmachines.com'
+  },
+  interval: '15s',
+  labels: {
+    environment: 'production',
+    region: 'us-east-1'
+  }
+});
+```
+
+## Logging System
+
+### Log Aggregation
+
+```typescript
+interface LoggingConfig {
+  destination: {
+    type: 'elasticsearch' | 'loki' | 'stackdriver';
+    url: string;
+    index: string;
+  };
+  retention: string;
+  sampling: {
+    enabled: boolean;
+    rate: number;
+  };
+}
+
+await client.configureLogs({
+  destination: {
+    type: 'elasticsearch',
+    url: 'https://logs.deanmachines.com',
+    index: 'ai-agents'
+  },
+  retention: '30d',
+  sampling: {
+    enabled: true,
+    rate: 0.1
+  }
+});
+```
+
+## Health Checks
+
+### Agent Health
+
+```typescript
+interface HealthCheck {
+  path: string;
+  interval: string;
+  timeout: string;
+  thresholds: {
+    success: number;
+    latency: number;
+  };
+}
+
+await client.configureHealth({
+  path: '/health',
+  interval: '30s',
+  timeout: '5s',
+  thresholds: {
+    success: 0.999,  // 99.9% success rate
+    latency: 200     // 200ms max latency
+  }
+});
+```
+
+## Alert Configuration
+
+### Alert Rules
+
+```typescript
+interface AlertRule {
+  name: string;
+  condition: string;
+  duration: string;
+  severity: 'critical' | 'warning' | 'info';
+  channels: string[];
+  labels: Record<string, string>;
+}
+
+await client.configureAlerts([
+  {
+    name: 'high_error_rate',
+    condition: 'rate(errors_total[5m]) > 0.01',
+    duration: '5m',
+    severity: 'critical',
+    channels: ['slack-ops', 'pagerduty'],
+    labels: { team: 'ai-ops' }
+  },
+  {
+    name: 'memory_warning',
+    condition: 'memory_usage > 85',
+    duration: '10m',
+    severity: 'warning',
+    channels: ['slack-ops'],
+    labels: { team: 'ai-ops' }
+  }
+]);
+```
+
+## Dashboard Setup
+
+### Grafana Integration
+
+```typescript
+interface DashboardConfig {
+  provider: 'grafana';
+  url: string;
+  datasources: {
+    metrics: string;
+    logs: string;
+  };
+  folders: {
+    agents: string;
+    system: string;
+  };
+}
+
+await client.configureDashboards({
+  provider: 'grafana',
+  url: 'https://grafana.deanmachines.com',
+  datasources: {
+    metrics: 'prometheus',
+    logs: 'loki'
+  },
+  folders: {
+    agents: 'AI Agents',
+    system: 'System Metrics'
+  }
+});
+```
+
+## Tracing Configuration
+
+### Distributed Tracing
+
+```typescript
+interface TracingConfig {
+  provider: 'jaeger' | 'zipkin';
+  endpoint: string;
+  sampling: {
+    type: 'probabilistic' | 'ratelimiting';
+    value: number;
+  };
+  tags: Record<string, string>;
+}
+
+await client.configureTracing({
+  provider: 'jaeger',
+  endpoint: 'http://jaeger:14268/api/traces',
+  sampling: {
+    type: 'probabilistic',
+    value: 0.1
+  },
+  tags: {
+    service: 'ai-agents',
+    environment: 'production'
+  }
+});
+```
+
+## Performance Monitoring
+
+### Resource Usage
+
+```typescript
+interface ResourceMetrics {
+  cpu: {
+    usage: boolean;
+    throttling: boolean;
+  };
+  memory: {
+    usage: boolean;
+    limits: boolean;
+  };
+  network: {
+    io: boolean;
+    latency: boolean;
+  };
+}
+
+await client.configureResourceMetrics({
+  cpu: {
+    usage: true,
+    throttling: true
+  },
+  memory: {
+    usage: true,
+    limits: true
+  },
+  network: {
+    io: true,
+    latency: true
+  }
+});
+```
+
+## Best Practices
+
+1. **Metric Collection**
+   - Define meaningful metrics
+   - Use appropriate aggregations
+   - Set up proper retention policies
+   - Monitor resource usage
+
+2. **Logging**
+   - Implement structured logging
+   - Use appropriate log levels
+   - Configure log rotation
+   - Implement log sampling
+
+3. **Alerting**
+   - Define clear alert thresholds
+   - Avoid alert fatigue
+   - Implement proper escalation
+   - Document alert responses
+
+<Callout type="info">
+  Regular review of monitoring thresholds and alert rules is essential for maintaining system reliability.
+</Callout>
+
+## Next Steps
+
+- [Security Configuration](/docs/deployment/security)
+- [Performance Optimization](/docs/guides/performance)
+- [Troubleshooting Guide](/docs/guides/troubleshooting)

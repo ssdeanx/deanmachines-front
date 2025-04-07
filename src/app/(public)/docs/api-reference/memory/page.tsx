@@ -11,13 +11,13 @@ import { DocsLayoutWrapper } from "@/components/docs/DocsLayoutWrapper"
 const allDocs: Doc[] = []
 
 export const metadata: Metadata = {
-  title: "Installation - deanmachines AI",
-  description: "Install and set up your development environment for deanmachines AI.",
+  title: "Memory API Reference - deanmachines AI",
+  description: "Complete API reference for memory management and storage.",
 }
 
-export default async function InstallationPage() {
+export default async function MemoryApiPage() {
   try {
-    const doc = allDocs.find((doc) => doc.slugAsParams === "getting-started/installation")
+    const doc = allDocs.find((doc) => doc.slugAsParams === "api-reference/memory")
 
     if (!doc) {
       notFound()
@@ -31,12 +31,12 @@ export default async function InstallationPage() {
           toc={{ items: toc }}
           pagination={{
             prev: {
-              title: "Getting Started",
-              href: "/docs/getting-started",
+              title: "Agent API",
+              href: "/docs/api-reference/agent",
             },
             next: {
-              title: "Configuration",
-              href: "/docs/getting-started/configuration",
+              title: "Network API",
+              href: "/docs/api-reference/network",
             },
           }}
         >
@@ -45,7 +45,7 @@ export default async function InstallationPage() {
       </DocsLayoutWrapper>
     )
   } catch (error) {
-    console.error("Error in InstallationPage:", error)
+    console.error("Error in MemoryApiPage:", error)
     throw error
   }
 }

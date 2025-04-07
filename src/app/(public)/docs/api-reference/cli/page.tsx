@@ -11,13 +11,13 @@ import { DocsLayoutWrapper } from "@/components/docs/DocsLayoutWrapper"
 const allDocs: Doc[] = []
 
 export const metadata: Metadata = {
-  title: "Installation - deanmachines AI",
-  description: "Install and set up your development environment for deanmachines AI.",
+  title: "CLI Reference - deanmachines AI",
+  description: "Complete reference for the deanmachines AI command-line interface.",
 }
 
-export default async function InstallationPage() {
+export default async function CliReferencePage() {
   try {
-    const doc = allDocs.find((doc) => doc.slugAsParams === "getting-started/installation")
+    const doc = allDocs.find((doc) => doc.slugAsParams === "api-reference/cli")
 
     if (!doc) {
       notFound()
@@ -31,12 +31,8 @@ export default async function InstallationPage() {
           toc={{ items: toc }}
           pagination={{
             prev: {
-              title: "Getting Started",
-              href: "/docs/getting-started",
-            },
-            next: {
-              title: "Configuration",
-              href: "/docs/getting-started/configuration",
+              title: "Deployment API",
+              href: "/docs/api-reference/deployment",
             },
           }}
         >
@@ -45,7 +41,7 @@ export default async function InstallationPage() {
       </DocsLayoutWrapper>
     )
   } catch (error) {
-    console.error("Error in InstallationPage:", error)
+    console.error("Error in CliReferencePage:", error)
     throw error
   }
 }

@@ -11,13 +11,13 @@ import { DocsLayoutWrapper } from "@/components/docs/DocsLayoutWrapper"
 const allDocs: Doc[] = []
 
 export const metadata: Metadata = {
-  title: "Installation - deanmachines AI",
-  description: "Install and set up your development environment for deanmachines AI.",
+  title: "Scaling Strategies - deanmachines AI",
+  description: "Learn how to scale your AI applications from prototype to production.",
 }
 
-export default async function InstallationPage() {
+export default async function ScalingGuidePage() {
   try {
-    const doc = allDocs.find((doc) => doc.slugAsParams === "getting-started/installation")
+    const doc = allDocs.find((doc) => doc.slugAsParams === "guides/scaling")
 
     if (!doc) {
       notFound()
@@ -31,12 +31,12 @@ export default async function InstallationPage() {
           toc={{ items: toc }}
           pagination={{
             prev: {
-              title: "Getting Started",
-              href: "/docs/getting-started",
+              title: "Monitoring & Observability",
+              href: "/docs/guides/monitoring",
             },
             next: {
-              title: "Configuration",
-              href: "/docs/getting-started/configuration",
+              title: "Testing & Validation",
+              href: "/docs/guides/testing",
             },
           }}
         >
@@ -45,7 +45,7 @@ export default async function InstallationPage() {
       </DocsLayoutWrapper>
     )
   } catch (error) {
-    console.error("Error in InstallationPage:", error)
+    console.error("Error in ScalingGuidePage:", error)
     throw error
   }
 }

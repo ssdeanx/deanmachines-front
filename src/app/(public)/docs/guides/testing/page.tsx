@@ -11,13 +11,13 @@ import { DocsLayoutWrapper } from "@/components/docs/DocsLayoutWrapper"
 const allDocs: Doc[] = []
 
 export const metadata: Metadata = {
-  title: "Installation - deanmachines AI",
-  description: "Install and set up your development environment for deanmachines AI.",
+  title: "Testing & Validation - deanmachines AI",
+  description: "Learn how to test and validate your AI agents effectively.",
 }
 
-export default async function InstallationPage() {
+export default async function TestingGuidePage() {
   try {
-    const doc = allDocs.find((doc) => doc.slugAsParams === "getting-started/installation")
+    const doc = allDocs.find((doc) => doc.slugAsParams === "guides/testing")
 
     if (!doc) {
       notFound()
@@ -31,12 +31,12 @@ export default async function InstallationPage() {
           toc={{ items: toc }}
           pagination={{
             prev: {
-              title: "Getting Started",
-              href: "/docs/getting-started",
+              title: "Scaling Strategies",
+              href: "/docs/guides/scaling",
             },
             next: {
-              title: "Configuration",
-              href: "/docs/getting-started/configuration",
+              title: "API Reference",
+              href: "/docs/api-reference",
             },
           }}
         >
@@ -45,7 +45,7 @@ export default async function InstallationPage() {
       </DocsLayoutWrapper>
     )
   } catch (error) {
-    console.error("Error in InstallationPage:", error)
+    console.error("Error in TestingGuidePage:", error)
     throw error
   }
 }
