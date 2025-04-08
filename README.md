@@ -268,112 +268,115 @@ flowchart TD
 
 ```mermaid
 graph TB
-    User((External User))
+    User((User))
+    Admin((Admin))
 
-    subgraph "Frontend Application"
-        NextApp["Next.js Application<br>(Next.js 15+)"]
+    subgraph "Frontend Container"
+        direction TB
+        WebApp["Web Application<br>Next.js"]
 
-        subgraph "Core Components"
-            Layout["Layout Manager<br>(React/TSX)"]
-            ThemeProvider["Theme Provider<br>(next-themes)"]
-            Router["Router<br>(Next.js App Router)"]
-            MDXProcessor["MDX Processor<br>(Contentlayer)"]
-        end
-
-        subgraph "Layout Components"
-            NavBar["Navigation Bar<br>(React/TSX)"]
-            Footer["Footer<br>(React/TSX)"]
-            MobileNav["Mobile Navigation<br>(React/TSX)"]
-        end
-
-        subgraph "Documentation Components"
-            DocsSidebar["Docs Sidebar<br>(React/TSX)"]
-            DocsSearch["Docs Search<br>(React/TSX)"]
-            DocsLayout["Docs Layout<br>(React/TSX)"]
-            MDXComponents["MDX Components<br>(React/TSX)"]
-            TocComponent["Table of Contents<br>(React/TSX)"]
-            CodeBlock["Code Block<br>(with Syntax Highlighting)"]
-        end
-
-        subgraph "UI Components"
-            CommonUI["Common UI Elements<br>(React/TSX)"]
-            ThemeToggle["Theme Toggle<br>(React/TSX)"]
-            SearchInput["Search Input<br>(React/TSX)"]
-            Buttons["Button Components<br>(shadcn/ui)"]
-            Forms["Form Components<br>(React Hook Form)"]
-            Feedback["Feedback Components<br>(Alerts, Toasts)"]
+        subgraph "Frontend Components"
+            direction TB
+            NavBar["Navigation Bar<br>React"]
+            ThemeProvider["Theme Provider<br>next-themes"]
+            AuthComponents["Auth Components<br>NextAuth.js"]
+            DocsViewer["Documentation Viewer<br>MDX"]
+            UIComponents["UI Components<br>Radix UI"]
+            Visualizations["Visualization Components<br>Custom React"]
         end
     end
 
-    subgraph "Content Layer"
-        ContentManager["Content Manager<br>(Contentlayer)"]
+    subgraph "Authentication Container"
+        direction TB
+        AuthService["Auth Service<br>NextAuth.js"]
 
-        subgraph "Content Types"
-            BlogPosts["Blog Posts<br>(MDX)"]
-            Documentation["Documentation<br>(MDX)"]
-            APIReference["API Reference<br>(MDX)"]
-        end
-
-        subgraph "Content Processing"
-            FrontmatterExtraction["Frontmatter<br>Extraction"]
-            MDXCompilation["MDX<br>Compilation"]
-            TOCGeneration["Table of Contents<br>Generation"]
-            CodeProcessing["Code Block<br>Processing"]
+        subgraph "Auth Components"
+            Providers["Auth Providers<br>Google, GitHub, Credentials"]
+            SessionManager["Session Manager<br>JWT"]
+            RoleManager["Role Manager<br>Custom"]
         end
     end
 
-    subgraph "Static Assets"
-        PublicAssets["Public Assets<br>(Static Files)"]
-        Styles["Styles<br>(TailwindCSS)"]
-        Fonts["Font Optimization<br>(next/font)"]
-        Images["Image Optimization<br>(next/image)"]
+    subgraph "Backend Container"
+        direction TB
+        APIRoutes["API Routes<br>Next.js API"]
+
+        subgraph "API Components"
+            AuthHandler["Auth Handler<br>NextAuth"]
+            UserManager["User Manager<br>Firebase Admin"]
+            DataProcessor["Data Processor<br>Node.js"]
+        end
+    end
+
+    subgraph "Content Container"
+        direction TB
+        ContentLayer["Content Layer<br>contentlayer"]
+
+        subgraph "Content Components"
+            MDXProcessor["MDX Processor<br>contentlayer"]
+            DocGenerator["Documentation Generator<br>contentlayer"]
+            BlogProcessor["Blog Processor<br>contentlayer"]
+        end
+    end
+
+    subgraph "Data Storage Container"
+        direction TB
+        FirebaseDB["Firebase Database<br>Firestore"]
+
+        subgraph "Storage Components"
+            UserStore["User Storage<br>Firestore"]
+            AuthStore["Auth Storage<br>Firestore"]
+            ContentStore["Content Cache<br>Firestore"]
+        end
+    end
+
+    subgraph "External Services"
+        Firebase["Firebase<br>Cloud Services"]
+        GoogleAuth["Google Auth<br>OAuth 2.0"]
+        GitHubAuth["GitHub Auth<br>OAuth 2.0"]
     end
 
     %% User Interactions
-    User -->|"Accesses"| NextApp
+    User -->|"Accesses"| WebApp
+    Admin -->|"Manages"| WebApp
 
-    %% Core Component Relationships
-    NextApp -->|"Uses"| Layout
-    Layout -->|"Includes"| ThemeProvider
-    Layout -->|"Uses"| Router
-    NextApp -->|"Processes"| MDXProcessor
+    %% Frontend Connections
+    WebApp -->|"Uses"| NavBar
+    WebApp -->|"Uses"| ThemeProvider
+    WebApp -->|"Uses"| AuthComponents
+    WebApp -->|"Uses"| DocsViewer
+    WebApp -->|"Uses"| UIComponents
+    WebApp -->|"Uses"| Visualizations
 
-    %% Layout Component Relationships
-    Layout -->|"Renders"| NavBar
-    Layout -->|"Renders"| Footer
-    NavBar -->|"Shows on mobile"| MobileNav
+    %% Auth Flow
+    WebApp -->|"Authenticates"| AuthService
+    AuthService -->|"Uses"| Providers
+    AuthService -->|"Manages"| SessionManager
+    SessionManager -->|"Uses"| RoleManager
 
-    %% Documentation Component Relationships
-    DocsLayout -->|"Includes"| DocsSidebar
-    DocsLayout -->|"Includes"| DocsSearch
-    DocsLayout -->|"Includes"| TocComponent
-    DocsLayout -->|"Uses"| MDXComponents
-    MDXComponents -->|"Uses"| CodeBlock
-
-    %% UI Component Relationships
-    NavBar -->|"Uses"| ThemeToggle
-    NavBar -->|"Uses"| SearchInput
-    NavBar -->|"Uses"| Buttons
-    CommonUI -->|"Provides"| Buttons
-    CommonUI -->|"Provides"| Forms
-    CommonUI -->|"Provides"| Feedback
+    %% API Connections
+    WebApp -->|"Calls"| APIRoutes
+    APIRoutes -->|"Routes"| AuthHandler
+    APIRoutes -->|"Routes"| UserManager
+    APIRoutes -->|"Routes"| DataProcessor
 
     %% Content Management
-    ContentManager -->|"Manages"| BlogPosts
-    ContentManager -->|"Manages"| Documentation
-    ContentManager -->|"Manages"| APIReference
-    ContentManager -->|"Uses"| FrontmatterExtraction
-    ContentManager -->|"Uses"| MDXCompilation
-    ContentManager -->|"Uses"| TOCGeneration
-    ContentManager -->|"Uses"| CodeProcessing
-    MDXProcessor -->|"Processes"| BlogPosts
-    MDXProcessor -->|"Processes"| Documentation
+    WebApp -->|"Loads"| ContentLayer
+    ContentLayer -->|"Processes"| MDXProcessor
+    ContentLayer -->|"Generates"| DocGenerator
+    ContentLayer -->|"Processes"| BlogProcessor
 
-    %% Static Asset Relationships
-    NextApp -->|"Serves"| PublicAssets
-    NextApp -->|"Applies"| Styles
-    NextApp -->|"Optimizes"| Fonts
-    NextApp -->|"Optimizes"| Images
+    %% Data Storage
+    AuthHandler -->|"Stores"| UserStore
+    UserManager -->|"Manages"| UserStore
+    AuthService -->|"Uses"| AuthStore
+    ContentLayer -->|"Caches"| ContentStore
+
+    %% External Service Connections
+    AuthService -->|"Integrates"| Firebase
+    Providers -->|"Uses"| GoogleAuth
+    Providers -->|"Uses"| GitHubAuth
+    FirebaseDB -->|"Syncs"| Firebase
 ```
 
 ## 🎯 Technical Goals & Implementation Status

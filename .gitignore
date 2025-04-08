@@ -1,17 +1,13 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-.contentlayer/
-.github
+/.contentlayer
+/.github
 .github/
 gen-lang-client-0520765474-firebase-adminsdk-fbsvc-d1e16fc9e0.json
 # dependencies
 /node_modules
 /.pnp
 .pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
+
 
 # testing
 /coverage
@@ -29,8 +25,6 @@ gen-lang-client-0520765474-firebase-adminsdk-fbsvc-d1e16fc9e0.json
 
 # debug
 npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
 .pnpm-debug.log*
 
 # env files (can opt-in for committing if needed)
