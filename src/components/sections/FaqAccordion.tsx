@@ -1,19 +1,46 @@
 import * as React from "react"
+import { useState } from "react"
+import { motion, AnimatePresence } from "framer-motion"
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion"
+import { Badge } from "@/components/ui/badge"
+import { cn } from "@/lib/utils"
+import { PlusIcon, MinusIcon } from "lucide-react"
 
-const faqs = [
+interface FaqCategory {
+  name: string
+  color?: string
+}
+
+interface Faq {
+  question: string
+  answer: string
+  category?: string
+  isPopular?: boolean
+}
+
+const categories: FaqCategory[] = [
+  { name: "General", color: "bg-blue-500/10 text-blue-500" },
+  { name: "Technical", color: "bg-purple-500/10 text-purple-500" },
+  { name: "Pricing", color: "bg-green-500/10 text-green-500" },
+  { name: "Security", color: "bg-amber-500/10 text-amber-500" },
+]
+
+const faqs: Faq[] = [
   {
     question: "What is Mastra AI?",
     answer: "Mastra AI is a platform for building, deploying, and managing AI agents. It provides the tools and infrastructure needed to create intelligent agents that can understand context, learn from interactions, and automate complex tasks.",
+    category: "General",
+    isPopular: true
   },
   {
     question: "How does agent memory work?",
     answer: "Agents in Mastra maintain context through our advanced memory management system. They can store and recall information from previous interactions, learn from patterns, and maintain long-term memory across sessions using various storage backends.",
+    category: "Technical"
   },
   {
     question: "Can I deploy Mastra agents anywhere?",

@@ -6,6 +6,7 @@ import { getTableOfContents } from "@/lib/toc"
 import { Mdx } from "@/components/docs/mdx"
 import { DocsPageLayout } from "@/components/docs/DocsPageLayout"
 import { DocsLayoutWrapper } from "@/components/docs/DocsLayoutWrapper"
+import { mockDocs } from "@/lib/mock-docs"
 
 // Temporary mock for contentlayer until it's properly set up
 const allDocs: Doc[] = []
@@ -17,11 +18,8 @@ export const metadata: Metadata = {
 
 export default async function AgentsPage() {
   try {
-    const doc = allDocs.find((doc) => doc.slugAsParams === "core-concepts/agents")
-
-    if (!doc) {
-      notFound()
-    }
+    // Get doc from centralized mock data
+    const doc = mockDocs["core-concepts/agents"];
 
     const toc = await getTableOfContents(doc.body.raw)
 

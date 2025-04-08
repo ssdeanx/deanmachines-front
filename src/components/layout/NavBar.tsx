@@ -3,13 +3,14 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 import {
   Menu,
   Home,
   ChevronDown,
   Brain,
   Database,
-  Wrench, // Replacing Tool with Wrench
+  Wrench,
   Workflow,
   Building,
   Headset,
@@ -25,6 +26,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { SearchInput } from "@/components/common/SearchInput";
 import { ThemeToggle } from "@/components/common/ThemeToggle";
+import { UserNav } from "@/components/user/UserNav";
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -50,7 +52,7 @@ import { type NavItem } from "@/types/nav";
 const iconMap: Record<string, LucideIcon> = {
   brain: Brain,
   database: Database,
-  wrench: Wrench, // Replacing Tool with Wrench
+  wrench: Wrench,
   workflow: Workflow,
   building: Building,
   headset: Headset,
@@ -94,16 +96,16 @@ const ListItem = React.forwardRef<
         >
           <div className="flex items-center gap-3">
             {IconComponent && (
-              <div className="rounded-md bg-muted p-2 group-hover:bg-primary/10 transition-colors duration-300">
-                <IconComponent className="h-5 w-5" />
+              <div className="rounded-md bg-muted p-2 group-hover:bg-primary/10 group-hover:scale-110 transition-all duration-300 motion-reduce:transition-none">
+                <IconComponent className="size-5 text-foreground/70 group-hover:text-foreground transition-colors" />
               </div>
             )}
-            <div className="text-sm font-medium leading-none group-hover:translate-x-0.5 transition-transform duration-300">
+            <div className="text-sm font-medium leading-none group-hover:translate-x-0.5 transition-transform duration-300 motion-reduce:transition-none">
               {title}
             </div>
           </div>
           {description && (
-            <p className="line-clamp-2 mt-2 text-sm leading-snug text-muted-foreground">
+            <p className="line-clamp-2 mt-2 text-sm leading-snug text-muted-foreground group-hover:text-muted-foreground/80 transition-colors">
               {description}
             </p>
           )}
@@ -175,8 +177,9 @@ function MainNav() {
                   </NavigationMenuTrigger>
                   <NavigationMenuContent>
                     <ul className={cn(
-                      "grid gap-3 p-4 w-[400px] md:w-[500px]",
-                      item.children.length > 2 ? "lg:grid-cols-2" : ""
+                      "grid gap-3 p-4 w-[400px] @md:w-[500px]",
+                      "animate-in fade-in-50 zoom-in-95 data-[motion=from-start]:slide-in-from-left-10 data-[motion=from-end]:slide-in-from-right-10 data-[motion=to-start]:slide-out-to-left-10 data-[motion=to-end]:slide-out-to-right-10",
+                      item.children.length > 2 ? "@lg:grid-cols-2" : ""
                     )}>
                       {item.children.map((child) => (
                         <ListItem
@@ -219,6 +222,10 @@ function MainNav() {
 /**
  * Mobile navigation item component for responsive menu
  */
+/**
+ * Mobile navigation item component for responsive menu
+ * Enhanced with smooth animations and improved interactions
+ */
 function MobileNavItem({
   item,
   isActive,
@@ -230,57 +237,75 @@ function MobileNavItem({
 }) {
   const [isOpen, setIsOpen] = React.useState(false);
   const hasChildren = item.children && item.children.length > 0;
+  const IconComponent = item.icon ? iconMap[item.icon] || null : null;
 
   return (
-    <div>
+    <div className={cn(
+      "group transition-all duration-300",
+      isOpen && "bg-accent/10 rounded-lg"
+    )}>
       <div className="flex items-center justify-between">
         <Link
           href={item.href}
           className={cn(
-            "flex w-full items-center py-2 text-base font-medium transition-colors",
-            isActive(item.href) ? "text-primary" : "text-foreground/70 hover:text-foreground",
-            depth > 0 ? "pl-4" : ""
+            "flex w-full items-center gap-2 py-2 text-base font-medium transition-colors duration-300",
+            isActive(item.href) ? "text-primary font-semibold" : "text-foreground/70 hover:text-foreground",
+            depth > 0 ? "pl-4" : "",
+            "group-hover:translate-x-0.5 transition-transform motion-reduce:transition-none"
           )}
           onClick={hasChildren ? () => setIsOpen(!isOpen) : undefined}
         >
+          {IconComponent && <IconComponent className="size-4 opacity-70 group-hover:opacity-100 transition-opacity" />}
           {item.title}
         </Link>
         {hasChildren && (
           <Button
             variant="ghost"
             size="sm"
-            className="h-8 w-8 p-0"
+            className="size-8 p-0 hover:bg-accent/50 active:scale-95"
             onClick={() => setIsOpen(!isOpen)}
           >
             <ChevronDown
               className={cn(
-                "h-4 w-4 transition-transform",
+                "size-4 transition-transform duration-300",
                 isOpen ? "rotate-180" : ""
               )}
             />
-            <span className="sr-only">Toggle</span>
+            <span className="sr-only">Toggle {item.title} submenu</span>
           </Button>
         )}
       </div>
 
       {hasChildren && isOpen && (
-        <div className="ml-4 mt-1 space-y-1">
-          {item.children?.map((child) => (
-            <div key={child.href}>
+        <div className="ml-4 mt-1 space-y-1 animate-in slide-in-from-left-5 duration-300">
+          {item.children?.map((child, index) => (
+            <div
+              key={child.href}
+              className={cn(
+                "rounded-md transition-all duration-300 hover:bg-accent/30",
+                "animate-in fade-in-50 duration-300",
+                { "delay-100": index === 0 },
+                { "delay-150": index === 1 },
+                { "delay-200": index >= 2 }
+              )}
+            >
               <Link
                 href={child.href}
                 className={cn(
-                  "flex items-center gap-2 py-2 pl-4 text-sm font-medium transition-colors",
-                  isActive(child.href) ? "text-primary" : "text-foreground/70 hover:text-foreground"
+                  "flex items-center gap-2 py-2 pl-4 text-sm font-medium transition-all duration-300",
+                  "rounded-md",
+                  isActive(child.href)
+                    ? "text-primary font-semibold"
+                    : "text-foreground/70 hover:text-foreground hover:translate-x-1"
                 )}
               >
                 {child.icon && iconMap[child.icon] && (
-                  <IconWrapper icon={iconMap[child.icon]} size="sm" />
+                  <IconWrapper icon={iconMap[child.icon]} size="sm" withHoverEffect />
                 )}
                 {child.title}
               </Link>
               {child.description && (
-                <p className="pl-4 text-xs text-muted-foreground mb-2">{child.description}</p>
+                <p className="pl-4 text-xs text-muted-foreground mb-2 line-clamp-1">{child.description}</p>
               )}
             </div>
           ))}
@@ -295,7 +320,10 @@ function MobileNavItem({
  */
 export function NavBar() {
   const pathname = usePathname();
+  const { data: session, status } = useSession();
   const [isScrolled, setIsScrolled] = React.useState(false);
+  const isAuthenticated = status === "authenticated" && !!session?.user;
+  const isAdmin = isAuthenticated && session?.user?.role === "admin";
 
   // Handle scroll event to update navbar styling
   React.useEffect(() => {
@@ -314,13 +342,149 @@ export function NavBar() {
     return pathname === path || pathname.startsWith(`${path}/`);
   };
 
+  /**
+   * Get navigation items based on authentication status and user role
+   */
+  const getNavItems = () => {
+    const items = [...siteConfig.mainNav]; // Create a copy to avoid mutating the original
+
+    if (isAuthenticated) {
+      // Add user-specific navigation items
+      if (!items.some(item => item.href === "/dashboard")) {
+        items.push({
+          title: "Dashboard",
+          href: "/dashboard",
+        });
+      }
+
+      // Add admin-specific navigation items if the user is an admin
+      if (isAdmin && !items.some(item => item.href === "/admin")) {
+        items.push({
+          title: "Admin",
+          href: "/admin/dashboard",
+          children: [
+            {
+              title: "Dashboard",
+              href: "/admin/dashboard",
+              icon: "barChart",
+              description: "Admin dashboard with key metrics and performance indicators",
+            },
+            {
+              title: "Users",
+              href: "/admin/users",
+              icon: "building",
+              description: "Manage user accounts and permissions",
+            },
+            {
+              title: "Settings",
+              href: "/admin/settings",
+              icon: "wrench",
+              description: "Configure system settings and preferences",
+            },
+          ]
+        });
+      }
+    }
+
+    return items;
+  };
+
+  // Get the appropriate navigation items based on auth status
+  const navItems = getNavItems();
+
   return (
     <header className={cn(
       "sticky top-0 z-50 w-full border-b bg-background/70 backdrop-blur-xl transition-all duration-300",
+      "supports-[backdrop-filter]:bg-background/60",
       isScrolled ? "shadow-md" : "shadow-sm"
     )}>
-      <div className="container flex h-16 items-center">
-        <MainNav />
+      <div className="container flex h-16 items-center @container">
+        <div className="flex items-center gap-6 @md:gap-10">
+          <Link
+            href="/"
+            className="ml-4 flex items-center space-x-2 transition-all duration-300 hover:opacity-80 hover:scale-[1.02]"
+            aria-label="Home"
+          >
+            <span className="sr-only @md:not-sr-only font-bold text-xl bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">{siteConfig.name}</span>
+            <span className="@md:hidden font-bold text-xl">dm</span>
+          </Link>
+
+          <NavigationMenu className="hidden @md:flex">
+            <NavigationMenuList className="gap-1">
+              <NavigationMenuItem>
+                <Link href="/" legacyBehavior passHref>
+                  <NavigationMenuLink
+                    className={cn(
+                      navigationMenuTriggerStyle(),
+                      "group transition-all duration-300 px-3",
+                      "motion-reduce:transition-none",
+                      isActive("/") ? "bg-accent text-accent-foreground" : "hover:bg-accent/40"
+                    )}
+                  >
+                    <span className="flex items-center gap-1">
+                      <Home className="h-4 w-4 group-hover:scale-125 transition-transform duration-300" />
+                      <span>Home</span>
+                    </span>
+                  </NavigationMenuLink>
+                </Link>
+              </NavigationMenuItem>
+
+              {navItems.map((item) => {
+                // If the item has children, render as dropdown
+                if (item.children && item.children.length > 0) {
+                  return (
+                    <NavigationMenuItem key={item.title}>
+                      <NavigationMenuTrigger
+                        className={cn(
+                          "group transition-all duration-300 px-3",
+                          isActive(item.href) ? "bg-accent text-accent-foreground" : "hover:bg-accent/40"
+                        )}
+                      >
+                        <span className="flex items-center gap-1">
+                          {item.title}
+                          <ChevronDown className="h-3 w-3 group-data-[state=open]:rotate-180 transition-transform duration-300" />
+                        </span>
+                      </NavigationMenuTrigger>
+                      <NavigationMenuContent>
+                        <ul className={cn(
+                          "grid gap-3 p-4 w-[400px] md:w-[500px]",
+                          item.children.length > 2 ? "lg:grid-cols-2" : ""
+                        )}>
+                          {item.children.map((child) => (
+                            <ListItem
+                              key={child.title}
+                              title={child.title}
+                              href={child.href}
+                              icon={child.icon}
+                              description={child.description}
+                            />
+                          ))}
+                        </ul>
+                      </NavigationMenuContent>
+                    </NavigationMenuItem>
+                  );
+                }
+
+                // Otherwise render as regular link
+                return (
+                  <NavigationMenuItem key={item.title}>
+                    <Link href={item.href} legacyBehavior passHref>
+                      <NavigationMenuLink
+                        className={cn(
+                          navigationMenuTriggerStyle(),
+                          "transition-all duration-300 px-3",
+                          isActive(item.href) ? "bg-accent text-accent-foreground" : "hover:bg-accent/40"
+                        )}
+                      >
+                        {item.title}
+                      </NavigationMenuLink>
+                    </Link>
+                  </NavigationMenuItem>
+                );
+              })}
+            </NavigationMenuList>
+          </NavigationMenu>
+        </div>
         <div className="flex items-center ml-auto space-x-4">
           <nav className="flex items-center space-x-2">
             <SearchInput />
@@ -332,18 +496,21 @@ export function NavBar() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="md:hidden transition-transform hover:scale-110"
+                  className="@md:hidden transition-all duration-300 hover:scale-110 active:scale-95"
                   aria-label="Toggle menu"
                 >
-                  <Menu className="h-5 w-5" />
+                  <Menu className="size-5" />
                   <span className="sr-only">Toggle menu</span>
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="w-[80%] max-w-sm">
+              <SheetContent
+                side="right"
+                className="w-[80%] max-w-sm animate-in slide-in-from-right-80 duration-300"
+              >
                 <SheetHeader>
                   <SheetTitle className="text-left">Navigation</SheetTitle>
                 </SheetHeader>
-                <div className="mt-6 space-y-2">
+                <div className="mt-6 space-y-2 animate-in fade-in slide-in-from-right-5 duration-500 delay-150">
                   <Link
                     href="/"
                     className={cn(
@@ -356,34 +523,60 @@ export function NavBar() {
                   </Link>
 
                   {/* Mobile navigation items */}
-                  {siteConfig.mainNav.map((item) => (
+                  {navItems.map((item) => (
                     <MobileNavItem
                       key={item.href}
                       item={item}
                       isActive={isActive}
                     />
                   ))}
+
+                  {/* Mobile login/signup links for unauthenticated users */}
+                  {!isAuthenticated && (
+                    <>
+                      <Link
+                        href="/login"
+                        className="flex items-center gap-2 py-2 text-base font-medium transition-colors text-foreground/70 hover:text-foreground"
+                      >
+                        Login
+                      </Link>
+                      <Link
+                        href="/signup"
+                        className="flex items-center gap-2 py-2 text-base font-medium transition-colors text-foreground/70 hover:text-foreground"
+                      >
+                        Sign Up
+                      </Link>
+                    </>
+                  )}
                 </div>
               </SheetContent>
             </Sheet>
 
-            {/* Desktop login/signup buttons */}
+            {/* Authentication UI */}
             <div className="hidden md:flex items-center space-x-1">
-              <Button
-                asChild
-                variant="outline"
-                size="sm"
-                className="mr-2 transition-all duration-300 hover:border-primary/50"
-              >
-                <Link href="/login">Login</Link>
-              </Button>
-              <Button
-                asChild
-                size="sm"
-                className="bg-primary transition-all duration-300 hover:bg-primary/90"
-              >
-                <Link href="/signup">Sign Up</Link>
-              </Button>
+              {status === "loading" ? (
+                <div className="h-8 w-20 bg-muted/50 animate-pulse rounded"></div>
+              ) : isAuthenticated ? (
+                <UserNav user={session.user} />
+              ) : (
+                <>
+                  <Button
+                    asChild
+                    variant="outline"
+                    size="sm"
+                    className="mr-2 transition-all duration-300 hover:border-primary/50"
+                  >
+                    <Link href="/login">Login</Link>
+                  </Button>
+                  <Button
+                    asChild
+                    size="sm"
+                    className="bg-primary transition-all duration-300 hover:bg-primary/90"
+                  >
+                    <Link href="/signup">Sign Up</Link>
+                  </Button>
+                </>
+              )}
             </div>
           </nav>
         </div>

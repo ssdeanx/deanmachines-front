@@ -6,6 +6,7 @@ import { useMDXComponent } from "next-contentlayer/hooks"
 import { cn } from "@/lib/utils"
 
 import { Callout } from "@/components/docs/Callout"
+import { Card } from "@/components/docs/Card"
 import { CodeBlockWrapper } from "@/components/docs/CodeBlockWrapper"
 
 const components = {
@@ -148,6 +149,7 @@ const components = {
   ),
   Image,
   Callout,
+  Card,
 }
 
 interface MdxProps {
