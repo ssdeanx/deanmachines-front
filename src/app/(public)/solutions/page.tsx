@@ -8,7 +8,7 @@ import {
   Globe,
   FileText,
   Brain,
-  type LucideIcon,
+  LucideIcon,
 } from "lucide-react";
 
 import { siteConfig } from "@/config/site";
