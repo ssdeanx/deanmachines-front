@@ -2,11 +2,10 @@ import type { NextConfig } from "next";
 import { withContentlayer } from "next-contentlayer";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  pageExtensions: ["ts", "tsx", "mdx"],
+  reactStrictMode: true,
   experimental: {
-    turbo: {
-      // ...
-    },
+    mdxRs: true,
   },
 };
 
