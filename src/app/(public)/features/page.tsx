@@ -1,6 +1,6 @@
 import { Metadata } from "next"
 import Link from "next/link"
-import { ArrowRight, Brain, Database, LucideIcon, Wrench, Workflow } from "lucide-react"
+import { ArrowRight, BarChart, Brain, Database, LucideIcon, Wrench, Workflow } from "lucide-react"
 
 import { siteConfig } from "@/config/site"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -72,6 +72,12 @@ export default function FeaturesPage() {
       description: "Create sophisticated workflows that coordinate multiple AI agents and systems to solve complex problems efficiently.",
       icon: Workflow,
       href: "/features/workflow",
+    },
+    {
+      title: "Visualizations",
+      description: "Create sophisticated visual representations of AI processes",
+      href: "/features/visualizations",
+      icon: BarChart, // Use a LucideIcon component
     },
   ]
 

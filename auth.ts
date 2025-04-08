@@ -3,29 +3,35 @@ import Google from "next-auth/providers/google";
 import GitHub from "next-auth/providers/github";
 import Credentials from "next-auth/providers/credentials";
 import { FirestoreAdapter } from "@auth/firebase-adapter";
-import { cert } from "firebase-admin/app";
+import { cert, initializeApp, getApps } from "firebase-admin/app";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { initFirestore } from "@auth/firebase-adapter";
-import { initializeApp } from "firebase-admin/app";
 import { auth as firebaseAuth } from "@/lib/firebase/client";
-import { readFileSync } from "fs";
 import { getFirestore } from "firebase-admin/firestore";
 
-// Read Firebase Admin credentials from the JSON file
-const serviceAccount = JSON.parse(
-  readFileSync(process.env.GOOGLE_APPLICATION_CREDENTIALS!, "utf8")
-);
+// Initialize Firebase Admin only if it hasn't been initialized yet
+// This prevents errors during hot-reloading in development
+let firebaseAdminApp;
+if (!getApps().length) {
+  firebaseAdminApp = initializeApp({
+    credential: cert({
+      projectId: process.env.FIREBASE_PROJECT_ID,
+      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+    }),
+  });
+} else {
+  firebaseAdminApp = getApps()[0];
+}
 
-// Initialize Firebase Admin with service account
-const firebaseAdmin = initializeApp({
-  credential: cert(serviceAccount),
-});
+const firestore = initFirestore(firebaseAdminApp);
+const db = getFirestore(firebaseAdminApp);
 
-const firestore = initFirestore(firebaseAdmin);
-const db = getFirestore(firebaseAdmin);
-
-// List of admin email addresses (consider moving to env or database)
-const ADMIN_EMAILS = ["admin@deanmachines.com"];
+// Read admin emails from environment variable, split by comma, trim whitespace, and convert to lowercase
+const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || "")
+  .split(",")
+  .map(email => email.trim().toLowerCase())
+  .filter(email => email);
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: FirestoreAdapter(firestore),
@@ -49,11 +55,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        // Validate credentials exist and are strings
         if (
           typeof credentials?.email !== "string" ||
           typeof credentials?.password !== "string"
         ) {
+          console.error("Invalid credentials format");
           return null;
         }
 
@@ -65,11 +71,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           );
 
           if (userCredential.user) {
-            // Get user role from Firestore
             const userDoc = await db
               .collection("users")
               .doc(userCredential.user.uid)
               .get();
+
+            if (!userDoc.exists) {
+              console.warn(`User ${userCredential.user.uid} signed in but not found in Firestore.`);
+              return null;
+            }
+
             const userData = userDoc.data();
 
             return {
@@ -81,8 +92,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             };
           }
           return null;
-        } catch (error) {
-          console.error("Auth error:", error);
+        } catch (error: any) {
+          console.error("Firebase Auth Error in authorize callback:", error.code, error.message);
           return null;
         }
       },
@@ -93,50 +104,56 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   },
   events: {
     async createUser({ user }) {
-      // Ensure user.id exists before proceeding
-      if (!user.id) {
-        console.error("Cannot create user in Firestore: user ID is missing.");
+      if (!user.id || !user.email) {
+        console.error("Cannot create user in Firestore: user ID or email is missing.", user);
         return;
       }
-      // Set role as admin for predefined admin emails, otherwise as user
-      const role = ADMIN_EMAILS.includes(user.email?.toLowerCase() ?? "")
+      const role = ADMIN_EMAILS.includes(user.email.toLowerCase())
         ? "admin"
         : "user";
 
-      // Store role in Firestore
-      if (!user.id) return;
-      await db.collection("users").doc(user.id).set(
-        {
-          role,
-          email: user.email,
-          name: user.name,
-        },
-        { merge: true }
-      );
+      try {
+        await db.collection("users").doc(user.id).set(
+          {
+            email: user.email,
+            name: user.name,
+            image: user.image,
+            role: role,
+            createdAt: new Date(),
+            emailVerified: null,
+          },
+          { merge: true }
+        );
+        console.log(`User ${user.id} created/updated in Firestore with role: ${role}`);
+      } catch (error) {
+        console.error("Error setting user role/data in Firestore during createUser event:", error);
+      }
     },
   },
   callbacks: {
     async session({ session, token }) {
-      if (session?.user) {
-        session.user.id = token.sub as string;
+      if (session?.user && token?.sub) {
+        session.user.id = token.sub;
         session.user.role = token.role as string;
       }
       return session;
     },
-    async jwt({ token, user }) {
+    async jwt({ token, user, account, profile, isNewUser }) {
       if (user?.id) {
-        // Check if user and user.id exist
         token.uid = user.id;
-        // If signing in first time or role is missing, get role from Firestore
-        if (!token.role) {
+
+        if (isNewUser) {
+          const role = ADMIN_EMAILS.includes(user.email?.toLowerCase() ?? "")
+            ? "admin"
+            : "user";
+          token.role = role;
+        } else if (!token.role) {
           try {
-            if (!user.id) return token;
             const userDoc = await db.collection("users").doc(user.id).get();
             const userData = userDoc.data();
             token.role = userData?.role || "user";
           } catch (error) {
-            console.error("Error fetching user role from Firestore:", error);
-            // Assign a default role or handle the error appropriately
+            console.error("Error fetching user role for JWT callback:", error);
             token.role = "user";
           }
         }

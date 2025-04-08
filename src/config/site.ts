@@ -60,6 +60,13 @@ export const siteConfig: SiteConfig = {
           href: "/features/workflow",
           icon: "workflow",
         },
+        {
+          title: "Visualizations",
+          description:
+            "Create sophisticated visual representations of AI processes",
+          href: "/features/visualizations",
+          icon: "chart",
+        },
       ],
     },
     {
