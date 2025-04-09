@@ -139,19 +139,21 @@ export function HeroSection() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.6 }}
-            >
-              <CallToAction
+            >              <CallToAction
                 title="Get Started"
                 href="/docs"
-                className="rounded-full px-8 hover:scale-105 transition-transform"
+                showArrow={true}
+                size="lg"
+                className="rounded-full px-8 hover:scale-105 transition-transform shadow-md hover:shadow-lg"
               />
               <CallToAction
                 title="View on GitHub"
-                href="https://github.com/yourusername/mastra"
+                href="https://github.com/ssdeanx/deanmachinesai"
                 variant="outline"
+                size="lg"
                 icon={Github}
                 external
-                className="rounded-full px-8 hover:scale-105 transition-transform"
+                className="rounded-full px-8 hover:scale-105 transition-transform hover:bg-background/80"
               />
             </motion.div>
           </motion.div>

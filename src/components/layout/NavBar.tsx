@@ -399,92 +399,7 @@ export function NavBar() {
       isScrolled ? "shadow-md" : "shadow-sm"
     )}>
       <div className="container flex h-16 items-center @container">
-        <div className="flex items-center gap-6 @md:gap-10">
-          <Link
-            href="/"
-            className="ml-4 flex items-center space-x-2 transition-all duration-300 hover:opacity-80 hover:scale-[1.02]"
-            aria-label="Home"
-          >
-            <span className="sr-only @md:not-sr-only font-bold text-xl bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">{siteConfig.name}</span>
-            <span className="@md:hidden font-bold text-xl">dm</span>
-          </Link>
-
-          <NavigationMenu className="hidden @md:flex">
-            <NavigationMenuList className="gap-1">
-              <NavigationMenuItem>
-                <Link href="/" legacyBehavior passHref>
-                  <NavigationMenuLink
-                    className={cn(
-                      navigationMenuTriggerStyle(),
-                      "group transition-all duration-300 px-3",
-                      "motion-reduce:transition-none",
-                      isActive("/") ? "bg-accent text-accent-foreground" : "hover:bg-accent/40"
-                    )}
-                  >
-                    <span className="flex items-center gap-1">
-                      <Home className="h-4 w-4 group-hover:scale-125 transition-transform duration-300" />
-                      <span>Home</span>
-                    </span>
-                  </NavigationMenuLink>
-                </Link>
-              </NavigationMenuItem>
-
-              {navItems.map((item) => {
-                // If the item has children, render as dropdown
-                if (item.children && item.children.length > 0) {
-                  return (
-                    <NavigationMenuItem key={item.title}>
-                      <NavigationMenuTrigger
-                        className={cn(
-                          "group transition-all duration-300 px-3",
-                          isActive(item.href) ? "bg-accent text-accent-foreground" : "hover:bg-accent/40"
-                        )}
-                      >
-                        <span className="flex items-center gap-1">
-                          {item.title}
-                          <ChevronDown className="h-3 w-3 group-data-[state=open]:rotate-180 transition-transform duration-300" />
-                        </span>
-                      </NavigationMenuTrigger>
-                      <NavigationMenuContent>
-                        <ul className={cn(
-                          "grid gap-3 p-4 w-[400px] md:w-[500px]",
-                          item.children.length > 2 ? "lg:grid-cols-2" : ""
-                        )}>
-                          {item.children.map((child) => (
-                            <ListItem
-                              key={child.title}
-                              title={child.title}
-                              href={child.href}
-                              icon={child.icon}
-                              description={child.description}
-                            />
-                          ))}
-                        </ul>
-                      </NavigationMenuContent>
-                    </NavigationMenuItem>
-                  );
-                }
-
-                // Otherwise render as regular link
-                return (
-                  <NavigationMenuItem key={item.title}>
-                    <Link href={item.href} legacyBehavior passHref>
-                      <NavigationMenuLink
-                        className={cn(
-                          navigationMenuTriggerStyle(),
-                          "transition-all duration-300 px-3",
-                          isActive(item.href) ? "bg-accent text-accent-foreground" : "hover:bg-accent/40"
-                        )}
-                      >
-                        {item.title}
-                      </NavigationMenuLink>
-                    </Link>
-                  </NavigationMenuItem>
-                );
-              })}
-            </NavigationMenuList>
-          </NavigationMenu>
-        </div>
+        <MainNav />
         <div className="flex items-center ml-auto space-x-4">
           <nav className="flex items-center space-x-2">
             <SearchInput />
@@ -496,7 +411,7 @@ export function NavBar() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="@md:hidden transition-all duration-300 hover:scale-110 active:scale-95"
+                  className="@md:hidden transition-all duration-300 hover:scale-110 active:scale-95 motion-reduce:transition-none"
                   aria-label="Toggle menu"
                 >
                   <Menu className="size-5" />
@@ -505,21 +420,23 @@ export function NavBar() {
               </SheetTrigger>
               <SheetContent
                 side="right"
-                className="w-[80%] max-w-sm animate-in slide-in-from-right-80 duration-300"
+                className="w-[80%] max-w-sm animate-in slide-in-from-right-80 duration-300 border-l border-border/50"
               >
                 <SheetHeader>
-                  <SheetTitle className="text-left">Navigation</SheetTitle>
+                  <SheetTitle className="text-left font-heading">Navigation</SheetTitle>
                 </SheetHeader>
                 <div className="mt-6 space-y-2 animate-in fade-in slide-in-from-right-5 duration-500 delay-150">
                   <Link
                     href="/"
                     className={cn(
-                      "flex items-center gap-2 py-2 text-base font-medium transition-colors",
-                      isActive("/") ? "text-primary" : "text-foreground/70 hover:text-foreground"
+                      "flex items-center gap-2 py-2 text-base font-medium transition-all duration-300 rounded-md px-2",
+                      isActive("/")
+                        ? "text-primary bg-primary/10 font-medium"
+                        : "text-foreground/70 hover:text-foreground hover:bg-accent/30"
                     )}
                   >
-                    <Home className="h-5 w-5" />
-                    Home
+                    <Home className="size-5 text-primary" />
+                    <span>Home</span>
                   </Link>
 
                   {/* Mobile navigation items */}
@@ -533,29 +450,34 @@ export function NavBar() {
 
                   {/* Mobile login/signup links for unauthenticated users */}
                   {!isAuthenticated && (
-                    <>
+                    <div className="mt-4 space-y-2 border-t pt-4 border-border/30">
                       <Link
                         href="/login"
-                        className="flex items-center gap-2 py-2 text-base font-medium transition-colors text-foreground/70 hover:text-foreground"
+                        className="flex items-center gap-2 py-2.5 px-2 text-base font-medium transition-all duration-300 rounded-md
+                          text-foreground/70 hover:text-foreground hover:bg-accent/30"
                       >
                         Login
                       </Link>
                       <Link
                         href="/signup"
-                        className="flex items-center gap-2 py-2 text-base font-medium transition-colors text-foreground/70 hover:text-foreground"
+                        className="flex items-center justify-center gap-2 py-2.5 text-base font-medium
+                          bg-primary text-primary-foreground hover:bg-primary/90
+                          transition-all duration-300 rounded-md hover:shadow-sm active:scale-[0.98]"
                       >
                         Sign Up
                       </Link>
-                    </>
+                    </div>
                   )}
                 </div>
               </SheetContent>
             </Sheet>
 
             {/* Authentication UI */}
-            <div className="hidden md:flex items-center space-x-1">
+            <div className="hidden @md:flex items-center space-x-2">
               {status === "loading" ? (
-                <div className="h-8 w-20 bg-muted/50 animate-pulse rounded"></div>
+                <div className="h-8 w-20 bg-muted/50 animate-pulse rounded-md" aria-hidden="true">
+                  <span className="sr-only">Loading authentication status</span>
+                </div>
               ) : isAuthenticated ? (
                 <UserNav user={session.user} />
               ) : (
@@ -564,14 +486,14 @@ export function NavBar() {
                     asChild
                     variant="outline"
                     size="sm"
-                    className="mr-2 transition-all duration-300 hover:border-primary/50"
+                    className="mr-1 transition-all duration-300 hover:border-primary/50 hover:bg-accent/30 active:scale-95"
                   >
                     <Link href="/login">Login</Link>
                   </Button>
                   <Button
                     asChild
                     size="sm"
-                    className="bg-primary transition-all duration-300 hover:bg-primary/90"
+                    className="bg-primary transition-all duration-300 hover:bg-primary/90 active:scale-95 shadow-sm hover:shadow"
                   >
                     <Link href="/signup">Sign Up</Link>
                   </Button>

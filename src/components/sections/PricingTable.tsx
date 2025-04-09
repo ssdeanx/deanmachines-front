@@ -172,12 +172,13 @@ export function PricingTable() {
                       </span>
                     </>
                   )}
-                </p>
-                <CallToAction
+                </p>                <CallToAction
                   title={plan.cta.text}
                   href={plan.cta.href}
-                  className={cn("mt-6 w-full", {
-                    "bg-primary text-primary-foreground hover:bg-primary/90": plan.popular,
+                  variant={plan.popular ? "default" : "outline"}
+                  showArrow={plan.popular}
+                  className={cn("mt-6 w-full transition-all duration-300", {
+                    "shadow-sm hover:shadow-md": plan.popular,
                   })}
                   aria-describedby={`${plan.name}-plan`}
                 />
