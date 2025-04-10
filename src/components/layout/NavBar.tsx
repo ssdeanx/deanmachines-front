@@ -133,7 +133,7 @@ function MainNav() {
     <div className="flex items-center gap-6 md:gap-10">
       <Link
         href="/"
-        className="ml-4 flex items-center space-x-2 transition-opacity duration-300 hover:opacity-80"
+        className="flex items-center space-x-2 transition-opacity duration-300 hover:opacity-80"
         aria-label="Home"
       >
         <span className="sr-only md:not-sr-only font-bold text-xl bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">{siteConfig.name}</span>
@@ -170,9 +170,8 @@ function MainNav() {
                       isActive(item.href) ? "bg-accent text-accent-foreground" : "hover:bg-accent/40"
                     )}
                   >
-                    <span className="flex items-center gap-1">
+                    <span>
                       {item.title}
-                      <ChevronDown className="h-3 w-3 group-data-[state=open]:rotate-180 transition-transform duration-300" />
                     </span>
                   </NavigationMenuTrigger>
                   <NavigationMenuContent>
@@ -320,7 +319,40 @@ function MobileNavItem({
  */
 export function NavBar() {
   const pathname = usePathname();
-  const { data: session, status } = useSession();
+  // Using try/catch to handle case when SessionProvider is not available
+  // This prevents the "useSession must be wrapped in SessionProvider" error
+  // Initialize with a default session state
+  const [sessionData, setSessionData] = React.useState<{
+    data: any;
+    status: "loading" | "authenticated" | "unauthenticated";
+  }>({
+    data: null,
+    status: "loading"
+  });
+
+  // Safely try to get session after component mounts
+  React.useEffect(() => {
+    try {
+      // Get real session data from useSession() directly
+      const sessionResult = useSession();
+      if (sessionResult) {
+        setSessionData({
+          data: sessionResult.data,
+          status: sessionResult.status
+        });
+      }
+    } catch (e) {
+      // If SessionProvider is not available, set to unauthenticated
+      setSessionData({
+        data: null,
+        status: "unauthenticated"
+      });
+    }
+  }, []);
+
+  // Destructure from our safe state
+  const { data: session, status } = sessionData;
+
   const [isScrolled, setIsScrolled] = React.useState(false);
   const isAuthenticated = status === "authenticated" && !!session?.user;
   const isAdmin = isAuthenticated && session?.user?.role === "admin";

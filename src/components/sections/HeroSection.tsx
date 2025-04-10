@@ -62,41 +62,51 @@ export function HeroSection() {
                 "polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)",
             }}
           />
-        </div>
-
-        {/* Floating particles */}
+        </div>        {/* Floating particles */}
         <div className="absolute inset-0">
-          {Array.from({ length: 20 }).map((_, i) => (
-            <motion.div
-              key={`particle-${i}`}
-              className="absolute rounded-full bg-primary/20"
-              initial={{
-                opacity: 0,
-                scale: 0.5,
-                x: Math.random() * window.innerWidth,
-                y: Math.random() * window.innerHeight,
-              }}
-              animate={{
-                opacity: [0.1, 0.3, 0.1],
-                scale: [0.4, 0.6, 0.4],
-                x: `calc(${Math.random() * 100}vw)`,
-                y: `calc(${Math.random() * 100}vh)`,
-              }}
-              transition={{
-                duration: 15 + Math.random() * 10,
-                repeat: Infinity,
-                delay: i * 0.2,
-              }}
-              style={{
-                width: `${10 + Math.random() * 20}px`,
-                height: `${10 + Math.random() * 20}px`,
-              }}
-            />
-          ))}
+          {/* Use client-side only rendering to avoid hydration errors */}
+          {typeof window !== 'undefined' &&
+            Array.from({ length: 20 }).map((_, i) => {
+              // Pre-calculate these values for client-side rendering only
+              // This prevents hydration mismatches between server and client
+              const xPos = i % 5 * 20 + 5; // Distribute evenly across screen width
+              const yPos = Math.floor(i / 5) * 20 + 10; // Distribute evenly across screen height
+              const width = 10 + (i % 10) * 1.5;
+              const height = 10 + (i % 8) * 2;
+              const duration = 15 + (i % 5) * 2;
+
+              return (
+                <motion.div
+                  key={`particle-${i}`}
+                  className="absolute rounded-full bg-primary/20"
+                  initial={{
+                    opacity: 0,
+                    scale: 0.5,
+                    x: `${xPos}vw`,
+                    y: `${yPos}vh`,
+                  }}
+                  animate={{
+                    opacity: [0.1, 0.3, 0.1],
+                    scale: [0.4, 0.6, 0.4],
+                    x: [`${xPos}vw`, `${xPos + (i % 10 - 5)}vw`, `${xPos}vw`],
+                    y: [`${yPos}vh`, `${yPos + (i % 6 - 3)}vh`, `${yPos}vh`],
+                  }}
+                  transition={{
+                    duration: duration,
+                    repeat: Infinity,
+                    delay: i * 0.2,
+                  }}
+                  style={{
+                    width: `${width}px`,
+                    height: `${height}px`,
+                  }}
+                />
+              );
+            })}
         </div>
       </div>
 
-      <div className="py-24 sm:py-32 lg:pb-40">
+        <div className="py-24 sm:py-32 lg:pb-40">
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <motion.div
             className="mx-auto max-w-4xl text-center"
