@@ -270,115 +270,111 @@ flowchart TD
 
 ```mermaid
 graph TB
-    User((User))
-    Admin((Admin))
+    User((External User))
+    Admin((Admin User))
 
     subgraph "Frontend Container"
         direction TB
-        WebApp["Web Application<br>Next.js"]
+        NextApp["Next.js Application<br>(Next.js 15.2)"]
 
-        subgraph "Frontend Components"
-            direction TB
-            NavBar["Navigation Bar<br>React"]
-            ThemeProvider["Theme Provider<br>next-themes"]
-            AuthComponents["Auth Components<br>NextAuth.js"]
-            DocsViewer["Documentation Viewer<br>MDX"]
-            UIComponents["UI Components<br>Radix UI"]
-            Visualizations["Visualization Components<br>Custom React"]
+        subgraph "Layout Components"
+            NavBar["Navigation Bar<br>(React)"]
+            Footer["Footer<br>(React)"]
+            ThemeProvider["Theme Provider<br>(next-themes)"]
+        end
+
+        subgraph "Authentication Components"
+            AuthModule["Auth Module<br>(NextAuth.js)"]
+            SignIn["Sign In Component<br>(React)"]
+        end
+
+        subgraph "Documentation Components"
+            DocsLayout["Docs Layout<br>(React)"]
+            DocsSidebar["Docs Sidebar<br>(React)"]
+            DocsSearch["Docs Search<br>(React)"]
+            MDXRenderer["MDX Renderer<br>(ContentLayer)"]
+        end
+
+        subgraph "UI Components"
+            UILib["UI Library<br>(shadcn/ui)"]
+            ThemeToggle["Theme Toggle<br>(React)"]
+            Breadcrumb["Breadcrumb<br>(React)"]
+            SearchInput["Search Input<br>(React)"]
+        end
+
+        subgraph "Visualization Components"
+            AIHeatmap["AI Activity Heatmap<br>(React)"]
+            MLMetrics["ML Metrics Plot<br>(React)"]
+            ResourceUtil["Resource Utilization<br>(React)"]
         end
     end
 
-    subgraph "Authentication Container"
+    subgraph "Backend Services"
         direction TB
-        AuthService["Auth Service<br>NextAuth.js"]
+        APILayer["API Layer<br>(Next.js API Routes)"]
 
-        subgraph "Auth Components"
-            Providers["Auth Providers<br>Google, GitHub, Credentials"]
-            SessionManager["Session Manager<br>JWT"]
-            RoleManager["Role Manager<br>Custom"]
+        subgraph "Authentication Services"
+            FirebaseAuth["Firebase Auth<br>(Firebase)"]
+            AuthProvider["Auth Provider<br>(NextAuth.js)"]
+        end
+
+        subgraph "Content Services"
+            ContentLayer["Content Management<br>(ContentLayer)"]
+            MDXProcessor["MDX Processor<br>(Remark/Rehype)"]
         end
     end
 
-    subgraph "Backend Container"
-        direction TB
-        APIRoutes["API Routes<br>Next.js API"]
-
-        subgraph "API Components"
-            AuthHandler["Auth Handler<br>NextAuth"]
-            UserManager["User Manager<br>Firebase Admin"]
-            DataProcessor["Data Processor<br>Node.js"]
-        end
-    end
-
-    subgraph "Content Container"
-        direction TB
-        ContentLayer["Content Layer<br>contentlayer"]
-
-        subgraph "Content Components"
-            MDXProcessor["MDX Processor<br>contentlayer"]
-            DocGenerator["Documentation Generator<br>contentlayer"]
-            BlogProcessor["Blog Processor<br>contentlayer"]
-        end
-    end
-
-    subgraph "Data Storage Container"
-        direction TB
-        FirebaseDB["Firebase Database<br>Firestore"]
-
-        subgraph "Storage Components"
-            UserStore["User Storage<br>Firestore"]
-            AuthStore["Auth Storage<br>Firestore"]
-            ContentStore["Content Cache<br>Firestore"]
-        end
+    subgraph "Data Storage"
+        FirestoreDB[("Firestore Database<br>(Firebase)")]
+        ContentStore[("Content Store<br>(MDX Files)")]
     end
 
     subgraph "External Services"
-        Firebase["Firebase<br>Cloud Services"]
-        GoogleAuth["Google Auth<br>OAuth 2.0"]
-        GitHubAuth["GitHub Auth<br>OAuth 2.0"]
+        GoogleAuth["Google Auth<br>(OAuth2)"]
+        GitHubAuth["GitHub Auth<br>(OAuth2)"]
     end
 
     %% User Interactions
-    User -->|"Accesses"| WebApp
-    Admin -->|"Manages"| WebApp
+    User -->|"Accesses"| NextApp
+    Admin -->|"Manages"| NextApp
 
-    %% Frontend Connections
-    WebApp -->|"Uses"| NavBar
-    WebApp -->|"Uses"| ThemeProvider
-    WebApp -->|"Uses"| AuthComponents
-    WebApp -->|"Uses"| DocsViewer
-    WebApp -->|"Uses"| UIComponents
-    WebApp -->|"Uses"| Visualizations
+    %% Frontend Component Relationships
+    NextApp -->|"Uses"| NavBar
+    NextApp -->|"Uses"| Footer
+    NextApp -->|"Uses"| ThemeProvider
+    NextApp -->|"Uses"| AuthModule
+    NextApp -->|"Uses"| UILib
 
-    %% Auth Flow
-    WebApp -->|"Authenticates"| AuthService
-    AuthService -->|"Uses"| Providers
-    AuthService -->|"Manages"| SessionManager
-    SessionManager -->|"Uses"| RoleManager
+    %% Authentication Flow
+    AuthModule -->|"Handles Auth"| FirebaseAuth
+    AuthModule -->|"Uses"| GoogleAuth
+    AuthModule -->|"Uses"| GitHubAuth
+    SignIn -->|"Uses"| AuthModule
 
-    %% API Connections
-    WebApp -->|"Calls"| APIRoutes
-    APIRoutes -->|"Routes"| AuthHandler
-    APIRoutes -->|"Routes"| UserManager
-    APIRoutes -->|"Routes"| DataProcessor
+    %% Documentation Flow
+    DocsLayout -->|"Renders"| MDXRenderer
+    DocsLayout -->|"Uses"| DocsSidebar
+    DocsLayout -->|"Uses"| DocsSearch
+    MDXRenderer -->|"Processes"| ContentLayer
 
-    %% Content Management
-    WebApp -->|"Loads"| ContentLayer
-    ContentLayer -->|"Processes"| MDXProcessor
-    ContentLayer -->|"Generates"| DocGenerator
-    ContentLayer -->|"Processes"| BlogProcessor
+    %% Data Storage Relationships
+    FirebaseAuth -->|"Stores User Data"| FirestoreDB
+    ContentLayer -->|"Reads From"| ContentStore
 
-    %% Data Storage
-    AuthHandler -->|"Stores"| UserStore
-    UserManager -->|"Manages"| UserStore
-    AuthService -->|"Uses"| AuthStore
-    ContentLayer -->|"Caches"| ContentStore
+    %% API Interactions
+    NextApp -->|"Makes Requests"| APILayer
+    APILayer -->|"Authenticates"| FirebaseAuth
+    APILayer -->|"Queries"| FirestoreDB
 
-    %% External Service Connections
-    AuthService -->|"Integrates"| Firebase
-    Providers -->|"Uses"| GoogleAuth
-    Providers -->|"Uses"| GitHubAuth
-    FirebaseDB -->|"Syncs"| Firebase
+    %% Theme and UI
+    ThemeProvider -->|"Controls"| ThemeToggle
+    UILib -->|"Provides"| Breadcrumb
+    UILib -->|"Provides"| SearchInput
+
+    %% Visualization Components
+    NextApp -->|"Renders"| AIHeatmap
+    NextApp -->|"Renders"| MLMetrics
+    NextApp -->|"Renders"| ResourceUtil
 ```
 
 ## 🎯 Technical Goals & Implementation Status
