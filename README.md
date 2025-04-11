@@ -270,111 +270,85 @@ flowchart TD
 
 ```mermaid
 graph TB
-    User((External User))
-    Admin((Admin User))
+    %% External Users
+    User((Public User))
+    AdminUser((Admin User))
+    AuthUser((Authenticated User))
 
     subgraph "Frontend Container"
         direction TB
         NextApp["Next.js Application<br>(Next.js 15.2)"]
 
-        subgraph "Layout Components"
-            NavBar["Navigation Bar<br>(React)"]
-            Footer["Footer<br>(React)"]
-            ThemeProvider["Theme Provider<br>(next-themes)"]
-        end
-
-        subgraph "Authentication Components"
-            AuthModule["Auth Module<br>(NextAuth.js)"]
-            SignIn["Sign In Component<br>(React)"]
-        end
-
-        subgraph "Documentation Components"
-            DocsLayout["Docs Layout<br>(React)"]
-            DocsSidebar["Docs Sidebar<br>(React)"]
-            DocsSearch["Docs Search<br>(React)"]
-            MDXRenderer["MDX Renderer<br>(ContentLayer)"]
-        end
-
-        subgraph "UI Components"
-            UILib["UI Library<br>(shadcn/ui)"]
-            ThemeToggle["Theme Toggle<br>(React)"]
-            Breadcrumb["Breadcrumb<br>(React)"]
-            SearchInput["Search Input<br>(React)"]
-        end
-
-        subgraph "Visualization Components"
-            AIHeatmap["AI Activity Heatmap<br>(React)"]
-            MLMetrics["ML Metrics Plot<br>(React)"]
-            ResourceUtil["Resource Utilization<br>(React)"]
+        subgraph "Frontend Components"
+            direction TB
+            LayoutComponents["Layout Components<br>(React)"]
+            UIComponents["UI Components<br>(React + Shadcn)"]
+            DocsComponents["Documentation Components<br>(React + MDX)"]
+            AdminComponents["Admin Components<br>(React)"]
+            UserComponents["User Components<br>(React)"]
+            AuthComponents["Auth Components<br>(Next-Auth)"]
+            ThemeSystem["Theme System<br>(next-themes)"]
         end
     end
 
-    subgraph "Backend Services"
+    subgraph "Backend Container"
         direction TB
-        APILayer["API Layer<br>(Next.js API Routes)"]
+        APIRoutes["API Routes<br>(Next.js API)"]
 
-        subgraph "Authentication Services"
+        subgraph "Mastra AI System"
+            direction TB
+            AgentSystem["Agent System<br>(TypeScript)"]
+            WorkflowEngine["Workflow Engine<br>(TypeScript)"]
+            MemorySystem["Memory System<br>(LibSQL)"]
+            ToolRegistry["Tool Registry<br>(TypeScript)"]
+            VectorStore["Vector Store<br>(Pinecone)"]
+        end
+
+        subgraph "Authentication System"
+            direction TB
+            AuthHandler["Auth Handler<br>(Next-Auth)"]
             FirebaseAuth["Firebase Auth<br>(Firebase)"]
-            AuthProvider["Auth Provider<br>(NextAuth.js)"]
         end
-
-        subgraph "Content Services"
-            ContentLayer["Content Management<br>(ContentLayer)"]
-            MDXProcessor["MDX Processor<br>(Remark/Rehype)"]
-        end
-    end
-
-    subgraph "Data Storage"
-        FirestoreDB[("Firestore Database<br>(Firebase)")]
-        ContentStore[("Content Store<br>(MDX Files)")]
     end
 
     subgraph "External Services"
-        GoogleAuth["Google Auth<br>(OAuth2)"]
-        GitHubAuth["GitHub Auth<br>(OAuth2)"]
+        direction TB
+        Firebase[("Firebase<br>(Database + Auth)")]
+        GoogleAI["Google AI<br>(Gemini)"]
+        ExaSearch["Exa Search<br>(API)"]
+        LangSmith["LangSmith<br>(Monitoring)"]
     end
 
-    %% User Interactions
+    %% Relationships
     User -->|"Accesses"| NextApp
-    Admin -->|"Manages"| NextApp
+    AdminUser -->|"Manages"| NextApp
+    AuthUser -->|"Uses"| NextApp
 
     %% Frontend Component Relationships
-    NextApp -->|"Uses"| NavBar
-    NextApp -->|"Uses"| Footer
-    NextApp -->|"Uses"| ThemeProvider
-    NextApp -->|"Uses"| AuthModule
-    NextApp -->|"Uses"| UILib
+    NextApp -->|"Uses"| LayoutComponents
+    NextApp -->|"Uses"| UIComponents
+    NextApp -->|"Uses"| DocsComponents
+    NextApp -->|"Uses"| AdminComponents
+    NextApp -->|"Uses"| UserComponents
+    NextApp -->|"Uses"| AuthComponents
+    NextApp -->|"Uses"| ThemeSystem
 
-    %% Authentication Flow
-    AuthModule -->|"Handles Auth"| FirebaseAuth
-    AuthModule -->|"Uses"| GoogleAuth
-    AuthModule -->|"Uses"| GitHubAuth
-    SignIn -->|"Uses"| AuthModule
+    %% Backend Component Relationships
+    NextApp -->|"Calls"| APIRoutes
+    APIRoutes -->|"Uses"| AgentSystem
+    APIRoutes -->|"Uses"| AuthHandler
 
-    %% Documentation Flow
-    DocsLayout -->|"Renders"| MDXRenderer
-    DocsLayout -->|"Uses"| DocsSidebar
-    DocsLayout -->|"Uses"| DocsSearch
-    MDXRenderer -->|"Processes"| ContentLayer
+    AgentSystem -->|"Uses"| WorkflowEngine
+    AgentSystem -->|"Uses"| MemorySystem
+    AgentSystem -->|"Uses"| ToolRegistry
+    MemorySystem -->|"Stores vectors"| VectorStore
 
-    %% Data Storage Relationships
-    FirebaseAuth -->|"Stores User Data"| FirestoreDB
-    ContentLayer -->|"Reads From"| ContentStore
-
-    %% API Interactions
-    NextApp -->|"Makes Requests"| APILayer
-    APILayer -->|"Authenticates"| FirebaseAuth
-    APILayer -->|"Queries"| FirestoreDB
-
-    %% Theme and UI
-    ThemeProvider -->|"Controls"| ThemeToggle
-    UILib -->|"Provides"| Breadcrumb
-    UILib -->|"Provides"| SearchInput
-
-    %% Visualization Components
-    NextApp -->|"Renders"| AIHeatmap
-    NextApp -->|"Renders"| MLMetrics
-    NextApp -->|"Renders"| ResourceUtil
+    %% External Service Relationships
+    AuthHandler -->|"Authenticates"| FirebaseAuth
+    FirebaseAuth -->|"Uses"| Firebase
+    AgentSystem -->|"Uses"| GoogleAI
+    ToolRegistry -->|"Searches"| ExaSearch
+    AgentSystem -->|"Monitors"| LangSmith
 ```
 
 ## 🎯 Technical Goals & Implementation Status
