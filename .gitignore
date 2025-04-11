@@ -39,3 +39,9 @@ npm-debug.log*
 next-env.d.ts
 
 api.md
+
+openapi.yaml
+openapi.json
+
+memory.db*
+

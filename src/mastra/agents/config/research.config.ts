@@ -127,7 +127,6 @@ export const researchAgentConfig: BaseAgentConfig = {
   toolIds: [
     "read-file", // Corrected ID
     "write-file", // Corrected ID
-    "exa-search", // Specific search tool
     "google-search", // Specific search tool
     "tavily-search", // Specific search tool
     "brave-search", // Specific search tool

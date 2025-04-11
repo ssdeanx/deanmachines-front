@@ -167,7 +167,7 @@ export const writerAgentConfig: BaseAgentConfig = {
     "read-file",
     "write-file",
     "collect-feedback",
-    "exa-search",
+    "brave-search",
   ],
 };
 

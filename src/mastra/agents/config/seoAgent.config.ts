@@ -157,7 +157,6 @@ export const seoAgentConfig: BaseAgentConfig = {
     When receiving a search optimization request, mentally map the multiple dimensions requiring analysis before suggesting changes, ensuring your approach balances immediate ranking opportunities with long-term sustainable visibility.
   `,
   toolIds: [
-    "exa-search", // Corrected ID
     "google-search", // Corrected ID
     "tavily-search", // Corrected ID
     "brave-search", // Corrected ID
