@@ -1,8 +1,42 @@
 import type { NextConfig } from "next";
-import { withContentlayer } from "next-contentlayer";
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ["@mastra/*"],
+  serverComponentsExternalPackages: [
+    "@mastra/core",
+    "@mastra/memory",
+    "@mastra/pinecone",
+    "@mastra/upstash",
+    "@mastra/vector-pinecone",
+    "@mastra/voice-elevenlabs",
+    "@mastra/voice-google",
+    "@mastra/loggers",
+    "@agentic/core",
+    "@agentic/mastra",
+    "@agentic/ai-sdk",
+    "@agentic/langchain",
+    "@agentic/mcp",
+    "@agentic/stdlib",
+    "@agentic/exa",
+    "@agentic/google-custom-search",
+    "@agentic/arxiv",
+    "@agentic/tavily",
+    "@agentic/wikipedia",
+    "@agentic/firecrawl",
+    "@agentic/genkit",
+    "@ai-sdk/google",
+    "@ai-sdk/google-vertex",
+    "@ai-sdk/provider",
+    "@pinecone-database/pinecone",
+    "langchain",
+    "@langchain/community",
+    "@langchain/google-genai",
+    "@langchain/pinecone",
+    "langsmith",
+    "langfuse",
+    "firebase-admin",
+    "@modelcontextprotocol/sdk",
+    "exa-js",
+  ],
   pageExtensions: ["ts", "tsx", "mdx"],
   reactStrictMode: true,
   experimental: {
@@ -10,4 +44,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withContentlayer(nextConfig);
+export default nextConfig;
