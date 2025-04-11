@@ -270,85 +270,123 @@ flowchart TD
 
 ```mermaid
 graph TB
-    %% External Users
-    User((Public User))
-    AdminUser((Admin User))
-    AuthUser((Authenticated User))
+    User((User))
+    Admin((Admin))
 
     subgraph "Frontend Container"
         direction TB
-        NextApp["Next.js Application<br>(Next.js 15.2)"]
+        NextApp["Next.js App<br>(Next.js 15)"]
 
-        subgraph "Frontend Components"
-            direction TB
-            LayoutComponents["Layout Components<br>(React)"]
-            UIComponents["UI Components<br>(React + Shadcn)"]
-            DocsComponents["Documentation Components<br>(React + MDX)"]
-            AdminComponents["Admin Components<br>(React)"]
-            UserComponents["User Components<br>(React)"]
-            AuthComponents["Auth Components<br>(Next-Auth)"]
-            ThemeSystem["Theme System<br>(next-themes)"]
+        subgraph "Layout Components"
+            NavBar["Navigation Bar<br>(React)"]
+            Footer["Footer<br>(React)"]
+            ThemeProvider["Theme Provider<br>(next-themes)"]
+            Toaster["Notifications<br>(Sonner)"]
+        end
+
+        subgraph "Page Components"
+            PublicPages["Public Pages<br>(Next.js Pages)"]
+            AdminPages["Admin Pages<br>(Next.js Pages)"]
+            UserPages["User Pages<br>(Next.js Pages)"]
+            DocsPages["Documentation<br>(MDX)"]
+        end
+
+        subgraph "UI Components"
+            CommonUI["Common UI<br>(shadcn/ui)"]
+            Forms["Form Components<br>(React)"]
+            Charts["Visualization<br>(React)"]
+            MDXComponents["MDX Components<br>(React)"]
         end
     end
 
-    subgraph "Backend Container"
-        direction TB
-        APIRoutes["API Routes<br>(Next.js API)"]
+    subgraph "Authentication Container"
+        AuthService["Auth Service<br>(NextAuth.js)"]
+        FirebaseAuth["Firebase Auth<br>(Firebase)"]
+        FirestoreAdapter["Firestore Adapter<br>(Auth.js)"]
+    end
 
-        subgraph "Mastra AI System"
-            direction TB
-            AgentSystem["Agent System<br>(TypeScript)"]
-            WorkflowEngine["Workflow Engine<br>(TypeScript)"]
+    subgraph "AI System Container"
+        subgraph "Core AI Components"
+            AgentNetwork["Agent Network<br>(Mastra)"]
+            LangChainService["LangChain Service<br>(LangChain)"]
             MemorySystem["Memory System<br>(LibSQL)"]
-            ToolRegistry["Tool Registry<br>(TypeScript)"]
-            VectorStore["Vector Store<br>(Pinecone)"]
         end
 
-        subgraph "Authentication System"
-            direction TB
-            AuthHandler["Auth Handler<br>(Next-Auth)"]
-            FirebaseAuth["Firebase Auth<br>(Firebase)"]
+        subgraph "Agent Components"
+            ResearchAgent["Research Agent<br>(AI)"]
+            AnalystAgent["Analyst Agent<br>(AI)"]
+            WriterAgent["Writer Agent<br>(AI)"]
+            CoderAgent["Coder Agent<br>(AI)"]
+            DataManager["Data Manager<br>(AI)"]
         end
+
+        subgraph "Tool Components"
+            SearchTools["Search Tools<br>(Multiple APIs)"]
+            VectorTools["Vector Tools<br>(Pinecone)"]
+            FileTools["File Tools<br>(Node.js)"]
+            APITools["API Tools<br>(REST)"]
+        end
+    end
+
+    subgraph "Data Storage"
+        Firestore[("Firestore DB<br>Firebase")]
+        VectorDB[("Vector DB<br>Pinecone")]
+        LibSQLDB[("LibSQL DB<br>LibSQL")]
     end
 
     subgraph "External Services"
-        direction TB
-        Firebase[("Firebase<br>(Database + Auth)")]
         GoogleAI["Google AI<br>(Gemini)"]
         ExaSearch["Exa Search<br>(API)"]
-        LangSmith["LangSmith<br>(Monitoring)"]
+        TavilyAPI["Tavily API<br>(API)"]
+        BraveSearch["Brave Search<br>(API)"]
     end
 
-    %% Relationships
+    %% Connections
     User -->|"Accesses"| NextApp
-    AdminUser -->|"Manages"| NextApp
-    AuthUser -->|"Uses"| NextApp
+    Admin -->|"Manages"| NextApp
 
-    %% Frontend Component Relationships
-    NextApp -->|"Uses"| LayoutComponents
-    NextApp -->|"Uses"| UIComponents
-    NextApp -->|"Uses"| DocsComponents
-    NextApp -->|"Uses"| AdminComponents
-    NextApp -->|"Uses"| UserComponents
-    NextApp -->|"Uses"| AuthComponents
-    NextApp -->|"Uses"| ThemeSystem
+    NextApp -->|"Uses"| NavBar
+    NextApp -->|"Uses"| Footer
+    NextApp -->|"Uses"| ThemeProvider
+    NextApp -->|"Uses"| Toaster
 
-    %% Backend Component Relationships
-    NextApp -->|"Calls"| APIRoutes
-    APIRoutes -->|"Uses"| AgentSystem
-    APIRoutes -->|"Uses"| AuthHandler
+    NextApp -->|"Routes to"| PublicPages
+    NextApp -->|"Routes to"| AdminPages
+    NextApp -->|"Routes to"| UserPages
+    NextApp -->|"Routes to"| DocsPages
 
-    AgentSystem -->|"Uses"| WorkflowEngine
-    AgentSystem -->|"Uses"| MemorySystem
-    AgentSystem -->|"Uses"| ToolRegistry
-    MemorySystem -->|"Stores vectors"| VectorStore
+    PublicPages -->|"Uses"| CommonUI
+    AdminPages -->|"Uses"| CommonUI
+    UserPages -->|"Uses"| CommonUI
+    DocsPages -->|"Uses"| MDXComponents
 
-    %% External Service Relationships
-    AuthHandler -->|"Authenticates"| FirebaseAuth
-    FirebaseAuth -->|"Uses"| Firebase
-    AgentSystem -->|"Uses"| GoogleAI
-    ToolRegistry -->|"Searches"| ExaSearch
-    AgentSystem -->|"Monitors"| LangSmith
+    NextApp -->|"Authenticates"| AuthService
+    AuthService -->|"Uses"| FirebaseAuth
+    AuthService -->|"Adapts"| FirestoreAdapter
+    FirestoreAdapter -->|"Stores"| Firestore
+
+    AgentNetwork -->|"Coordinates"| ResearchAgent
+    AgentNetwork -->|"Coordinates"| AnalystAgent
+    AgentNetwork -->|"Coordinates"| WriterAgent
+    AgentNetwork -->|"Coordinates"| CoderAgent
+    AgentNetwork -->|"Coordinates"| DataManager
+
+    ResearchAgent -->|"Uses"| SearchTools
+    AnalystAgent -->|"Uses"| VectorTools
+    WriterAgent -->|"Uses"| FileTools
+    CoderAgent -->|"Uses"| APITools
+    DataManager -->|"Uses"| FileTools
+
+    SearchTools -->|"Queries"| ExaSearch
+    SearchTools -->|"Queries"| TavilyAPI
+    SearchTools -->|"Queries"| BraveSearch
+
+    AgentNetwork -->|"Uses"| LangChainService
+    LangChainService -->|"Calls"| GoogleAI
+
+    AgentNetwork -->|"Uses"| MemorySystem
+    MemorySystem -->|"Stores in"| LibSQLDB
+    VectorTools -->|"Stores in"| VectorDB
 ```
 
 ## 🎯 Technical Goals & Implementation Status
