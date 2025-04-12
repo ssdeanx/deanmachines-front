@@ -149,7 +149,8 @@ export function Footer() {
                   rel="noopener noreferrer"
                   aria-label={link.label}
                   className="group relative rounded-full bg-muted p-2 transition-all duration-300 hover:bg-primary/10 hover:scale-110"
-                  legacyBehavior>
+                  legacyBehavior={false}
+                >
                   <IconWrapper
                     icon={link.icon}
                     className="h-5 w-5 transition-colors group-hover:text-primary"
@@ -187,7 +188,8 @@ export function Footer() {
                     <Link
                       href={link.href}
                       className="group flex items-center text-sm text-muted-foreground transition-colors hover:text-foreground"
-                      legacyBehavior>
+                      legacyBehavior={false}
+                    >
                       <span className="transition-transform duration-300 group-hover:translate-x-0.5">
                         {link.title}
                       </span>
@@ -201,11 +203,11 @@ export function Footer() {
         </div>
 
         {/* Bottom Copyright Bar */}
-        <div className="mt-16 flex flex-col items-center justify-between space-y-4 border-t border-border pt-8 text-sm md:flex-row md:space-y-0">
-          <p className="text-muted-foreground">
+        <div className="mt-16 flex flex-col items-center space-y-4 border-t border-border pt-8 text-sm md:flex-row md:justify-between md:space-y-0">
+          <p className="text-muted-foreground text-center md:text-left">
             © {new Date().getFullYear()} {siteConfig.name}. All rights reserved.
           </p>
-          <div className="flex space-x-6">
+          <div className="flex flex-wrap justify-center space-x-4 md:justify-end md:space-x-6">
             <Link href="/terms" className="text-muted-foreground underline-offset-4 hover:underline">
               Terms of Service
             </Link>

@@ -135,15 +135,16 @@ function MainNav() {
         href="/"
         className="flex items-center space-x-2 transition-opacity duration-300 hover:opacity-80"
         aria-label="Home"
-        legacyBehavior>
+        legacyBehavior={false}
+      >
         <span className="sr-only md:not-sr-only font-bold text-xl bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">{siteConfig.name}</span>
         <span className="md:hidden font-bold text-xl">dm</span>
       </Link>
       <NavigationMenu className="hidden md:flex">
         <NavigationMenuList className="gap-1">
           <NavigationMenuItem>
-            <Link href="/" legacyBehavior passHref>
-              <NavigationMenuLink
+            <Link href="/" legacyBehavior={false}>
+              <NavigationMenuLink asChild
                 className={cn(
                   navigationMenuTriggerStyle(),
                   "group transition-all duration-300 px-3",
@@ -197,8 +198,8 @@ function MainNav() {
             // Otherwise render as regular link
             return (
               <NavigationMenuItem key={item.title}>
-                <Link href={item.href} legacyBehavior passHref>
-                  <NavigationMenuLink
+                <Link href={item.href} legacyBehavior={false}>
+                  <NavigationMenuLink asChild
                     className={cn(
                       navigationMenuTriggerStyle(),
                       "transition-all duration-300 px-3",
@@ -252,7 +253,7 @@ function MobileNavItem({
             "group-hover:translate-x-0.5 transition-transform motion-reduce:transition-none"
           )}
           onClick={hasChildren ? () => setIsOpen(!isOpen) : undefined}
-          legacyBehavior>
+        >
           {IconComponent && <IconComponent className="size-4 opacity-70 group-hover:opacity-100 transition-opacity" />}
           {item.title}
         </Link>
@@ -295,7 +296,8 @@ function MobileNavItem({
                     ? "text-primary font-semibold"
                     : "text-foreground/70 hover:text-foreground hover:translate-x-1"
                 )}
-                legacyBehavior>
+                legacyBehavior={false}
+              >
                 {child.icon && iconMap[child.icon] && (
                   <IconWrapper icon={iconMap[child.icon]} size="sm" withHoverEffect />
                 )}
@@ -430,7 +432,7 @@ export function NavBar() {
     )}>
       <div className="container flex h-16 items-center @container">
         <MainNav />
-        <div className="flex items-center ml-auto space-x-4">
+        <div className="ml-auto flex items-center space-x-4">
           <nav className="flex items-center space-x-2">
             <SearchInput />
             <ThemeToggle />
@@ -464,7 +466,7 @@ export function NavBar() {
                         ? "text-primary bg-primary/10 font-medium"
                         : "text-foreground/70 hover:text-foreground hover:bg-accent/30"
                     )}
-                    legacyBehavior>
+                  >
                     <Home className="size-5 text-primary" />
                     <span>Home</span>
                   </Link>
