@@ -58,7 +58,7 @@ import { e2b } from "./e2b";
 // Import GraphRag tools so that they are read and fully functional.
 import { createGraphRagTool, graphRagQueryTool } from "./graphRag";
 import { llmChainTool, aiSdkPromptTool } from "./llmchain";
-
+import { github } from "../integrations";
 // === Export all tool modules ===
 export * from "./e2b";
 export * from "./exasearch";
@@ -140,6 +140,31 @@ function validateConfig(): EnvConfig {
 
 // === Initialize Environment Configuration ===
 const config: EnvConfig = validateConfig();
+
+export const getMainBranchRef = createTool({
+  id: "getMainBranchRef",
+  description: "Fetch the main branch reference from a GitHub repository",
+  inputSchema: z.object({
+    owner: z.string(),
+    repo: z.string(),
+  }),
+  outputSchema: z.object({
+    ref: z.string().optional(),
+  }),
+  execute: async ({ context }) => {
+    const client = await github.getApiClient();
+
+    const mainRef = await client.gitGetRef({
+      path: {
+        owner: context.owner,
+        repo: context.repo,
+        ref: "heads/main",
+      },
+    });
+
+    return { ref: mainRef.data?.ref };
+  },
+});
 
 // === Search Tools Initialization ===
 
@@ -287,10 +312,9 @@ import { createMcpTools } from "@agentic/mcp";
       `Added ${mcpToolsArray.length} MCP tools from Docker socat bridge`
     );
   } catch (error) {
-    logger.error(
-      "Failed to initialize Docker socat MCP tools:",
-      { error: error instanceof Error ? error.message : String(error) }
-    );
+    logger.error("Failed to initialize Docker socat MCP tools:", {
+      error: error instanceof Error ? error.message : String(error),
+    });
   }
 })();
 

@@ -23,13 +23,11 @@ import { KnowledgeWorkMoENetwork } from "./knowledgeWorkMoE.network"; // Import 
 import { sharedMemory } from "../../database"; // Import shared memory for network config
 
 // Base configuration for all networks to match agent configuration
-// NOTE: Hooks are removed here as they are not part of AgentNetworkConfig.
-// Consult @mastra/core documentation for the correct way to configure hooks.
-// Memory might be configured elsewhere (e.g., during execution).
+// Core properties shared by all networks
 const baseNetworkConfig: Partial<AgentNetworkConfig> = {
   model: google("models/gemini-2.0-flash"),
-  // memory: sharedMemory, // Removed: 'memory' is not part of AgentNetworkConfig
-  // hooks: { ... } // Removed hooks configuration from base
+  // Note: shared hooks are applied in individual network configurations
+  // memory is handled separately as it may not be part of AgentNetworkConfig
 };
 
 // --- Original Hook Definitions (Unchanged) ---
@@ -122,7 +120,7 @@ const contentCreationHooks = {
  */
 export const deanInsightsNetwork = new AgentNetwork({
   // id: "dean-insights", // ID is not part of AgentNetworkConfig, set via other means if necessary
-  ...baseNetworkConfig, // Includes model and memory
+  ...baseNetworkConfig, // Includes core config
   model: baseNetworkConfig.model!, // Ensure model is explicitly provided and non-null
   name: "DeanInsights Network",
   agents: [
@@ -132,6 +130,11 @@ export const deanInsightsNetwork = new AgentNetwork({
     rlTrainerAgent,
     dataManagerAgent,
   ],
+  // Apply hooks directly in the configuration
+  hooks: {
+    onError: deanInsightsHooks.onError,
+    onResponse: deanInsightsHooks.onGenerateResponse,
+  },
   instructions: `
     You are a coordination system that routes queries to the appropriate specialized agents
     to deliver comprehensive and accurate insights.
@@ -179,10 +182,15 @@ export const deanInsightsNetwork = new AgentNetwork({
  */
 export const dataFlowNetwork = new AgentNetwork({
   // id: "data-flow", // ID is not part of AgentNetworkConfig, set via other means if necessary
-  ...baseNetworkConfig, // Includes model and memory
+  ...baseNetworkConfig, // Includes core config
   model: baseNetworkConfig.model!, // Ensure model is explicitly provided and non-null
   name: "DataFlow Network",
   agents: [dataManagerAgent, analystAgent, rlTrainerAgent],
+  // Apply hooks directly in the configuration
+  hooks: {
+    onError: dataFlowHooks.onError,
+    onResponse: dataFlowHooks.onGenerateResponse,
+  },
   instructions: `
     You are a data processing coordination system that orchestrates specialized agents
     to handle data operations, analysis, and optimization tasks.

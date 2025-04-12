@@ -9,7 +9,6 @@
 import { Agent } from "@mastra/core/agent";
 import { AgentNetwork, type AgentNetworkConfig } from "@mastra/core/network";
 import { createLogger } from "@mastra/core/logger";
-import { z } from "zod";
 import { type CoreMessage } from "ai"; // Import CoreMessage from the main 'ai' package
 
 // Import the actual agents map (value) and necessary config types/utils
@@ -20,7 +19,6 @@ import {
   createModelInstance,
   DEFAULT_MODELS,
 } from "../../agents/config";
-import { sharedMemory } from "../../database"; // Import shared memory
 
 
 // Define the type for the agents map more explicitly
@@ -65,11 +63,10 @@ export class KnowledgeWorkMoENetwork extends AgentNetwork {
    *                          Defaults to "agentic-assistant".
    * @throws {Error} If the agentRegistry is empty, no valid expert agents are found,
    *                 or the specified fallbackAgentId is invalid.
-   */
-  constructor(
+   */ constructor(
     expertAgentIds: AgentId[],
     agentRegistry: AgentRegistry,
-    routerModelConfig: ModelConfig,
+    routerModelConfig: ModelConfig = DEFAULT_MODELS.GOOGLE_STANDARD,
     networkId: string = "knowledge-work-moe",
     fallbackAgentId: AgentId = DEFAULT_FALLBACK_AGENT_ID
   ) {
@@ -465,10 +462,12 @@ export class KnowledgeWorkMoENetwork extends AgentNetwork {
           // Construct arguments for agent.generate, ensuring required fields are present.
           // The ruleBasedExpertId is the correct ID to use as the resourceId.
           const agentResourceId = ruleBasedExpertId;
-          if (!agentResourceId || typeof agentResourceId !== 'string') {
+          if (!agentResourceId || typeof agentResourceId !== "string") {
             // This check is technically redundant now if ruleBasedExpertId is always a valid AgentId string,
             // but kept for robustness in case AgentId type changes.
-            logger.error(`[${this.networkId}] Invalid agent ID determined by rule-based routing: ${ruleBasedExpertId}. This should not happen.`);
+            logger.error(
+              `[${this.networkId}] Invalid agent ID determined by rule-based routing: ${ruleBasedExpertId}. This should not happen.`
+            );
             // Fallback if resourceId cannot be determined
             return this.executeFallback(
               input,
@@ -485,9 +484,11 @@ export class KnowledgeWorkMoENetwork extends AgentNetwork {
 
           // Ensure threadId is a string, providing a temporary one if missing.
           // Consider if a default threadId is appropriate or if it should be required.
-          if (typeof generateArgs.threadId !== 'string') {
+          if (typeof generateArgs.threadId !== "string") {
             generateArgs.threadId = `temp-thread-${Date.now()}`;
-            logger.warn(`[${this.networkId}] Missing or invalid threadId in options for rule-based execution. Using temporary ID: ${generateArgs.threadId}`);
+            logger.warn(
+              `[${this.networkId}] Missing or invalid threadId in options for rule-based execution. Using temporary ID: ${generateArgs.threadId}`
+            );
           }
 
           // Call generate with the constructed arguments object
@@ -544,9 +545,11 @@ export class KnowledgeWorkMoENetwork extends AgentNetwork {
       };
 
       // Ensure threadId is a string, providing a temporary one if missing.
-      if (typeof baseGenerateArgs.threadId !== 'string') {
+      if (typeof baseGenerateArgs.threadId !== "string") {
         baseGenerateArgs.threadId = `temp-network-thread-${Date.now()}`;
-        logger.warn(`[${this.networkId}] Missing or invalid threadId in options for LLM-routed execution. Using temporary ID: ${baseGenerateArgs.threadId}`);
+        logger.warn(
+          `[${this.networkId}] Missing or invalid threadId in options for LLM-routed execution. Using temporary ID: ${baseGenerateArgs.threadId}`
+        );
       }
 
       // Call the base class generate method with correctly typed messages and args
@@ -623,13 +626,18 @@ export class KnowledgeWorkMoENetwork extends AgentNetwork {
       };
 
       // Ensure threadId is a string, providing a temporary one if missing.
-      if (typeof fallbackArgs.threadId !== 'string') {
+      if (typeof fallbackArgs.threadId !== "string") {
         fallbackArgs.threadId = `temp-fallback-thread-${Date.now()}`;
-        logger.warn(`[${this.networkId}] Missing or invalid threadId in options for fallback execution. Using temporary ID: ${fallbackArgs.threadId}`);
+        logger.warn(
+          `[${this.networkId}] Missing or invalid threadId in options for fallback execution. Using temporary ID: ${fallbackArgs.threadId}`
+        );
       }
 
       // Call generate with the constructed arguments object
-      const fallbackResult = await fallbackAgent.generate(fallbackInput, fallbackArgs);
+      const fallbackResult = await fallbackAgent.generate(
+        fallbackInput,
+        fallbackArgs
+      );
 
       logger.info(
         `[${this.networkId}] Fallback agent "${this.fallbackAgentId}" execution completed successfully.`

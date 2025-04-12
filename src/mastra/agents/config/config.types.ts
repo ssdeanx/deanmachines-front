@@ -7,9 +7,7 @@
  * @module config.types
  */
 
-import { z } from "zod";
-import { google } from "@ai-sdk/google";
-import { vertex } from "@ai-sdk/google-vertex";
+
 import { Tool } from "@mastra/core/tools";
 
 /**
@@ -58,20 +56,38 @@ export const DEFAULT_MODELS = {
   // Standard Google model - fast, versatile
   GOOGLE_STANDARD: {
     provider: "google" as const,
-    modelId: "gemini-2.0-flash-exp",
+    modelId: "gemini-2.0-flash-live-001",
+    temperature: 0.6,
+    topP: 0.95,
+    maxTokens: DEFAULT_MAX_TOKENS,
+    capabilities: {
+      maxContextTokens: 1048576,
+      multimodalInput: true,
+      imageGeneration: false,
+      audioOutput: true,
+      functionCalling: true,
+      structuredOutput: true,
+      enhancedThinking: false,
+      grounding: true,
+      responseCaching: false,
+    },
+  },
+  GOOGLE_MAIN: {
+    provider: "google" as const,
+    modelId: "gemini-2.0-flash",
     temperature: 0.7,
     topP: 0.9,
     maxTokens: DEFAULT_MAX_TOKENS,
     capabilities: {
-      maxContextTokens: 1000000,
+      maxContextTokens: 1048576,
       multimodalInput: true,
-      imageGeneration: true,
-      audioOutput: false, // Coming soon according to docs
+      imageGeneration: false,
+      audioOutput: false,
       functionCalling: true,
       structuredOutput: true,
       enhancedThinking: true,
       grounding: true,
-      responseCaching: true,
+      responseCaching: false,
     },
   },
 
@@ -103,15 +119,15 @@ export const DEFAULT_MODELS = {
     topP: 0.9,
     maxTokens: DEFAULT_MAX_TOKENS,
     capabilities: {
-      maxContextTokens: 1000000,
-      multimodalInput: true,
+      maxContextTokens: 1048576,
+      multimodalInput: false,
       imageGeneration: false,
       audioOutput: false,
-      functionCalling: true,
+      functionCalling: false,
       structuredOutput: true,
       enhancedThinking: false,
-      grounding: true,
-      responseCaching: true,
+      grounding: false,
+      responseCaching: false,
     },
   },
 
@@ -123,7 +139,7 @@ export const DEFAULT_MODELS = {
     topP: 0.95,
     maxTokens: 65535,
     capabilities: {
-      maxContextTokens: 1000000,
+      maxContextTokens: 1048576,
       multimodalInput: true,
       imageGeneration: true,
       audioOutput: false,
@@ -140,20 +156,20 @@ export const DEFAULT_MODELS = {
   // Vertex AI model - for enterprise features and security
   VERTEX_STANDARD: {
     provider: "vertex" as const,
-    modelId: "models/gemini-2.0-flash-exp",
+    modelId: "gemini-2.0-flash-live-001",
     temperature: 0.6,
     topP: 0.95,
     maxTokens: DEFAULT_MAX_TOKENS,
     capabilities: {
-      maxContextTokens: 1000000,
+      maxContextTokens: 1048576,
       multimodalInput: true,
       imageGeneration: false,
-      audioOutput: false,
+      audioOutput: true,
       functionCalling: true,
       structuredOutput: true,
       enhancedThinking: false,
       grounding: true,
-      responseCaching: true,
+      responseCaching: false,
     },
     functionCalling: {
       mode: "AUTO" as const,

@@ -38,16 +38,12 @@ The content is organized as follows:
 
 # Directory Structure
 ```
-src/content/blog/[slug]/
-src/content/docs/cli/
-src/content/docs/configuration/
-src/content/docs/networks/
+src/content/
 src/mastra/tools/config/
 .gitignore
 auth.ts
 CHANGELOG.md
 components.json
-contentlayer.config.ts
 eslint.config.mjs
 fix.md
 middleware.ts
@@ -125,6 +121,8 @@ src/components/common/ThemeToggle.tsx
 src/components/docs/Callout.tsx
 src/components/docs/Card.tsx
 src/components/docs/CodeBlockWrapper.tsx
+src/components/docs/ContentRenderer.tsx
+src/components/docs/DocPage.tsx
 src/components/docs/DocsLayoutWrapper.tsx
 src/components/docs/DocsPageLayout.tsx
 src/components/docs/DocsPagination.tsx
@@ -199,54 +197,10 @@ src/components/visualization/ResourceUtilization.tsx
 src/config/docs.ts
 src/config/site.ts
 src/config/theme.ts
-src/content/blog/my-first-post.mdx
-src/content/docs/api-reference/agent/page.mdx
-src/content/docs/api-reference/cli.mdx
-src/content/docs/api-reference/cli/page.mdx
-src/content/docs/api-reference/deployment.mdx
-src/content/docs/api-reference/index.mdx
-src/content/docs/api-reference/memory.mdx
-src/content/docs/api-reference/network.mdx
-src/content/docs/api-reference/sdk/go.mdx
-src/content/docs/api-reference/sdk/java.mdx
-src/content/docs/api-reference/sdk/python.mdx
-src/content/docs/api-reference/sdk/typescript.mdx
-src/content/docs/core-concepts/agent-networks.mdx
-src/content/docs/core-concepts/agents.mdx
-src/content/docs/core-concepts/app.mdx
-src/content/docs/core-concepts/deployment.mdx
-src/content/docs/core-concepts/memory.mdx
-src/content/docs/core-concepts/networks.mdx
-src/content/docs/core-concepts/overview.mdx
-src/content/docs/examples/agents.mdx
-src/content/docs/examples/memory.mdx
-src/content/docs/examples/networks.mdx
-src/content/docs/getting-started/configuration.mdx
-src/content/docs/getting-started/configuration/page.mdx
-src/content/docs/getting-started/installation.mdx
-src/content/docs/getting-started/quick-start.mdx
-src/content/docs/guides/ci-cd.mdx
-src/content/docs/guides/compliance.mdx
-src/content/docs/guides/cost-optimization.mdx
-src/content/docs/guides/high-availability.mdx
-src/content/docs/guides/memory-management.mdx
-src/content/docs/guides/monitoring.mdx
-src/content/docs/guides/network-architecture.mdx
-src/content/docs/guides/overview.mdx
-src/content/docs/guides/performance-testing.mdx
-src/content/docs/guides/performance.mdx
-src/content/docs/guides/scaling.mdx
-src/content/docs/guides/security.mdx
-src/content/docs/guides/testing.mdx
-src/content/docs/guides/troubleshooting.mdx
-src/content/docs/index.mdx
-src/content/docs/introduction/index.mdx
-src/content/docs/introduction/overview.mdx
-src/content/docs/tutorials/creating-agents.mdx
-src/content/docs/tutorials/getting-started.mdx
 src/hooks/use-mobile.ts
 src/hooks/use-toc-highlighting.ts
 src/lib/api/mastra/index.ts
+src/lib/content-data.ts
 src/lib/firebase/admin.ts
 src/lib/firebase/client.ts
 src/lib/firebase/firebase.ts
@@ -326,6 +280,7 @@ src/mastra/tools/paginate.ts
 src/mastra/tools/readwrite.ts
 src/mastra/tools/rlFeedback.ts
 src/mastra/tools/rlReward.ts
+src/mastra/tools/stdlib.ts
 src/mastra/tools/tavily.ts
 src/mastra/tools/types.ts
 src/mastra/tools/utils.ts
@@ -351,104 +306,6 @@ tsconfig.json
 ```
 
 # Files
-
-## File: CHANGELOG.md
-````markdown
-# Changelog
-
-## [Unreleased]
-
-## [0.1.1] - 2025-04-11
-
-### Added
-
-- Installed comprehensive AI package ecosystem:
-  - **Mastra AI packages:**
-    - @mastra/client-js (v0.1.16): Client-side SDK for Mastra integration
-    - @mastra/core (v0.8.2): Core functionality for agent management
-    - @mastra/loggers (v0.1.17): Logging utilities for Mastra agents
-    - @mastra/memory (v0.2.9): Memory management for conversational agents
-    - @mastra/pinecone (v0.2.7): Pinecone vector database integration
-    - @mastra/upstash (v0.2.4): Upstash database integration
-    - @mastra/vector-pinecone (v0.1.5): Vector operations with Pinecone
-    - @mastra/voice-elevenlabs (v0.1.12): ElevenLabs voice integration
-    - @mastra/voice-google (v0.1.12): Google voice integration
-  - **@agentic ecosystem packages:**
-    - @agentic/ai-sdk (v7.6.4): Core AI SDK functionality
-    - @agentic/arxiv (v7.6.4): ArXiv research paper integration
-    - @agentic/brave-search (v7.6.4): Brave search integration
-    - @agentic/calculator (v7.6.4): Mathematical calculation capabilities
-    - @agentic/core (v7.6.4): Core agent framework
-    - @agentic/e2b (v7.6.4): E2B agent integration
-    - @agentic/exa (v7.6.4): Exa search integration
-    - @agentic/firecrawl (v7.6.4): Web crawling functionality
-    - @agentic/genkit (v7.6.4): Generation toolkit
-    - @agentic/google-custom-search (v7.6.4): Google Custom Search integration
-    - @agentic/google-docs (v7.6.4): Google Docs integration
-    - @agentic/google-drive (v7.6.4): Google Drive integration
-    - @agentic/langchain (v7.6.4): LangChain integration
-    - @agentic/llamaindex (v7.6.4): LlamaIndex integration
-    - @agentic/mastra (v7.6.4): Mastra AI integration
-    - @agentic/mcp (v7.6.4): Model Context Protocol integration
-    - @agentic/stdlib (v7.6.4): Standard library for agent operations
-    - @agentic/tavily (v7.6.4): Tavily search integration
-    - @agentic/wikipedia (v7.6.4): Wikipedia integration
-  - **AI SDK packages:**
-    - @ai-sdk/google (v1.2.10): Google AI integration
-    - @ai-sdk/google-vertex (v2.2.14): Google Vertex AI integration
-    - @ai-sdk/provider (v1.1.2): Provider abstractions
-    - @ai-sdk/provider-utils (v2.2.6): Utility functions for providers
-  - **MCP integration:**
-    - @modelcontextprotocol/sdk (v1.9.0): Model Context Protocol SDK
-- Initialized Mastra with `pnpm dlx mastra@latest init`
-- Added Mastra server packages to `serverExternalPackages` in Next.js config
-- Created Weather API endpoint using Mastra agent
-- Implemented server action `getWeatherInfo` for weather data
-- Added Weather component with form for city input
-- Set up API route for chat streaming with Mastra
-
-### Changed
-
-- Updated Next.js configuration to support Mastra integration
-- Updated project version to 0.1.1
-
-### Technical Details
-
-- Configured `next.config.ts` to allow server-side external packages for Mastra
-- Created a streaming API endpoint for chat responses
-- Implemented server action for direct agent invocation
-- Built React component with form data submission
-- Integrated vector database capabilities through Pinecone (v5.1.1)
-- Added support for LangChain (v0.3.21) and LangChain Community (v0.3.40)
-- Set up integration with various AI providers through unified SDK interfaces
-- Enabled voice capabilities through ElevenLabs and Google voice integrations
-
-### Mastra Implementation Details
-
-- **Core Setup (`/src/mastra/index.ts`):**
-  - Configured Mastra instance with custom workflows, agents and logging
-  - Centralized agent and workflow registration in a single export
-- **Weather Agent (`/src/mastra/agents/index.ts`):**
-  - Implemented a specialized weather assistant using Google's Gemini 1.5 Pro model
-  - Defined detailed contextual instructions for consistent, accurate weather responses
-  - Integrated with custom weather tool for real-time data retrieval
-- **Custom Weather Tool (`/src/mastra/tools/index.ts`):**
-  - Created a weather data retrieval tool using Open Meteo API
-  - Implemented geocoding for location-to-coordinates conversion
-  - Built comprehensive weather condition mapping for 30+ weather codes
-  - Schema validation using Zod for type safety and input/output validation
-- **Weather Workflow (`/src/mastra/workflows/index.ts`):**
-  - Designed a multi-step workflow for advanced weather processing
-  - Created an activity recommendation system based on weather conditions
-  - Implemented structured output formatting with emojis and sectioned content
-
-## [0.1.0] - 2025-04-11
-
-### Initial Release
-
-- Project scaffolding with Next.js 15.3.0
-- Base configuration setup
-````
 
 ## File: components.json
 ````json
@@ -1243,6 +1100,108 @@ import { cn } from "@/lib/utils";
  */
 ⋮----
 className=
+````
+
+## File: src/components/docs/ContentRenderer.tsx
+````typescript
+import Link from "next/link";
+import Image from "next/image";
+import { type ContentSection, SectionType, CalloutType, ListType } from "@/lib/content-data";
+import { Card } from "./Card";
+import { Callout } from "./Callout";
+import { CodeBlockWrapper } from "./CodeBlockWrapper";
+import { cn } from "@/lib/utils";
+⋮----
+/**
+ * Props for the ContentRenderer component
+ *
+ * @property sections - Array of content sections to render
+ * @property className - Optional CSS class name to apply to the container
+ * @property idPrefix - Optional prefix for section IDs to ensure uniqueness
+ */
+interface ContentRendererProps {
+  sections: ContentSection[];
+  className?: string;
+  idPrefix?: string;
+}
+⋮----
+/**
+ * Renders a formatted text span with optional styling
+ *
+ * @param span - The text span to render
+ * @returns A React element with appropriate formatting
+ */
+⋮----
+/**
+ * ContentRenderer component for displaying structured content
+ * This component renders different section types from our content structure
+ */
+⋮----
+// Generate a stable ID based on the section content or provided ID
+⋮----
+// Add the prefix to the ID if provided and the section has an ID
+⋮----
+// Apply any custom classes from the section
+⋮----
+className=
+⋮----
+<div className=
+⋮----
+<figure key=
+⋮----
+<div key=
+````
+
+## File: src/components/docs/DocPage.tsx
+````typescript
+import { useMemo } from "react";
+import { type DocContent, SectionType } from "@/lib/content-data";
+import { DocsPageLayout } from "@/components/docs/DocsPageLayout";
+import { ContentRenderer } from "@/components/docs/ContentRenderer";
+import { type TableOfContents, type TableOfContentsItem } from "@/types/toc";
+⋮----
+interface DocPageProps {
+  /**
+   * The documentation content to render
+   */
+  doc: DocContent;
+}
+⋮----
+/**
+   * The documentation content to render
+   */
+⋮----
+/**
+ * Generates a table of contents from the document's heading sections
+ *
+ * @param sections - The content sections of the document
+ * @returns A structured table of contents object
+ */
+function generateTocFromSections(doc: DocContent): TableOfContents
+⋮----
+// Initialize the level map with the top level
+⋮----
+// Use the section ID if provided, otherwise generate one from the title
+⋮----
+// Add this item to its parent level
+⋮----
+// Find the closest parent level
+⋮----
+// If no parent found, add to top level
+⋮----
+// Update the level map for this level
+⋮----
+/**
+ * Documentation page component that renders structured content
+ * This component replaces the previous MDX-based documentation page
+ */
+export function DocPage(
+⋮----
+// Generate table of contents from the document sections
+⋮----
+// Extract pagination links from the document
+⋮----
+{/* The sections are passed to DocsPageLayout and will be rendered by ContentRenderer */}
 ````
 
 ## File: src/components/layout/MobileNav.tsx
@@ -2440,4304 +2399,6 @@ type DotProps = NonNullable<LineProps['dot']> & {
 import { type ThemeConfig } from "@/types/theme";
 ````
 
-## File: src/content/docs/api-reference/agent/page.mdx
-````
----
-title: Agent API Reference
-description: Complete API reference for creating and managing AI agents.
----
-
-# Agent API Reference
-
-The Agent API allows you to create, configure, and manage AI agents in your applications.
-
-## Creating an Agent
-
-### `createAgent`
-
-Creates a new AI agent with the specified configuration.
-
-```typescript
-interface AgentConfig {
-  name: string;
-  description?: string;
-  model: {
-    name: string;
-    temperature?: number;
-    maxTokens?: number;
-  };
-  capabilities: string[];
-  memory?: MemoryConfig;
-}
-
-const agent = await client.createAgent({
-  name: "support-agent",
-  description: "Customer support agent",
-  model: {
-    name: "gpt-4",
-    temperature: 0.7,
-  },
-  capabilities: ["chat", "knowledge-base"],
-});
-```
-
-### Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| name | string | Yes | Unique identifier for the agent |
-| description | string | No | Human-readable description |
-| model | ModelConfig | Yes | AI model configuration |
-| capabilities | string[] | Yes | List of agent capabilities |
-| memory | MemoryConfig | No | Memory system configuration |
-
-### Response
-
-```typescript
-interface Agent {
-  id: string;
-  name: string;
-  status: "active" | "inactive" | "error";
-  created: string;
-  lastActive: string;
-  capabilities: string[];
-  config: AgentConfig;
-}
-```
-
-## Managing Agents
-
-### `listAgents`
-
-Retrieves a list of all agents in your project.
-
-```typescript
-const agents = await client.listAgents({
-  status: "active",
-  limit: 10,
-  offset: 0,
-});
-```
-
-### `updateAgent`
-
-Updates an existing agent's configuration.
-
-```typescript
-await client.updateAgent(agentId, {
-  description: "Updated description",
-  model: {
-    temperature: 0.8,
-  },
-});
-```
-
-### `deleteAgent`
-
-Deletes an agent and its associated resources.
-
-```typescript
-await client.deleteAgent(agentId);
-```
-
-## Agent Interactions
-
-### `sendMessage`
-
-Sends a message to an agent and receives a response.
-
-```typescript
-const response = await agent.sendMessage({
-  content: "Hello, how can I help?",
-  type: "text",
-  context: {
-    userId: "user-123",
-    sessionId: "session-456",
-  },
-});
-```
-
-### `streamResponse`
-
-Streams an agent's response in real-time.
-
-```typescript
-const stream = await agent.streamResponse({
-  content: "Generate a long report",
-  onToken: (token) => {
-    console.log("Received token:", token);
-  },
-});
-```
-
-## Webhooks
-
-### `registerWebhook`
-
-Registers a webhook to receive agent events.
-
-```typescript
-await client.registerWebhook({
-  url: "https://api.yourdomain.com/webhooks/agent",
-  events: ["message.created", "agent.status"],
-  secret: process.env.WEBHOOK_SECRET,
-});
-```
-
-## Error Handling
-
-```typescript
-try {
-  const agent = await client.createAgent(config);
-} catch (error) {
-  if (error instanceof AgentError) {
-    console.error("Agent creation failed:", error.message);
-    // Handle specific error cases
-    switch (error.code) {
-      case "invalid_config":
-        // Handle invalid configuration
-        break;
-      case "quota_exceeded":
-        // Handle quota issues
-        break;
-    }
-  }
-}
-```
-
-## Best Practices
-
-1. **Error Handling**
-   - Always implement proper error handling
-   - Use type-safe error handling with discriminated unions
-   - Handle rate limiting and retry scenarios
-
-2. **Security**
-   - Keep API keys secure
-   - Validate all inputs
-   - Use HTTPS for webhook endpoints
-
-3. **Performance**
-   - Use streaming for long responses
-   - Implement proper connection handling
-   - Consider rate limits in your design
-
-<Callout type="warning">
-  Never expose your API keys in client-side code or version control systems.
-</Callout>
-
-## Rate Limits
-
-| Operation | Rate Limit |
-|-----------|------------|
-| Create Agent | 10/minute |
-| Send Message | 60/minute |
-| Update Agent | 30/minute |
-| Delete Agent | 10/minute |
-
-## Next Steps
-
-- [Memory API Reference](/docs/api-reference/memory)
-- [Agent Tutorial](/docs/tutorials/creating-agents)
-- [Agent Examples](/docs/examples/agents)
-````
-
-## File: src/content/docs/api-reference/cli.mdx
-````
----
-title: "CLI Reference"
-description: "Command Line Interface reference for DeanMachines"
----
-
-# CLI Reference
-
-## Overview
-
-The DeanMachines CLI provides a powerful command-line interface for managing your agents, networks, and deployments.
-
-## Installation
-
-```bash
-npm install -g deanmachines-cli
-```
-
-## Usage
-
-```bash
-deanmachines [command] [options]
-```
-
-## Commands
-
-### Agent Management
-
-```bash
-deanmachines agent create [name]
-deanmachines agent list
-deanmachines agent delete [name]
-```
-
-### Network Management
-
-```bash
-deanmachines network create [name]
-deanmachines network list
-deanmachines network delete [name]
-```
-
-### Deployment
-
-```bash
-deanmachines deploy [environment]
-deanmachines deploy status
-deanmachines deploy rollback
-```
-
-## Configuration
-
-```bash
-deanmachines config set [key] [value]
-deanmachines config get [key]
-deanmachines config list
-```
-
-## Help
-
-```bash
-deanmachines help
-deanmachines [command] --help
-```
-````
-
-## File: src/content/docs/api-reference/cli/page.mdx
-````
----
-title: "CLI Reference"
-description: "Command Line Interface reference for DeanMachines"
----
-
-# CLI Reference
-
-## Overview
-
-The DeanMachines CLI is a powerful command-line interface that allows you to manage your agents, networks, and deployments. It provides a consistent interface for interacting with the DeanMachines platform from your terminal.
-
-## Installation
-
-```bash
-npm install -g deanmachines-cli
-```
-
-## Usage
-
-```bash
-deanmachines [command] [options]
-```
-
-Run `deanmachines --help` for a list of all available commands.
-
-## Commands
-
-### Agent Management
-
-```bash
-deanmachines agent create [name] [options]
-deanmachines agent list [options]
-deanmachines agent delete [name] [options]
-deanmachines agent update [name] [options]
-```
-
-#### Options
-
-```bash
---description, -d <description>  Agent description
---type, -t <type>               Agent type (node, python, etc.)
---version, -v <version>         Agent version
---config, -c <path>            Path to configuration file
-```
-
-### Network Management
-
-```bash
-deanmachines network create [name] [options]
-deanmachines network list [options]
-deanmachines network delete [name] [options]
-deanmachines network update [name] [options]
-```
-
-#### Options
-
-```bash
---type, -t <type>               Network type (local, distributed, cloud)
---protocol, -p <protocol>      Network protocol (tcp, udp, etc.)
---encryption, -e <level>       Encryption level
---nodes, -n <count>           Number of nodes
-```
-
-### Deployment
-
-```bash
-deanmachines deploy [environment] [options]
-deanmachines deploy status [options]
-deanmachines deploy rollback [options]
-```
-
-#### Options
-
-```bash
---environment, -e <env>    Environment name
---version, -v <version>   Version to deploy
---force, -f               Force deployment
---dry-run                 Show what would be deployed
-```
-
-### Configuration
-
-```bash
-deanmachines config set [key] [value]
-deanmachines config get [key]
-deanmachines config list
-deanmachines config export [path]
-```
-
-### Help
-
-```bash
-deanmachines help
-deanmachines [command] --help
-```
-
-## Environment Variables
-
-You can override CLI configuration using environment variables:
-
-```bash
-# Core settings
-DEANMACHINES_API_KEY=your_api_key
-DEANMACHINES_API_ENDPOINT=https://api.deanmachines.com
-
-# Agent settings
-DEANMACHINES_AGENT_TIMEOUT=30000
-DEANMACHINES_AGENT_MAX_CONCURRENCY=5
-
-# Network settings
-DEANMACHINES_NETWORK_TYPE=distributed
-DEANMACHINES_NETWORK_PROTOCOL=tcp
-```
-
-## Best Practices
-
-1. Use meaningful names for agents and networks
-2. Keep configuration in version control
-3. Use environment variables for sensitive information
-4. Regularly update CLI to latest version
-5. Use dry-run before major deployments
-6. Document all custom configurations
-
-## Troubleshooting
-
-Common issues and solutions:
-
-1. **Authentication Issues**
-   - Check your API key
-   - Verify API endpoint
-   - Check network connectivity
-
-2. **Deployment Failures**
-   - Check environment status
-   - Review deployment logs
-   - Verify configuration
-
-3. **Network Connectivity**
-   - Check firewall rules
-   - Verify network configuration
-   - Test connectivity
-
-## Version History
-
-- 1.0.0 - Initial release
-- 1.1.0 - Added network management
-- 1.2.0 - Added deployment commands
-- 1.3.0 - Added configuration management
-````
-
-## File: src/content/docs/api-reference/deployment.mdx
-````
----
-title: Deployment API Reference
-description: Complete API reference for deploying and managing AI applications in production.
----
-
-# Deployment API Reference
-
-The Deployment API provides tools and endpoints for deploying, scaling, and managing AI applications in production environments.
-
-## Environment Configuration
-
-### Create Environment
-
-```typescript
-interface EnvironmentConfig {
-  name: string;
-  type: 'development' | 'staging' | 'production';
-  region: string;
-  resources: {
-    compute: {
-      type: string;
-      size: string;
-      autoscaling?: {
-        min: number;
-        max: number;
-        targetCPU: number;
-      };
-    };
-    memory: {
-      size: string;
-      type: 'standard' | 'high-memory';
-    };
-    storage: {
-      size: string;
-      type: 'ssd' | 'premium-ssd';
-    };
-  };
-}
-
-const env = await client.createEnvironment({
-  name: 'prod-us-east',
-  type: 'production',
-  region: 'us-east-1',
-  resources: {
-    compute: {
-      type: 'standard',
-      size: '2xlarge',
-      autoscaling: {
-        min: 2,
-        max: 10,
-        targetCPU: 70
-      }
-    },
-    memory: {
-      size: '16Gi',
-      type: 'high-memory'
-    },
-    storage: {
-      size: '100Gi',
-      type: 'premium-ssd'
-    }
-  }
-});
-```
-
-## Deployment Operations
-
-### Deploy Application
-
-```typescript
-interface DeploymentConfig {
-  environment: string;
-  version: string;
-  agents: {
-    id: string;
-    replicas: number;
-    resources: ResourceConfig;
-  }[];
-  networking: {
-    ingress?: {
-      domain: string;
-      tls: boolean;
-    };
-    vpc?: {
-      id: string;
-      subnets: string[];
-    };
-  };
-  monitoring: {
-    metrics: boolean;
-    logging: boolean;
-    tracing: boolean;
-  };
-}
-
-const deployment = await client.deploy({
-  environment: 'prod-us-east',
-  version: '1.0.0',
-  agents: [
-    {
-      id: 'support-agent',
-      replicas: 3,
-      resources: {
-        cpu: '2',
-        memory: '4Gi'
-      }
-    }
-  ],
-  networking: {
-    ingress: {
-      domain: 'api.deanmachines.com',
-      tls: true
-    }
-  },
-  monitoring: {
-    metrics: true,
-    logging: true,
-    tracing: true
-  }
-});
-```
-
-## Scaling Operations
-
-### Configure Autoscaling
-
-```typescript
-await client.configureScaling('prod-us-east', {
-  metrics: ['cpu', 'memory', 'requests'],
-  rules: [
-    {
-      metric: 'cpu',
-      target: 70,
-      minReplicas: 2,
-      maxReplicas: 10
-    },
-    {
-      metric: 'requests',
-      target: 1000,
-      minReplicas: 3,
-      maxReplicas: 15
-    }
-  ]
-});
-```
-
-## Monitoring & Observability
-
-### Configure Monitoring
-
-```typescript
-interface MonitoringConfig {
-  metrics: {
-    provider: 'prometheus' | 'datadog';
-    scrapeInterval: string;
-    retention: string;
-  };
-  logging: {
-    provider: 'elasticsearch' | 'cloudwatch';
-    retention: string;
-    indexes: string[];
-  };
-  alerting: {
-    channels: string[];
-    rules: AlertRule[];
-  };
-}
-
-await client.configureMonitoring({
-  metrics: {
-    provider: 'prometheus',
-    scrapeInterval: '15s',
-    retention: '30d'
-  },
-  logging: {
-    provider: 'elasticsearch',
-    retention: '90d',
-    indexes: ['app-logs', 'agent-logs']
-  },
-  alerting: {
-    channels: ['slack', 'email'],
-    rules: [
-      {
-        name: 'high-error-rate',
-        condition: 'error_rate > 0.01',
-        duration: '5m',
-        severity: 'critical'
-      }
-    ]
-  }
-});
-```
-
-## Infrastructure Management
-
-### Resource Management
-
-```typescript
-interface ResourceUpdate {
-  compute?: {
-    size?: string;
-    autoscaling?: AutoscalingConfig;
-  };
-  memory?: {
-    size?: string;
-  };
-  storage?: {
-    size?: string;
-  };
-}
-
-await client.updateResources('prod-us-east', {
-  compute: {
-    size: '4xlarge',
-    autoscaling: {
-      min: 4,
-      max: 20
-    }
-  },
-  memory: {
-    size: '32Gi'
-  }
-});
-```
-
-## Security & Compliance
-
-### Configure Security
-
-```typescript
-interface SecurityConfig {
-  network: {
-    encryption: boolean;
-    firewalls: FirewallRule[];
-    allowedIPs: string[];
-  };
-  authentication: {
-    type: 'jwt' | 'oauth2';
-    provider?: string;
-    config: Record<string, unknown>;
-  };
-  compliance: {
-    audit: boolean;
-    retention: string;
-    encryption: {
-      atRest: boolean;
-      inTransit: boolean;
-    };
-  };
-}
-
-await client.configureSecurity({
-  network: {
-    encryption: true,
-    firewalls: [
-      {
-        name: 'allow-api',
-        ports: [443],
-        sources: ['0.0.0.0/0']
-      }
-    ]
-  },
-  authentication: {
-    type: 'oauth2',
-    provider: 'auth0',
-    config: {
-      domain: 'your-domain.auth0.com'
-    }
-  },
-  compliance: {
-    audit: true,
-    retention: '365d',
-    encryption: {
-      atRest: true,
-      inTransit: true
-    }
-  }
-});
-```
-
-## Error Handling
-
-```typescript
-try {
-  await client.deploy(config);
-} catch (error) {
-  if (error instanceof DeploymentError) {
-    switch (error.code) {
-      case 'insufficient_resources':
-        await client.requestResourceIncrease();
-        break;
-      case 'invalid_configuration':
-        await client.validateConfig(config);
-        break;
-    }
-  }
-  throw error;
-}
-```
-
-## Best Practices
-
-1. **Deployment Strategy**
-   - Use blue-green deployments
-   - Implement proper health checks
-   - Configure appropriate resource limits
-   - Monitor deployment metrics
-
-2. **Security**
-   - Enable encryption in transit
-   - Configure network policies
-   - Implement access controls
-   - Regular security audits
-
-3. **Monitoring**
-   - Set up comprehensive monitoring
-   - Configure appropriate alerts
-   - Implement proper logging
-   - Monitor resource usage
-
-<Callout type="warning">
-  Always test deployments in a staging environment before deploying to production.
-</Callout>
-
-## Rate Limits
-
-| Operation | Rate Limit |
-|-----------|------------|
-| Deployments | 10/hour |
-| Configuration Updates | 30/hour |
-| Resource Scaling | 20/hour |
-| Security Updates | 10/hour |
-
-## Next Steps
-
-- [CI/CD Integration](/docs/deployment/ci-cd)
-- [Monitoring Setup](/docs/deployment/monitoring)
-- [Security Configuration](/docs/deployment/security)
-````
-
-## File: src/content/docs/api-reference/memory.mdx
-````
----
-title: Memory API Reference
-description: Complete API reference for managing AI agent memory systems.
----
-
-# Memory API Reference
-
-The Memory API enables sophisticated memory management and context storage for AI agents.
-
-## Memory Types
-
-### Short-Term Memory
-
-```typescript
-interface ShortTermMemoryConfig {
-  capacity: number;
-  ttl: string;  // Time-to-live duration
-  strategy: 'fifo' | 'lru';
-}
-
-const memory = await client.createMemory({
-  type: 'short-term',
-  config: {
-    capacity: 100,
-    ttl: '1h',
-    strategy: 'lru'
-  }
-});
-```
-
-### Long-Term Memory
-
-```typescript
-interface LongTermMemoryConfig {
-  storage: 'postgres' | 'redis' | 'vector';
-  indexing: {
-    enabled: boolean;
-    dimensions?: number;
-    similarity?: 'cosine' | 'euclidean';
-  };
-}
-
-const persistentMemory = await client.createMemory({
-  type: 'long-term',
-  config: {
-    storage: 'postgres',
-    indexing: {
-      enabled: true,
-      dimensions: 1536,
-      similarity: 'cosine'
-    }
-  }
-});
-```
-
-## Memory Operations
-
-### Store Data
-
-```typescript
-interface MemoryEntry {
-  key: string;
-  value: unknown;
-  metadata?: Record<string, unknown>;
-  tags?: string[];
-  ttl?: string;
-}
-
-await memory.store({
-  key: 'conversation:123',
-  value: {
-    messages: [],
-    context: { topic: 'support' }
-  },
-  tags: ['conversation', 'support'],
-  ttl: '24h'
-});
-```
-
-### Retrieve Data
-
-```typescript
-const data = await memory.retrieve('conversation:123');
-const taggedData = await memory.retrieveByTags(['conversation']);
-const vectorData = await memory.searchSimilar('query text', {
-  limit: 5,
-  threshold: 0.8
-});
-```
-
-### Update Data
-
-```typescript
-await memory.update('conversation:123', {
-  messages: [...existingMessages, newMessage]
-});
-
-// Partial updates
-await memory.patch('conversation:123', {
-  'messages[-1]': newMessage
-});
-```
-
-### Delete Data
-
-```typescript
-await memory.delete('conversation:123');
-await memory.deleteByTags(['temporary']);
-await memory.clear(); // Clear all data
-```
-
-## Memory Events
-
-### Subscribe to Changes
-
-```typescript
-memory.on('change', (event) => {
-  console.log('Memory changed:', event);
-});
-
-memory.on('expire', (key) => {
-  console.log('Entry expired:', key);
-});
-```
-
-## Batch Operations
-
-### Bulk Store
-
-```typescript
-await memory.bulkStore([
-  { key: 'user:1', value: userData1 },
-  { key: 'user:2', value: userData2 }
-]);
-```
-
-### Bulk Retrieve
-
-```typescript
-const entries = await memory.bulkRetrieve([
-  'user:1',
-  'user:2'
-]);
-```
-
-## Memory Analytics
-
-### Usage Statistics
-
-```typescript
-const stats = await memory.getStats();
-// {
-//   totalEntries: 1000,
-//   totalSize: "500MB",
-//   avgAccessTime: "50ms"
-// }
-```
-
-### Memory Health
-
-```typescript
-const health = await memory.checkHealth();
-// {
-//   status: "healthy",
-//   issues: [],
-//   lastOptimization: "2024-04-07T..."
-// }
-```
-
-## Error Handling
-
-```typescript
-try {
-  await memory.store(entry);
-} catch (error) {
-  if (error instanceof MemoryError) {
-    switch (error.code) {
-      case 'capacity_exceeded':
-        await memory.optimize();
-        break;
-      case 'storage_unavailable':
-        await memory.reconnect();
-        break;
-    }
-  }
-  throw error;
-}
-```
-
-## Best Practices
-
-1. **Memory Management**
-   - Set appropriate TTL values
-   - Implement cleanup strategies
-   - Monitor memory usage
-   - Use batch operations for bulk data
-
-2. **Performance**
-   - Index frequently accessed data
-   - Use appropriate storage backends
-   - Implement caching strategies
-   - Monitor access patterns
-
-3. **Data Security**
-   - Encrypt sensitive data
-   - Implement access controls
-   - Regular backups
-   - Audit access logs
-
-<Callout type="info">
-  Choose memory types based on your specific use case requirements for persistence, speed, and scale.
-</Callout>
-
-## Rate Limits
-
-| Operation | Rate Limit |
-|-----------|------------|
-| Store | 1000/minute |
-| Retrieve | 2000/minute |
-| Update | 500/minute |
-| Delete | 200/minute |
-
-## Next Steps
-
-- [Network API Reference](/docs/api-reference/network)
-- [Memory Management Guide](/docs/guides/memory-management)
-- [Memory Examples](/docs/examples/memory)
-````
-
-## File: src/content/docs/api-reference/network.mdx
-````
----
-title: Network API Reference
-description: Complete API reference for managing AI agent networks and communication.
----
-
-# Network API Reference
-
-The Network API enables creating and managing networks of cooperating AI agents.
-
-## Network Creation
-
-### Create Network
-
-```typescript
-interface NetworkConfig {
-  name: string;
-  description?: string;
-  topology: 'mesh' | 'star' | 'hierarchical';
-  maxAgents: number;
-  protocol: {
-    type: 'grpc' | 'websocket' | 'http';
-    options?: Record<string, unknown>;
-  };
-}
-
-const network = await client.createNetwork({
-  name: 'analysis-network',
-  topology: 'hierarchical',
-  maxAgents: 10,
-  protocol: {
-    type: 'grpc',
-    options: {
-      keepAlive: true,
-      timeout: '30s'
-    }
-  }
-});
-```
-
-## Agent Management
-
-### Add Agents
-
-```typescript
-interface AgentNode {
-  agentId: string;
-  role: string;
-  connections: string[];  // Array of agent IDs to connect to
-  priority?: number;      // Priority in hierarchical networks
-}
-
-await network.addAgent({
-  agentId: 'agent-123',
-  role: 'analyzer',
-  connections: ['agent-456', 'agent-789'],
-  priority: 1
-});
-```
-
-### Remove Agents
-
-```typescript
-await network.removeAgent('agent-123', {
-  gracePeriod: '5s',
-  reassignConnections: true
-});
-```
-
-## Communication
-
-### Message Routing
-
-```typescript
-interface NetworkMessage {
-  from: string;
-  to: string | string[];
-  content: unknown;
-  metadata: {
-    priority: number;
-    ttl: string;
-    trace?: string;
-  };
-}
-
-await network.sendMessage({
-  from: 'agent-123',
-  to: 'agent-456',
-  content: {
-    type: 'analysis_request',
-    data: { /* ... */ }
-  },
-  metadata: {
-    priority: 1,
-    ttl: '30s'
-  }
-});
-```
-
-### Broadcast Messages
-
-```typescript
-await network.broadcast({
-  from: 'agent-123',
-  content: {
-    type: 'status_update',
-    status: 'ready'
-  },
-  metadata: {
-    priority: 2,
-    ttl: '10s'
-  }
-});
-```
-
-## Network Topology
-
-### Update Topology
-
-```typescript
-await network.updateTopology({
-  type: 'mesh',
-  connections: [
-    { from: 'agent-1', to: ['agent-2', 'agent-3'] },
-    { from: 'agent-2', to: ['agent-3', 'agent-4'] }
-  ]
-});
-```
-
-### Network Analysis
-
-```typescript
-const analysis = await network.analyze();
-// {
-//   nodes: number;
-//   connections: number;
-//   avgLatency: string;
-//   bottlenecks: string[];
-// }
-```
-
-## Monitoring
-
-### Network Health
-
-```typescript
-const health = await network.checkHealth({
-  timeout: '5s',
-  checkConnections: true
-});
-```
-
-### Network Metrics
-
-```typescript
-const metrics = await network.getMetrics({
-  timeframe: '1h',
-  resolution: '1m'
-});
-```
-
-## Error Handling
-
-```typescript
-try {
-  await network.sendMessage(message);
-} catch (error) {
-  if (error instanceof NetworkError) {
-    switch (error.code) {
-      case 'agent_unavailable':
-        await network.rebalance();
-        break;
-      case 'connection_failed':
-        await network.reconnect(message.to);
-        break;
-    }
-  }
-  throw error;
-}
-```
-
-## Load Balancing
-
-### Configure Load Balancer
-
-```typescript
-await network.configureLoadBalancing({
-  strategy: 'least_loaded',
-  metrics: ['cpu', 'memory', 'queue_length'],
-  updateInterval: '10s',
-  thresholds: {
-    cpu: 80,
-    memory: 85,
-    queue_length: 100
-  }
-});
-```
-
-## Best Practices
-
-1. **Network Design**
-   - Choose appropriate topology
-   - Plan for scalability
-   - Implement proper error handling
-   - Monitor network health
-
-2. **Performance**
-   - Use efficient message formats
-   - Implement message prioritization
-   - Configure appropriate timeouts
-   - Monitor network latency
-
-3. **Security**
-   - Implement authentication
-   - Encrypt network traffic
-   - Monitor for anomalies
-   - Regular security audits
-
-<Callout type="warning">
-  Always implement proper error handling and recovery mechanisms in distributed networks.
-</Callout>
-
-## Rate Limits
-
-| Operation | Rate Limit |
-|-----------|------------|
-| Messages | 1000/minute/agent |
-| Topology Changes | 10/minute |
-| Agent Addition/Removal | 50/minute |
-| Broadcasts | 100/minute |
-
-## Next Steps
-
-- [Deployment API Reference](/docs/api-reference/deployment)
-- [Network Architecture Guide](/docs/guides/network-architecture)
-- [Network Examples](/docs/examples/networks)
-````
-
-## File: src/content/docs/core-concepts/agent-networks.mdx
-````
----
-title: Agent Networks
-description: Learn how to create and manage networks of cooperating AI agents.
----
-
-# Agent Networks
-
-Agent networks allow multiple AI agents to work together, share resources, and coordinate to solve complex problems.
-
-## Network Architecture
-
-### Basic Network Structure
-
-```typescript
-import { createNetwork } from '@deanmachines/core'
-
-const network = createNetwork({
-  name: 'CustomNetwork',
-  topology: 'mesh', // or 'star', 'hierarchical'
-  coordination: 'distributed',
-})
-```
-
-### Network Roles
-
-Agents can take different roles in a network:
-
-- **Coordinator**: Manages task distribution and workflow
-- **Specialist**: Handles specific types of tasks
-- **Monitor**: Oversees network health and performance
-- **Gateway**: Interfaces with external systems
-
-## Creating Agent Networks
-
-### Basic Network Setup
-
-```typescript
-// Create specialist agents
-const dataAgent = createAgent({
-  name: 'DataProcessor',
-  capabilities: ['dataProcessing'],
-})
-
-const nlpAgent = createAgent({
-  name: 'LanguageProcessor',
-  capabilities: ['nlp'],
-})
-
-// Create and configure network
-const network = createNetwork()
-  .addAgent(dataAgent)
-  .addAgent(nlpAgent)
-  .setCoordinator(coordinatorAgent)
-```
-
-### Advanced Configuration
-
-```typescript
-const network = createNetwork({
-  name: 'AdvancedNetwork',
-  config: {
-    loadBalancing: true,
-    faultTolerance: {
-      enabled: true,
-      strategy: 'failover',
-    },
-    scaling: {
-      min: 2,
-      max: 10,
-      metric: 'load',
-    },
-  },
-})
-```
-
-## Communication Patterns
-
-### Direct Communication
-
-```typescript
-// Agent-to-agent communication
-await sourceAgent.sendMessage(targetAgent, {
-  type: 'request',
-  payload: { task: 'analyze_data' },
-})
-
-// Handle responses
-targetAgent.onMessage(async (message, sender) => {
-  if (message.type === 'request') {
-    const result = await processRequest(message.payload)
-    return { type: 'response', payload: result }
-  }
-})
-```
-
-### Broadcast Communication
-
-```typescript
-// Send to all agents in network
-await network.broadcast({
-  type: 'notification',
-  payload: { status: 'system_update' },
-})
-
-// Handle broadcasts
-agent.onBroadcast(async (message, network) => {
-  await handleSystemUpdate(message.payload)
-})
-```
-
-## Task Distribution
-
-### Work Assignment
-
-```typescript
-// Coordinator assigns tasks
-network.onTask(async (task) => {
-  const availableAgents = await network.getAvailableAgents()
-  const bestAgent = selectBestAgent(availableAgents, task)
-
-  await network.assignTask(bestAgent, task)
-})
-
-// Agents handle assigned tasks
-agent.onTask(async (task, context) => {
-  const result = await processTask(task)
-  await context.network.reportCompletion(task.id, result)
-})
-```
-
-### Load Balancing
-
-```typescript
-const network = createNetwork({
-  loadBalancing: {
-    strategy: 'round-robin', // or 'least-loaded', 'capability-based'
-    metrics: ['cpu', 'memory', 'queue_length'],
-    updateInterval: '1m',
-  },
-})
-```
-
-## State Management
-
-### Network State
-
-```typescript
-// Get network status
-const status = await network.getStatus()
-
-// Monitor state changes
-network.onStateChange((newState, oldState) => {
-  logStateChange(newState, oldState)
-  adjustResources(newState)
-})
-```
-
-### Agent State Synchronization
-
-```typescript
-// Share state updates
-await agent.syncState({
-  status: 'processing',
-  currentTask: taskId,
-  load: calculateLoad(),
-})
-
-// React to state changes
-agent.onPeerStateChange((peer, newState) => {
-  updateLocalView(peer, newState)
-})
-```
-
-## Error Handling
-
-### Network-Level Errors
-
-```typescript
-network.onError(async (error, context) => {
-  if (error.type === 'agent_failure') {
-    await handleAgentFailure(error.agentId)
-  } else if (error.type === 'communication_error') {
-    await retryConnection(error.source, error.target)
-  }
-})
-```
-
-### Fault Tolerance
-
-```typescript
-const network = createNetwork({
-  faultTolerance: {
-    autoRecover: true,
-    maxRetries: 3,
-    backoff: {
-      initial: 1000,
-      multiplier: 2,
-      max: 30000,
-    },
-  },
-})
-```
-
-## Monitoring and Analytics
-
-### Performance Metrics
-
-```typescript
-// Collect network metrics
-const metrics = await network.getMetrics({
-  timeframe: 'last_hour',
-  include: ['latency', 'throughput', 'error_rate'],
-})
-
-// Set up monitoring
-network.monitor({
-  interval: '1m',
-  metrics: ['cpu', 'memory', 'communication'],
-  alerts: {
-    highLatency: { threshold: 1000, action: alertOps },
-    errorSpike: { threshold: 0.05, action: notifyAdmin },
-  },
-})
-```
-
-## Best Practices
-
-### Network Design
-
-- Keep networks focused on related tasks
-- Implement proper error handling
-- Use appropriate communication patterns
-- Monitor network health
-
-### Performance
-
-- Optimize message payload size
-- Use efficient routing strategies
-- Implement caching where appropriate
-- Balance load across agents
-
-### Security
-
-- Authenticate agent communications
-- Encrypt sensitive data
-- Implement access controls
-- Monitor for unusual behavior
-
-<Callout>
-  Complex networks may require careful monitoring and tuning. Start with simple topologies and expand based on needs.
-</Callout>
-
-## Advanced Topics
-
-- [Custom Network Topologies](/docs/advanced-features/network-topologies)
-- [Scaling Strategies](/docs/advanced-features/network-scaling)
-- [Custom Protocols](/docs/advanced-features/network-protocols)
-- [Network Security](/docs/advanced-features/network-security)
-````
-
-## File: src/content/docs/core-concepts/agents.mdx
-````
----
-title: AI Agents
-description: Understanding AI agents, their capabilities, and how to build them effectively.
----
-
-# AI Agents
-
-AI agents are autonomous software entities that can perceive their environment, make decisions, and take actions to achieve specific goals.
-
-## Agent Architecture
-
-### Core Components
-
-Every deanmachines AI agent consists of three main components:
-
-1. **Perception System**: Processes inputs and understands context
-2. **Decision Engine**: Analyzes situations and determines actions
-3. **Action System**: Executes decisions and interacts with the environment
-
-```typescript
-interface AgentConfig {
-  name: string;
-  description: string;
-  capabilities: Capability[];
-  modelConfig?: ModelConfig;
-  memory?: MemoryConfig;
-}
-```
-
-## Agent Capabilities
-
-Agents can be enhanced with various capabilities:
-
-### Built-in Capabilities
-
-- **Natural Language Processing**: Understanding and generating human language
-- **Memory Management**: Maintaining context and learning from interactions
-- **Task Planning**: Breaking down complex goals into actionable steps
-- **Error Handling**: Graceful handling of exceptions and edge cases
-
-### Optional Capabilities
-
-- **API Integration**: Connecting with external services and data sources
-- **File Processing**: Handling various file formats and data types
-- **Image Analysis**: Processing and understanding visual information
-- **Code Generation**: Creating and modifying code programmatically
-
-## Creating Agents
-
-### Basic Agent Creation
-
-```typescript
-import { createAgent } from '@deanmachines/core'
-
-const agent = createAgent({
-  name: 'SimpleAgent',
-  description: 'A basic agent with core capabilities',
-  capabilities: ['chat', 'memory'],
-})
-```
-
-### Advanced Configuration
-
-```typescript
-const agent = createAgent({
-  name: 'AdvancedAgent',
-  description: 'An agent with advanced capabilities',
-  capabilities: ['chat', 'memory', 'planning'],
-  modelConfig: {
-    type: 'gpt-4',
-    temperature: 0.7,
-    maxTokens: 2000,
-  },
-  memory: {
-    type: 'conversational',
-    ttl: '24h',
-    storage: 'redis',
-  },
-})
-```
-
-## Agent Lifecycle
-
-### 1. Initialization
-
-```typescript
-await agent.init({
-  loadState: true,  // Load previous state
-  warmup: true,     // Warm up ML models
-})
-```
-
-### 2. Event Handling
-
-```typescript
-// Handle incoming messages
-agent.onMessage(async (message, context) => {
-  // Process message
-  return response
-})
-
-// Handle errors
-agent.onError((error) => {
-  console.error('Agent error:', error)
-})
-```
-
-### 3. State Management
-
-```typescript
-// Save agent state
-await agent.saveState()
-
-// Load agent state
-await agent.loadState()
-
-// Reset agent
-await agent.reset()
-```
-
-## Best Practices
-
-### 1. Agent Design
-
-- Keep agents focused on specific tasks
-- Use appropriate capabilities for the task
-- Implement proper error handling
-- Monitor agent performance
-
-### 2. Memory Usage
-
-- Configure appropriate TTL for memory
-- Clean up unused memory
-- Use efficient storage solutions
-- Implement memory limitations
-
-### 3. Security
-
-- Validate all inputs
-- Implement rate limiting
-- Use secure communication channels
-- Follow least privilege principle
-
-## Examples
-
-### Customer Service Agent
-
-```typescript
-const customerAgent = createAgent({
-  name: 'CustomerSupport',
-  description: 'Handles customer inquiries and support tickets',
-  capabilities: [
-    'chat',
-    'memory',
-    'ticketing',
-    'knowledgeBase',
-  ],
-})
-
-customerAgent.onMessage(async (message, context) => {
-  // Analyze customer intent
-  const intent = await customerAgent.analyzeIntent(message)
-
-  // Access knowledge base
-  const relevant = await customerAgent.searchKnowledge(intent)
-
-  // Generate response
-  return await customerAgent.generateResponse(message, relevant)
-})
-```
-
-### Data Processing Agent
-
-```typescript
-const dataAgent = createAgent({
-  name: 'DataProcessor',
-  description: 'Processes and analyzes data files',
-  capabilities: [
-    'fileProcessing',
-    'dataAnalysis',
-    'visualization',
-  ],
-})
-
-dataAgent.onFile(async (file, context) => {
-  // Process file
-  const data = await dataAgent.processFile(file)
-
-  // Analyze data
-  const analysis = await dataAgent.analyzeData(data)
-
-  // Generate visualizations
-  return await dataAgent.createVisualizations(analysis)
-})
-```
-
-## Advanced Topics
-
-- [Agent Networks](/docs/core-concepts/agent-networks)
-- [Custom Capabilities](/docs/advanced-features/custom-capabilities)
-- [Performance Optimization](/docs/advanced-features/performance)
-- [Testing Strategies](/docs/testing/agents)
-
-<Callout type="warning">
-  Ensure your agents handle rate limits and API quotas appropriately when integrating with external services.
-</Callout>
-````
-
-## File: src/content/docs/core-concepts/deployment.mdx
-````
----
-title: Deployment
-description: Learn how to deploy and scale your AI applications in production environments.
----
-
-# Deployment
-
-Learn how to deploy your deanmachines AI applications to production environments securely and efficiently.
-
-## Deployment Options
-
-### Cloud Providers
-
-We support deployment across major cloud providers:
-
-- **AWS**: Lambda, ECS, and EKS
-- **Google Cloud**: Cloud Run, GKE
-- **Azure**: Azure Functions, AKS
-- **Custom**: Self-hosted infrastructure
-
-## Quick Deploy
-
-### Using CLI
-
-```bash
-# Initialize deployment configuration
-dm deploy init
-
-# Deploy to development
-dm deploy dev
-
-# Deploy to production
-dm deploy prod --confirm
-```
-
-### Using GitHub Actions
-
-```yaml
-name: Deploy AI Application
-
-on:
-  push:
-    branches: [main]
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: deanmachines/deploy-action@v1
-        with:
-          environment: production
-          api-key: ${{ secrets.DEANMACHINES_API_KEY }}
-```
-
-## Configuration
-
-### Basic Configuration
-
-```typescript
-// deanmachines.config.ts
-export default {
-  name: 'my-ai-app',
-  runtime: 'node18',
-  region: 'us-east-1',
-  scaling: {
-    minInstances: 1,
-    maxInstances: 10,
-  },
-}
-```
-
-### Advanced Configuration
-
-```typescript
-export default {
-  name: 'my-ai-app',
-  runtime: 'node18',
-  regions: ['us-east-1', 'eu-west-1'],
-  scaling: {
-    minInstances: 1,
-    maxInstances: 10,
-    targetCPUUtilization: 70,
-    scaleDownDelay: '10m',
-  },
-  networking: {
-    vpc: true,
-    privateSubnets: true,
-    natGateways: 1,
-  },
-  security: {
-    encryption: {
-      atRest: true,
-      inTransit: true,
-    },
-    accessControl: {
-      rbac: true,
-      serviceAccounts: true,
-    },
-  },
-}
-```
-
-## Infrastructure as Code
-
-### Terraform Example
-
-```hcl
-module "deanmachines_app" {
-  source  = "deanmachines/app/aws"
-  version = "1.0.0"
-
-  name        = "my-ai-app"
-  environment = "production"
-
-  vpc_config = {
-    cidr = "10.0.0.0/16"
-    azs  = ["us-east-1a", "us-east-1b"]
-  }
-
-  scaling_config = {
-    min_size     = 1
-    max_size     = 10
-    target_cpu   = 70
-  }
-}
-```
-
-### Pulumi Example
-
-```typescript
-import * as deanmachines from "@pulumi/deanmachines"
-
-const app = new deanmachines.App("my-ai-app", {
-  environment: "production",
-  scaling: {
-    minInstances: 1,
-    maxInstances: 10,
-  },
-  networking: {
-    vpc: true,
-    privateSubnets: true,
-  },
-})
-```
-
-## Container Deployment
-
-### Docker Configuration
-
-```dockerfile
-FROM deanmachines/runtime:node18
-
-WORKDIR /app
-COPY package*.json ./
-RUN npm install
-
-COPY . .
-RUN npm run build
-
-ENV NODE_ENV=production
-EXPOSE 3000
-
-CMD ["npm", "start"]
-```
-
-### Kubernetes Deployment
-
-```yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: ai-app
-spec:
-  replicas: 3
-  selector:
-    matchLabels:
-      app: ai-app
-  template:
-    metadata:
-      labels:
-        app: ai-app
-    spec:
-      containers:
-      - name: ai-app
-        image: my-registry/ai-app:latest
-        env:
-          - name: DEANMACHINES_API_KEY
-            valueFrom:
-              secretKeyRef:
-                name: ai-secrets
-                key: api-key
-        resources:
-          requests:
-            memory: "512Mi"
-            cpu: "250m"
-          limits:
-            memory: "1Gi"
-            cpu: "500m"
-```
-
-## Environment Management
-
-### Environment Variables
-
-```bash
-# .env.production
-DEANMACHINES_API_KEY=your_api_key
-DEANMACHINES_ENVIRONMENT=production
-DEANMACHINES_REGION=us-east-1
-MEMORY_STORAGE_TYPE=redis
-REDIS_URL=redis://cache.example.com
-```
-
-### Secrets Management
-
-```typescript
-import { createSecretsManager } from '@deanmachines/core'
-
-const secrets = createSecretsManager({
-  provider: 'aws', // or 'gcp', 'azure'
-  region: 'us-east-1',
-})
-
-// Access secrets
-const apiKey = await secrets.get('api-key')
-```
-
-## Monitoring and Logging
-
-### Basic Monitoring
-
-```typescript
-import { monitor } from '@deanmachines/core'
-
-monitor.configure({
-  metrics: ['cpu', 'memory', 'requests'],
-  interval: '1m',
-  alerting: {
-    threshold: {
-      cpu: 80,
-      memory: 85,
-    },
-  },
-})
-```
-
-### Advanced Observability
-
-```typescript
-import { observability } from '@deanmachines/core'
-
-observability.configure({
-  tracing: {
-    enabled: true,
-    sampler: 0.1,
-  },
-  metrics: {
-    custom: {
-      'agent.response.time': {
-        type: 'histogram',
-        buckets: [0.1, 0.5, 1, 2],
-      },
-    },
-  },
-  logging: {
-    level: 'info',
-    format: 'json',
-    destination: 'cloudwatch',
-  },
-})
-```
-
-## Best Practices
-
-### Security
-
-- Use environment-specific configurations
-- Implement proper access controls
-- Encrypt sensitive data
-- Regular security audits
-- Use secure communication channels
-
-### Performance
-
-- Implement caching strategies
-- Use appropriate instance sizes
-- Configure auto-scaling properly
-- Monitor resource usage
-- Optimize database queries
-
-### Reliability
-
-- Implement health checks
-- Use multiple availability zones
-- Set up proper backup strategies
-- Implement retry mechanisms
-- Monitor error rates
-
-<Callout type="warning">
-  Always test your deployment configuration in a staging environment before deploying to production.
-</Callout>
-
-## Advanced Topics
-
-- [Blue-Green Deployments](/docs/advanced-features/blue-green)
-- [Canary Releases](/docs/advanced-features/canary)
-- [Custom Runtime Configuration](/docs/advanced-features/custom-runtime)
-- [Multi-Region Deployment](/docs/advanced-features/multi-region)
-````
-
-## File: src/content/docs/core-concepts/memory.mdx
-````
----
-title: Memory Management
-description: Understanding how AI agents maintain context and learn from interactions using the memory system.
----
-
-# Memory Management
-
-The memory system is a fundamental component that enables AI agents to maintain context, learn from interactions, and develop over time.
-
-## Memory Types
-
-### Conversational Memory
-
-Maintains dialogue context and conversation history:
-
-```typescript
-import { createMemory } from '@deanmachines/core'
-
-const conversationalMemory = createMemory({
-  type: 'conversational',
-  ttl: '24h',
-  maxItems: 100,
-})
-```
-
-### Semantic Memory
-
-Stores and retrieves information based on meaning:
-
-```typescript
-const semanticMemory = createMemory({
-  type: 'semantic',
-  embedModel: 'ada-002',
-  similarityThreshold: 0.85,
-})
-```
-
-### Episodic Memory
-
-Records sequences of events and experiences:
-
-```typescript
-const episodicMemory = createMemory({
-  type: 'episodic',
-  timeframe: '7d',
-  indexing: 'temporal',
-})
-```
-
-## Storage Options
-
-### In-Memory Storage
-
-Quick access for temporary data:
-
-```typescript
-const volatileMemory = createMemory({
-  type: 'conversational',
-  storage: {
-    type: 'memory',
-    maxSize: '1GB',
-  },
-})
-```
-
-### Redis Storage
-
-Distributed storage for scalability:
-
-```typescript
-const redisMemory = createMemory({
-  type: 'conversational',
-  storage: {
-    type: 'redis',
-    url: process.env.REDIS_URL,
-    prefix: 'agent:memory:',
-  },
-})
-```
-
-### Vector Database
-
-For semantic search and similarity matching:
-
-```typescript
-const vectorMemory = createMemory({
-  type: 'semantic',
-  storage: {
-    type: 'pinecone',
-    apiKey: process.env.PINECONE_API_KEY,
-    environment: 'production',
-  },
-})
-```
-
-## Memory Operations
-
-### Writing to Memory
-
-```typescript
-// Store a new memory
-await memory.store({
-  type: 'conversation',
-  content: 'User asked about pricing',
-  metadata: {
-    timestamp: Date.now(),
-    topic: 'pricing',
-  },
-})
-
-// Update existing memory
-await memory.update(memoryId, {
-  content: 'Updated information',
-})
-```
-
-### Querying Memory
-
-```typescript
-// Retrieve recent memories
-const recent = await memory.query({
-  timeframe: 'last_hour',
-  limit: 10,
-})
-
-// Semantic search
-const relevant = await memory.search('product features', {
-  similarity: 0.8,
-  maxResults: 5,
-})
-
-// Complex queries
-const memories = await memory.query({
-  filter: {
-    topic: 'technical',
-    confidence: { $gt: 0.9 },
-  },
-  sort: { timestamp: -1 },
-})
-```
-
-## Memory Management
-
-### Cleanup and Maintenance
-
-```typescript
-// Remove old memories
-await memory.cleanup({
-  olderThan: '30d',
-  excludeTypes: ['critical'],
-})
-
-// Compact storage
-await memory.optimize()
-```
-
-### Memory Limitations
-
-```typescript
-const limitedMemory = createMemory({
-  maxSize: '1GB',
-  maxItems: 10000,
-  pruning: {
-    strategy: 'lru',
-    threshold: 0.9,
-  },
-})
-```
-
-## Integration with Agents
-
-### Basic Integration
-
-```typescript
-const agent = createAgent({
-  name: 'SmartAgent',
-  memory: conversationalMemory,
-})
-
-agent.onMessage(async (message, context) => {
-  // Access memory in handlers
-  const history = await context.memory.getRecent()
-
-  // Use memory for response
-  return generateResponse(message, history)
-})
-```
-
-### Advanced Memory Usage
-
-```typescript
-const agent = createAgent({
-  name: 'AdvancedAgent',
-  memory: {
-    conversation: conversationalMemory,
-    knowledge: semanticMemory,
-    experience: episodicMemory,
-  },
-})
-
-agent.onMessage(async (message, context) => {
-  // Access different memory types
-  const conversationContext = await context.memory.conversation.getRecent()
-  const relevantKnowledge = await context.memory.knowledge.search(message)
-  const pastExperiences = await context.memory.experience.getSimilar(message)
-
-  // Combine information for response
-  return generateResponse(message, {
-    context: conversationContext,
-    knowledge: relevantKnowledge,
-    experiences: pastExperiences,
-  })
-})
-```
-
-## Best Practices
-
-### Performance Optimization
-
-- Use appropriate TTL values
-- Implement efficient indexing
-- Cache frequently accessed data
-- Use batch operations for bulk updates
-
-### Data Management
-
-- Regular cleanup of old data
-- Implement data retention policies
-- Monitor storage usage
-- Back up critical memories
-
-### Security Considerations
-
-- Encrypt sensitive data
-- Implement access controls
-- Sanitize inputs
-- Regular security audits
-
-<Callout type="warning">
-  Memory usage can significantly impact performance and costs. Monitor and optimize memory usage based on your application's needs.
-</Callout>
-
-## Advanced Topics
-
-- [Memory Persistence Strategies](/docs/advanced-features/memory-persistence)
-- [Custom Storage Backends](/docs/advanced-features/custom-storage)
-- [Memory Optimization](/docs/advanced-features/memory-optimization)
-- [Distributed Memory Systems](/docs/advanced-features/distributed-memory)
-````
-
-## File: src/content/docs/core-concepts/networks.mdx
-````
----
-title: "Networks"
-description: "Understanding the network architecture in DeanMachines"
----
-
-# Networks
-
-## Overview
-
-DeanMachines uses a distributed network architecture to connect and coordinate multiple agents. This section covers the core concepts of networks in DeanMachines.
-
-## Network Types
-
-### Local Network
-- Runs on a single machine
-- Ideal for development and testing
-- Limited scalability
-
-### Distributed Network
-- Runs across multiple machines
-- Supports horizontal scaling
-- Requires proper configuration for high availability
-
-### Cloud Network
-- Runs on cloud infrastructure
-- Automatic scaling capabilities
-- Enterprise-grade security features
-
-## Network Components
-
-### Network Coordinator
-- Manages communication between agents
-- Handles message routing
-- Monitors network health
-
-### Message Bus
-- Provides reliable message delivery
-- Supports various communication protocols
-- Handles message queuing and persistence
-
-### Network Policies
-- Defines communication rules
-- Controls data flow
-- Implements security measures
-
-## Best Practices
-
-1. Use appropriate network type based on your needs
-2. Implement proper error handling
-3. Monitor network performance
-4. Regularly update network configuration
-5. Follow security guidelines
-````
-
-## File: src/content/docs/core-concepts/overview.mdx
-````
----
-title: Core Concepts
-description: Understanding the fundamental concepts and architecture of deanmachines AI.
----
-
-# Core Concepts
-
-This section covers the fundamental concepts and architecture of deanmachines AI platform. Understanding these concepts will help you build more effective AI solutions.
-
-## Platform Overview
-
-deanmachines AI is built on several key pillars:
-
-- **AI Agents**: Autonomous entities that can perceive, decide, and act
-- **Memory Systems**: Sophisticated context management and learning capabilities
-- **Deployment Infrastructure**: Cloud-native deployment and scaling solutions
-- **Network Orchestration**: Management of agent networks and interactions
-
-## Key Components
-
-### AI Agents
-
-[AI Agents](/docs/core-concepts/agents) are the building blocks of our platform. Each agent can:
-
-- Process and understand natural language
-- Maintain context across conversations
-- Learn from interactions
-- Integrate with external systems
-
-### Memory Management
-
-Our [Memory System](/docs/core-concepts/memory) provides:
-
-- Persistent context storage
-- Learning and adaptation capabilities
-- State management across sessions
-- Flexible storage options
-
-### Deployment Options
-
-The [Deployment](/docs/core-concepts/deployment) system offers:
-
-- Multi-cloud deployment support
-- Automatic scaling
-- Load balancing
-- High availability configurations
-
-### Network Architecture
-
-[Agent Networks](/docs/core-concepts/agent-networks) enable:
-
-- Inter-agent communication
-- Task distribution
-- Resource sharing
-- Coordinated decision making
-
-## System Architecture
-
-```mermaid
-graph TD
-    A[Client Application] --> B[API Gateway]
-    B --> C[Agent Network]
-    C --> D[Memory System]
-    C --> E[Processing Engine]
-    D --> F[Storage Layer]
-    E --> G[ML Models]
-```
-
-## Development Flow
-
-1. **Design**: Plan your AI solution architecture
-2. **Build**: Create and configure agents
-3. **Test**: Validate behavior and performance
-4. **Deploy**: Launch in production environment
-5. **Monitor**: Track performance and usage
-6. **Iterate**: Improve based on feedback
-
-## Best Practices
-
-- Follow the [Security Guidelines](/docs/security)
-- Implement proper [Error Handling](/docs/core-concepts/error-handling)
-- Use [Monitoring Tools](/docs/core-concepts/monitoring)
-- Structure your [Agent Communication](/docs/core-concepts/agent-communication)
-
-## Further Reading
-
-- [Advanced Features](/docs/advanced-features)
-- [API Reference](/docs/api-reference)
-- [Example Projects](/docs/examples)
-
-<Callout type="info">
-  Each concept has its own detailed documentation page. Use the navigation to explore specific topics in depth.
-</Callout>
-````
-
-## File: src/content/docs/getting-started/configuration/page.mdx
-````
----
-title: "Configuration"
-description: "Guide to configuring DeanMachines"
----
-
-# Configuration
-
-## Overview
-
-DeanMachines can be configured in multiple ways to suit your needs. This guide will help you understand the different configuration options and how to set them up.
-
-## Configuration Methods
-
-### 1. Configuration File
-
-Create a `deanmachines.config.js` file in your project root:
-
-```javascript
-module.exports = {
-  // Core settings
-  port: 3000,
-  environment: 'development',
-  logLevel: 'debug',
-  
-  // Agent settings
-  agent: {
-    maxConcurrency: 5,
-    timeout: 30000,
-    retryCount: 3
-  },
-  
-  // Network settings
-  network: {
-    type: 'local',
-    protocol: 'tcp',
-    encryption: true
-  },
-  
-  // Deployment settings
-  deployment: {
-    environment: 'development',
-    region: 'us-east-1',
-    autoScaling: true
-  }
-}
-```
-
-### 2. Environment Variables
-
-All configuration options can be overridden using environment variables:
-
-```bash
-# Core settings
-DEANMACHINES_PORT=3000
-DEANMACHINES_ENVIRONMENT=production
-DEANMACHINES_LOG_LEVEL=info
-
-# Agent settings
-DEANMACHINES_AGENT_MAX_CONCURRENCY=5
-DEANMACHINES_AGENT_TIMEOUT=30000
-DEANMACHINES_AGENT_RETRY_COUNT=3
-
-# Network settings
-DEANMACHINES_NETWORK_TYPE=local
-DEANMACHINES_NETWORK_PROTOCOL=tcp
-DEANMACHINES_NETWORK_ENCRYPTION=true
-
-# Deployment settings
-DEANMACHINES_DEPLOYMENT_ENVIRONMENT=production
-DEANMACHINES_DEPLOYMENT_REGION=us-east-1
-DEANMACHINES_DEPLOYMENT_AUTO_SCALING=true
-```
-
-### 3. Command Line Options
-
-Configuration can also be set via command line options:
-
-```bash
-deansmachines start --environment production --region us-east-1
-```
-
-## Configuration Options
-
-### Core Settings
-
-```javascript
-{
-  port: number,              // Application port
-  environment: string,       // Environment mode (development/production)
-  logLevel: string,          // Logging level (debug, info, warn, error)
-  timezone: string,          // Timezone for timestamps
-  metrics: boolean,          // Enable metrics collection
-  telemetry: boolean         // Enable telemetry
-}
-```
-
-### Agent Settings
-
-```javascript
-{
-  maxConcurrency: number,    // Maximum concurrent operations
-  timeout: number,          // Operation timeout in milliseconds
-  retryCount: number,       // Number of retries on failure
-  memoryLimit: number,      // Memory limit in MB
-  cpuLimit: number          // CPU limit as percentage
-}
-```
-
-### Network Settings
-
-```javascript
-{
-  type: string,             // Network type (local, distributed, cloud)
-  protocol: string,         // Communication protocol (tcp, udp, etc.)
-  encryption: boolean,      // Enable encryption
-  compression: boolean,     // Enable compression
-  maxConnections: number,   // Maximum concurrent connections
-  keepAlive: number        // Keep-alive interval in seconds
-}
-```
-
-### Deployment Settings
-
-```javascript
-{
-  environment: string,      // Deployment environment
-  region: string,          // Cloud region
-  autoScaling: boolean,     // Enable auto-scaling
-  minInstances: number,     // Minimum instances
-  maxInstances: number,     // Maximum instances
-  healthCheck: number,      // Health check interval
-  backupInterval: number   // Backup interval in hours
-}
-```
-
-## Best Practices
-
-1. **Keep Sensitive Data Secure**
-   - Use environment variables for API keys and secrets
-   - Never commit sensitive data to version control
-   - Use encrypted configuration files when possible
-
-2. **Environment-Specific Configurations**
-   - Use different configuration files for different environments
-   - Keep development and production configurations separate
-   - Use environment variables to override sensitive settings
-
-3. **Documentation**
-   - Document all custom configurations
-   - Keep a changelog of configuration changes
-   - Review configurations regularly
-
-4. **Validation**
-   - Validate configuration before deployment
-   - Use configuration management tools
-   - Implement configuration versioning
-
-5. **Monitoring**
-   - Monitor configuration changes
-   - Track configuration usage
-   - Alert on configuration errors
-
-## Troubleshooting
-
-### Common Issues
-
-1. **Configuration Not Applied**
-   - Check file permissions
-   - Verify configuration file location
-   - Check environment variable precedence
-
-2. **Invalid Configuration**
-   - Validate configuration syntax
-   - Check type compatibility
-   - Verify required fields
-
-3. **Environment Variables Not Found**
-   - Check environment variable names
-   - Verify variable existence
-   - Check variable scope
-
-## Migration Guide
-
-When upgrading to a new version:
-
-1. Review release notes for configuration changes
-2. Update configuration files
-3. Test new configuration
-4. Document changes
-5. Backup old configuration
-
-## Security Considerations
-
-1. Never store sensitive data in plain text
-2. Use encrypted configuration storage
-3. Implement proper access controls
-4. Regularly audit configuration access
-5. Use secure configuration management tools
-````
-
-## File: src/content/docs/guides/memory-management.mdx
-````
----
-title: Memory Management
-description: Learn how to effectively manage memory in deanmachines AI agents.
----
-
-# Memory Management Guide
-
-Learn best practices for managing memory in your AI agents to improve performance and reliability.
-
-## Types of Memory
-
-### Short-Term Memory
-
-Short-term memory is used for temporary storage during agent interactions:
-
-```typescript
-import { ShortTermMemory } from '@deanmachines/core'
-
-const shortTermMemory = new ShortTermMemory({
-  capacity: 1000,       // Maximum number of items
-  ttl: '30m',          // Time-to-live
-  strategy: 'lru',     // Least Recently Used eviction
-  compression: true    // Enable compression
-})
-```
-
-### Long-Term Memory
-
-Long-term memory persists important information across sessions:
-
-```typescript
-import { LongTermMemory } from '@deanmachines/core'
-
-const longTermMemory = new LongTermMemory({
-  storage: {
-    type: 'postgres',
-    connection: process.env.DATABASE_URL,
-    tableName: 'agent_memory'
-  },
-  indexing: {
-    enabled: true,
-    type: 'vector',
-    dimensions: 1536
-  }
-})
-```
-
-## Memory Operations
-
-### Storing Information
-
-```typescript
-interface MemoryEntry {
-  key: string
-  value: unknown
-  context?: Record<string, unknown>
-  importance?: number
-  tags?: string[]
-}
-
-await memory.store({
-  key: 'user_preference',
-  value: {
-    theme: 'dark',
-    language: 'en'
-  },
-  context: {
-    userId: 'user123',
-    timestamp: Date.now()
-  },
-  importance: 0.8,
-  tags: ['preferences', 'ui']
-})
-```
-
-### Retrieving Information
-
-```typescript
-// Direct key lookup
-const preference = await memory.retrieve('user_preference')
-
-// Query by tags
-const allPreferences = await memory.queryByTags(['preferences'])
-
-// Semantic search
-const similarMemories = await memory.searchSimilar(
-  'user interface settings',
-  { limit: 5, threshold: 0.7 }
-)
-```
-
-## Memory Management Strategies
-
-### Cleanup and Optimization
-
-```typescript
-interface CleanupConfig {
-  olderThan: string
-  importance: number
-  dryRun?: boolean
-}
-
-// Remove old, low-importance memories
-await memory.cleanup({
-  olderThan: '30d',
-  importance: 0.3,
-  dryRun: true  // Preview what would be removed
-})
-
-// Optimize storage
-await memory.optimize({
-  vacuum: true,
-  reindex: true
-})
-```
-
-### Memory Monitoring
-
-```typescript
-// Get memory usage statistics
-const stats = await memory.getStats()
-// {
-//   totalEntries: 10000,
-//   totalSize: '500MB',
-//   avgAccessTime: '50ms',
-//   hitRate: 0.95
-// }
-
-// Set up monitoring alerts
-memory.on('capacity-warning', async (usage) => {
-  if (usage > 0.9) {  // 90% capacity
-    await memory.cleanup({ importance: 0.2 })
-  }
-})
-```
-
-## Best Practices
-
-1. **Memory Segmentation**
-   - Separate short-term and long-term memory
-   - Use appropriate storage backends
-   - Implement proper TTL values
-   - Consider memory hierarchies
-
-2. **Performance Optimization**
-   - Enable compression for large datasets
-   - Index frequently accessed data
-   - Implement caching strategies
-   - Monitor memory usage
-
-3. **Data Management**
-   - Regular cleanup of stale data
-   - Implement importance scoring
-   - Use appropriate retention policies
-   - Back up critical memories
-
-<Callout type="warning">
-  Always validate and sanitize data before storing in memory to prevent security issues.
-</Callout>
-
-## Error Handling
-
-```typescript
-try {
-  await memory.store(entry)
-} catch (error) {
-  if (error instanceof MemoryCapacityError) {
-    await memory.cleanup({ importance: 0.3 })
-    await memory.store(entry)
-  } else if (error instanceof StorageError) {
-    // Handle storage backend issues
-    await memory.reconnect()
-  }
-  throw error
-}
-```
-
-## Next Steps
-
-- [Network Architecture Guide](/docs/guides/network-architecture)
-- [Performance Optimization](/docs/guides/performance)
-- [Memory API Reference](/docs/api-reference/memory)
-````
-
-## File: src/content/docs/guides/monitoring.mdx
-````
----
-title: Monitoring & Observability
-description: Learn how to monitor, log, and observe your AI applications effectively.
----
-
-# Monitoring & Observability
-
-Learn how to implement comprehensive monitoring and observability for your deanmachines AI applications.
-
-## Metrics Collection
-
-### Agent Metrics
-
-```typescript
-import { Metrics } from "@deanmachines/monitoring"
-
-const metrics = new Metrics({
-  agent: {
-    responseTime: true,
-    memoryUsage: true,
-    throughput: true,
-    errorRate: true,
-  },
-  customMetrics: {
-    "agent.decisions": {
-      type: "counter",
-      help: "Number of decisions made by the agent",
-    },
-  },
-})
-
-agent.use(metrics)
-```
-
-### Performance Monitoring
-
-```typescript
-const performanceConfig = {
-  metrics: ["cpu", "memory", "latency"],
-  alerts: {
-    cpu: { threshold: 80, window: "5m" },
-    memory: { threshold: 85, window: "5m" },
-    latency: { threshold: 1000, window: "1m" },
-  },
-}
-```
-
-## Logging
-
-### Structured Logging
-
-```typescript
-import { Logger } from "@deanmachines/core"
-
-const logger = new Logger({
-  level: "info",
-  format: "json",
-  metadata: {
-    service: "agent-service",
-    environment: process.env.NODE_ENV,
-  },
-})
-
-agent.onMessage(async (message) => {
-  logger.info("Processing message", {
-    messageId: message.id,
-    type: message.type,
-    timestamp: new Date().toISOString(),
-  })
-})
-```
-
-### Log Levels
-
-- **ERROR**: Errors that need immediate attention
-- **WARN**: Potential issues or degraded performance
-- **INFO**: Normal operation events
-- **DEBUG**: Detailed debugging information
-- **TRACE**: Very detailed flow information
-
-## Tracing
-
-### Distributed Tracing
-
-```typescript
-import { Tracer } from "@deanmachines/monitoring"
-
-const tracer = new Tracer({
-  serviceName: "agent-service",
-  samplingRate: 0.1,
-  exporters: ["jaeger", "zipkin"],
-})
-
-agent.use(tracer)
-```
-
-### Span Management
-
-```typescript
-async function processRequest(req) {
-  const span = tracer.startSpan("process-request")
-  try {
-    // Add context to span
-    span.setAttributes({
-      "request.id": req.id,
-      "request.type": req.type,
-    })
-
-    const result = await handleRequest(req)
-    span.end()
-    return result
-  } catch (error) {
-    span.setStatus("error")
-    span.recordException(error)
-    span.end()
-    throw error
-  }
-}
-```
-
-## Alerting
-
-### Alert Configuration
-
-```typescript
-const alertConfig = {
-  channels: ["email", "slack", "pagerduty"],
-  rules: [
-    {
-      name: "high-error-rate",
-      condition: "error_rate > 0.05",
-      duration: "5m",
-      severity: "critical",
-      notifications: ["slack", "pagerduty"],
-    },
-    {
-      name: "memory-warning",
-      condition: "memory_usage > 80",
-      duration: "10m",
-      severity: "warning",
-      notifications: ["email", "slack"],
-    },
-  ],
-}
-```
-
-### Alert Management
-
-- Set up escalation policies
-- Define on-call rotations
-- Configure alert routing rules
-- Implement alert grouping
-
-## Dashboard Creation
-
-### Metrics Dashboard
-
-```typescript
-const dashboardConfig = {
-  panels: [
-    {
-      title: "Agent Response Time",
-      metric: "agent_response_time",
-      type: "line",
-      duration: "24h",
-    },
-    {
-      title: "Memory Usage",
-      metric: "memory_usage_bytes",
-      type: "gauge",
-      thresholds: [
-        { value: 70, color: "yellow" },
-        { value: 85, color: "red" },
-      ],
-    },
-  ],
-}
-```
-
-### Custom Visualizations
-
-- Response time distributions
-- Error rate trends
-- Resource utilization
-- Agent interaction patterns
-
-## Best Practices
-
-1. **Data Retention**
-   - Define retention policies
-   - Implement data aggregation
-   - Use appropriate storage solutions
-
-2. **Performance Impact**
-   - Monitor the monitoring overhead
-   - Use sampling when appropriate
-   - Optimize metric collection
-
-3. **Alert Fatigue**
-   - Tune alert thresholds carefully
-   - Implement alert deduplication
-   - Use alert severity levels effectively
-
-4. **Documentation**
-   - Document monitoring setup
-   - Maintain runbooks
-   - Keep dashboards updated
-
-<Callout type="info">
-  Regular review and adjustment of monitoring thresholds is essential for maintaining effective observability.
-</Callout>
-
-## Next Steps
-
-- [Scaling Strategies](/docs/guides/scaling)
-- [Performance Optimization](/docs/guides/performance)
-- [Troubleshooting Guide](/docs/guides/troubleshooting)
-````
-
-## File: src/content/docs/guides/network-architecture.mdx
-````
----
-title: Network Architecture
-description: Design and implement scalable AI agent networks with deanmachines.
----
-
-# Network Architecture Guide
-
-Learn how to design and implement scalable networks of cooperating AI agents.
-
-## Network Topologies
-
-### Mesh Network
-
-Fully connected agents for maximum collaboration:
-
-```typescript
-import { AgentNetwork, NetworkTopology } from '@deanmachines/core'
-
-const meshNetwork = new AgentNetwork({
-  topology: NetworkTopology.MESH,
-  agents: ['analyst', 'researcher', 'writer'],
-  config: {
-    fullConnection: true,
-    redundancy: true,
-    maxLatency: '100ms'
-  }
-})
-```
-
-### Hierarchical Network
-
-Organized hierarchy for complex workflows:
-
-```typescript
-interface HierarchicalConfig {
-  layers: {
-    name: string
-    agents: string[]
-    connections: {
-      up?: string[]
-      down?: string[]
-    }
-  }[]
-}
-
-const hierarchicalNetwork = new AgentNetwork({
-  topology: NetworkTopology.HIERARCHICAL,
-  config: {
-    layers: [
-      {
-        name: 'supervisors',
-        agents: ['coordinator', 'planner'],
-        connections: {
-          down: ['workers']
-        }
-      },
-      {
-        name: 'workers',
-        agents: ['researcher1', 'researcher2', 'analyst1'],
-        connections: {
-          up: ['supervisors'],
-          down: ['specialists']
-        }
-      }
-    ]
-  }
-})
-```
-
-## Communication Patterns
-
-### Message Routing
-
-```typescript
-interface NetworkMessage {
-  from: string
-  to: string | string[]
-  content: unknown
-  metadata: {
-    priority: number
-    ttl: string
-    trace?: string
-  }
-}
-
-// Direct message
-await network.sendMessage({
-  from: 'analyst',
-  to: 'researcher',
-  content: {
-    type: 'research_request',
-    query: 'market analysis 2024'
-  },
-  metadata: {
-    priority: 1,
-    ttl: '30s'
-  }
-})
-
-// Broadcast to layer
-await network.broadcastToLayer('workers', {
-  from: 'coordinator',
-  content: {
-    type: 'task_assignment',
-    deadline: '2h'
-  }
-})
-```
-
-## Network Monitoring
-
-### Health Checks
-
-```typescript
-interface HealthCheckConfig {
-  interval: string
-  timeout: string
-  thresholds: {
-    latency: number
-    errorRate: number
-    messageQueue: number
-  }
-}
-
-await network.configureHealthChecks({
-  interval: '30s',
-  timeout: '5s',
-  thresholds: {
-    latency: 200,    // ms
-    errorRate: 0.01,  // 1%
-    messageQueue: 100 // max queued messages
-  }
-})
-```
-
-### Performance Metrics
-
-```typescript
-// Monitor network performance
-network.on('metrics', (metrics) => {
-  const {
-    messageCount,
-    avgLatency,
-    errorRate,
-    agentUtilization
-  } = metrics
-
-  if (avgLatency > 200) {
-    network.optimizeRouting()
-  }
-})
-```
-
-## Scaling Strategies
-
-### Dynamic Scaling
-
-```typescript
-interface ScalingConfig {
-  metrics: ('load' | 'latency' | 'queue')[]
-  thresholds: {
-    scaleUp: Record<string, number>
-    scaleDown: Record<string, number>
-  }
-  cooldown: {
-    up: string
-    down: string
-  }
-}
-
-await network.configureScaling({
-  metrics: ['load', 'latency', 'queue'],
-  thresholds: {
-    scaleUp: {
-      load: 80,      // 80% CPU
-      latency: 200,  // 200ms
-      queue: 100     // 100 messages
-    },
-    scaleDown: {
-      load: 30,
-      latency: 50,
-      queue: 10
-    }
-  },
-  cooldown: {
-    up: '5m',
-    down: '15m'
-  }
-})
-```
-
-## Error Handling
-
-### Network Resilience
-
-```typescript
-interface ResilienceConfig {
-  retry: {
-    attempts: number
-    backoff: {
-      initial: number
-      multiplier: number
-      max: number
-    }
-  }
-  circuit: {
-    threshold: number
-    timeout: string
-  }
-  fallback: {
-    enabled: boolean
-    strategy: 'cache' | 'alternative' | 'degraded'
-  }
-}
-
-await network.configureResilience({
-  retry: {
-    attempts: 3,
-    backoff: {
-      initial: 1000,
-      multiplier: 2,
-      max: 10000
-    }
-  },
-  circuit: {
-    threshold: 0.5,  // 50% failure rate
-    timeout: '30s'   // Time before retry
-  },
-  fallback: {
-    enabled: true,
-    strategy: 'degraded'
-  }
-})
-```
-
-## Best Practices
-
-1. **Network Design**
-   - Choose appropriate topology
-   - Plan for scalability
-   - Implement proper error handling
-   - Monitor network health
-
-2. **Communication**
-   - Use efficient protocols
-   - Implement message priorities
-   - Handle timeouts properly
-   - Enable message tracing
-
-3. **Security**
-   - Encrypt network traffic
-   - Authenticate agents
-   - Monitor for anomalies
-   - Regular security audits
-
-<Callout type="warning">
-  Always implement proper error handling and recovery mechanisms in distributed networks.
-</Callout>
-
-## Next Steps
-
-- [Performance Optimization](/docs/guides/performance)
-- [Security Best Practices](/docs/guides/security)
-- [Network API Reference](/docs/api-reference/network)
-````
-
-## File: src/content/docs/guides/overview.mdx
-````
----
-title: Guides Overview
-description: Comprehensive guides for building and deploying AI solutions with deanmachines.
----
-
-# Guides Overview
-
-Welcome to the deanmachines AI guides. These comprehensive guides will help you build, deploy, and maintain your AI applications effectively.
-
-## Getting Started Guides
-
-<div className="grid sm:grid-cols-2 gap-4 mt-6">
-
-<Card href="/docs/guides/quick-start">
-  ### Quick Start
-  Get up and running with deanmachines AI in minutes.
-</Card>
-
-<Card href="/docs/guides/memory-management">
-  ### Memory Management
-  Learn how to manage agent memory effectively.
-</Card>
-
-<Card href="/docs/guides/network-architecture">
-  ### Network Architecture
-  Design scalable agent networks.
-</Card>
-
-<Card href="/docs/guides/security">
-  ### Security Best Practices
-  Secure your AI applications.
-</Card>
-
-</div>
-
-## Performance & Optimization
-
-<div className="grid sm:grid-cols-2 gap-4 mt-6">
-
-<Card href="/docs/guides/performance">
-  ### Performance Optimization
-  Optimize your AI applications for speed and efficiency.
-</Card>
-
-<Card href="/docs/guides/performance-testing">
-  ### Performance Testing
-  Comprehensive testing strategies for AI systems.
-</Card>
-
-<Card href="/docs/guides/cost-optimization">
-  ### Cost Optimization
-  Optimize resource usage and costs.
-</Card>
-
-<Card href="/docs/guides/high-availability">
-  ### High Availability
-  Build resilient AI systems.
-</Card>
-
-</div>
-
-## Development Workflows
-
-<div className="grid sm:grid-cols-2 gap-4 mt-6">
-
-<Card href="/docs/guides/ci-cd">
-  ### CI/CD Integration
-  Automate your deployment pipeline.
-</Card>
-
-<Card href="/docs/guides/monitoring">
-  ### Monitoring & Observability
-  Monitor your AI applications effectively.
-</Card>
-
-<Card href="/docs/guides/troubleshooting">
-  ### Troubleshooting
-  Debug and resolve common issues.
-</Card>
-
-<Card href="/docs/guides/compliance">
-  ### Compliance
-  Meet regulatory requirements.
-</Card>
-
-</div>
-
-## Best Practices
-
-Here are some key best practices to follow when building with deanmachines AI:
-
-1. **Architecture Design**
-   - Plan your agent network topology
-   - Design for scalability from the start
-   - Implement proper error handling
-   - Use appropriate memory strategies
-
-2. **Security**
-   - Follow security best practices
-   - Implement proper authentication
-   - Secure sensitive data
-   - Regular security audits
-
-3. **Performance**
-   - Optimize agent interactions
-   - Monitor system resources
-   - Implement caching strategies
-   - Regular performance testing
-
-4. **Maintenance**
-   - Keep dependencies updated
-   - Regular backups
-   - Monitor system health
-   - Document everything
-
-## Guide Categories
-
-### Development
-- Setting up development environments
-- Writing efficient agent code
-- Testing and validation
-- Debugging techniques
-
-### Deployment
-- Production deployment strategies
-- Scaling considerations
-- Monitoring setup
-- Performance optimization
-
-### Security
-- Authentication and authorization
-- Data protection
-- Network security
-- Compliance requirements
-
-### Operations
-- Monitoring and alerting
-- Backup and recovery
-- Updating and maintenance
-- Troubleshooting
-
-<Callout type="info">
-  These guides are regularly updated with new best practices and community feedback.
-</Callout>
-
-## Next Steps
-
-- [Memory Management Guide](/docs/guides/memory-management)
-- [Network Architecture Guide](/docs/guides/network-architecture)
-- [Security Best Practices](/docs/guides/security)
-````
-
-## File: src/content/docs/guides/scaling.mdx
-````
----
-title: Scaling Strategies
-description: Learn how to scale your AI applications from prototype to production.
----
-
-# Scaling Strategies
-
-Learn how to effectively scale your deanmachines AI applications to handle increased load and complexity.
-
-## Horizontal Scaling
-
-### Agent Replication
-
-```typescript
-import { AgentCluster } from "@deanmachines/scaling"
-
-const cluster = new AgentCluster({
-  name: "processing-cluster",
-  minInstances: 2,
-  maxInstances: 10,
-  autoScaling: {
-    metric: "cpu_utilization",
-    target: 70,
-    scaleUpCooldown: "5m",
-    scaleDownCooldown: "10m",
-  },
-})
-
-// Add agents to cluster
-await cluster.addAgent(myAgent, {
-  replicas: 3,
-  distribution: "even",
-})
-```
-
-### Load Balancing
-
-```typescript
-const loadBalancer = new LoadBalancer({
-  strategy: "least-connections",
-  healthCheck: {
-    path: "/health",
-    interval: "30s",
-    timeout: "5s",
-    unhealthyThreshold: 3,
-  },
-  sticky: true, // Enable session affinity
-})
-```
-
-## Vertical Scaling
-
-### Resource Allocation
-
-```typescript
-const resourceConfig = {
-  compute: {
-    cpu: {
-      request: "500m",
-      limit: "2000m",
-    },
-    memory: {
-      request: "512Mi",
-      limit: "2Gi",
-    },
-  },
-  storage: {
-    type: "ssd",
-    size: "20Gi",
-  },
-}
-```
-
-### Performance Tuning
-
-```typescript
-const performanceConfig = {
-  concurrency: 50,
-  batchSize: 100,
-  timeout: "30s",
-  retry: {
-    attempts: 3,
-    backoff: {
-      initial: 1000,
-      multiplier: 2,
-      max: 10000,
-    },
-  },
-}
-```
-
-## Database Scaling
-
-### Connection Management
-
-```typescript
-const dbConfig = {
-  pool: {
-    min: 5,
-    max: 20,
-    idleTimeoutMillis: 30000,
-    acquireTimeoutMillis: 30000,
-  },
-  replication: {
-    read: ["replica-1", "replica-2"],
-    write: "master",
-  },
-}
-```
-
-### Data Sharding
-
-```typescript
-const shardConfig = {
-  shards: 4,
-  strategy: "hash",
-  replicationFactor: 2,
-  consistency: "quorum",
-}
-```
-
-## Memory Management
-
-### Caching Strategy
-
-```typescript
-const cacheConfig = {
-  provider: "redis",
-  clusters: [
-    {
-      host: "cache-1",
-      port: 6379,
-      role: "master",
-    },
-    {
-      host: "cache-2",
-      port: 6379,
-      role: "replica",
-    },
-  ],
-  policy: {
-    maxSize: "10GB",
-    eviction: "lru",
-    ttl: "1h",
-  },
-}
-```
-
-### Memory Optimization
-
-```typescript
-const memoryOptimization = {
-  compression: true,
-  serialization: "protobuf",
-  cleanup: {
-    interval: "1h",
-    threshold: "85%",
-  },
-}
-```
-
-## Network Scaling
-
-### Service Mesh
-
-```typescript
-const meshConfig = {
-  proxy: "envoy",
-  discovery: "auto",
-  protocol: "grpc",
-  security: {
-    mtls: true,
-    encryption: "tls",
-  },
-  tracing: {
-    enabled: true,
-    sampling: 0.1,
-  },
-}
-```
-
-### API Gateway
-
-```typescript
-const gatewayConfig = {
-  routes: [
-    {
-      path: "/api/v1",
-      service: "agent-service",
-      methods: ["GET", "POST"],
-      rateLimit: {
-        requests: 1000,
-        period: "1m",
-      },
-    },
-  ],
-  cors: {
-    origins: ["https://app.deanmachines.com"],
-    methods: ["GET", "POST"],
-  },
-}
-```
-
-## Monitoring & Alerts
-
-### Scaling Metrics
-
-```typescript
-const scalingMetrics = {
-  watch: [
-    "cpu_utilization",
-    "memory_usage",
-    "request_latency",
-    "error_rate",
-  ],
-  thresholds: {
-    scaleUp: {
-      cpu: 80,
-      memory: 85,
-      latency: 1000,
-    },
-    scaleDown: {
-      cpu: 40,
-      memory: 50,
-      latency: 200,
-    },
-  },
-}
-```
-
-## Best Practices
-
-1. **Gradual Scaling**
-   - Start with conservative limits
-   - Monitor performance metrics
-   - Adjust based on actual usage
-
-2. **Cost Optimization**
-   - Use auto-scaling wisely
-   - Implement proper resource limits
-   - Monitor resource utilization
-
-3. **Resilience**
-   - Implement circuit breakers
-   - Use retry mechanisms
-   - Handle failures gracefully
-
-4. **Testing**
-   - Perform load testing
-   - Test auto-scaling behavior
-   - Validate performance metrics
-
-<Callout type="warning">
-  Always test scaling configurations in a staging environment before applying to production.
-</Callout>
-
-## Next Steps
-
-- [Performance Testing](/docs/guides/performance-testing)
-- [Cost Optimization](/docs/guides/cost-optimization)
-- [High Availability](/docs/guides/high-availability)
-````
-
-## File: src/content/docs/guides/security.mdx
-````
----
-title: Security Best Practices
-description: Learn how to secure your AI applications and protect sensitive data.
----
-
-# Security Best Practices
-
-Implementing robust security measures is crucial when building AI applications. This guide covers essential security practices for deanmachines AI.
-
-## Authentication & Authorization
-
-### API Key Security
-
-```typescript
-// Use environment variables for API keys
-const client = new DeanMachinesClient({
-  apiKey: process.env.DEANMACHINES_API_KEY,
-  environment: process.env.NODE_ENV,
-})
-```
-
-### Role-Based Access Control
-
-```typescript
-const agent = createAgent({
-  name: "secure-agent",
-  permissions: ["read:data", "write:logs"],
-  rbac: {
-    roles: ["analyst"],
-    policies: {
-      analyst: {
-        allowedActions: ["analyze", "query"],
-        deniedActions: ["modify", "delete"],
-      },
-    },
-  },
-})
-```
-
-## Data Protection
-
-### Encryption at Rest
-
-- Use industry-standard encryption algorithms
-- Implement proper key management
-- Regular key rotation
-
-### Data Sanitization
-
-```typescript
-import { sanitizeInput } from "@deanmachines/security"
-
-agent.onMessage(async (message) => {
-  // Sanitize all input before processing
-  const sanitizedInput = await sanitizeInput(message)
-  return processMessage(sanitizedInput)
-})
-```
-
-## Network Security
-
-### TLS Configuration
-
-```typescript
-const config = {
-  tls: {
-    version: "TLSv1.3",
-    ciphers: ["TLS_AES_256_GCM_SHA384"],
-    minVersion: "TLSv1.2",
-  },
-}
-```
-
-### Rate Limiting
-
-```typescript
-import { RateLimit } from "@deanmachines/core"
-
-const limiter = new RateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per windowMs
-})
-
-agent.use(limiter)
-```
-
-## Monitoring & Auditing
-
-### Security Logging
-
-```typescript
-import { SecurityLogger } from "@deanmachines/security"
-
-const logger = new SecurityLogger({
-  level: "info",
-  auditLog: true,
-  alerts: {
-    threshold: "high",
-    notifications: ["email", "slack"],
-  },
-})
-
-agent.use(logger)
-```
-
-### Activity Monitoring
-
-- Monitor agent activities
-- Track unusual patterns
-- Set up alerts for suspicious behavior
-
-## Compliance
-
-### Data Privacy
-
-- Implement GDPR compliance measures
-- Handle personal data appropriately
-- Provide data deletion mechanisms
-
-### Audit Trail
-
-```typescript
-const auditConfig = {
-  storage: "encrypted",
-  retention: "90d",
-  fields: ["timestamp", "action", "user", "resource"],
-}
-```
-
-## Best Practices
-
-1. **Regular Updates**
-   - Keep dependencies up to date
-   - Monitor security advisories
-   - Apply security patches promptly
-
-2. **Input Validation**
-   - Validate all inputs
-   - Use strict type checking
-   - Implement request schemas
-
-3. **Error Handling**
-   - Use secure error messages
-   - Avoid exposing sensitive information
-   - Implement proper logging
-
-4. **Security Testing**
-   - Regular penetration testing
-   - Automated security scans
-   - Vulnerability assessments
-
-<Callout type="warning">
-  Never store sensitive information like API keys or credentials in your code repository.
-</Callout>
-
-## Next Steps
-
-- [Monitoring Guide](/docs/guides/monitoring)
-- [Deployment Security](/docs/deployment/security)
-- [Compliance Checklist](/docs/guides/compliance)
-````
-
-## File: src/content/docs/guides/testing.mdx
-````
----
-title: Testing & Validation
-description: Learn how to test and validate your AI agents effectively.
----
-
-# Testing & Validation
-
-Comprehensive testing is crucial for building reliable AI applications. This guide covers testing strategies for deanmachines AI.
-
-## Unit Testing
-
-### Agent Testing
-
-```typescript
-import { TestAgent, MockMemory } from "@deanmachines/testing"
-
-describe("CustomerSupportAgent", () => {
-  let agent: TestAgent
-  let mockMemory: MockMemory
-
-  beforeEach(() => {
-    mockMemory = new MockMemory()
-    agent = new TestAgent({
-      name: "test-agent",
-      memory: mockMemory,
-      config: {
-        model: "gpt-4",
-        temperature: 0.7,
-      },
-    })
-  })
-
-  test("should handle customer inquiry", async () => {
-    const response = await agent.process({
-      type: "inquiry",
-      content: "How do I reset my password?",
-    })
-
-    expect(response.intent).toBe("password_reset")
-    expect(response.actions).toContainEqual({
-      type: "PROVIDE_INSTRUCTIONS",
-      topic: "password_reset",
-    })
-  })
-})
-```
-
-### Memory Testing
-
-```typescript
-import { MemoryTestKit } from "@deanmachines/testing"
-
-describe("AgentMemory", () => {
-  const memoryKit = new MemoryTestKit()
-
-  test("should store and retrieve context", async () => {
-    await memoryKit.memory.store({
-      key: "user_preference",
-      value: { theme: "dark" },
-    })
-
-    const retrieved = await memoryKit.memory.retrieve("user_preference")
-    expect(retrieved).toEqual({ theme: "dark" })
-  })
-
-  test("should handle memory expiration", async () => {
-    await memoryKit.simulateTimePass("2h")
-    const expired = await memoryKit.memory.retrieve("temporary_data")
-    expect(expired).toBeNull()
-  })
-})
-```
-
-## Integration Testing
-
-### Network Testing
-
-```typescript
-import { NetworkTestSuite } from "@deanmachines/testing"
-
-describe("AgentNetwork", () => {
-  const network = new NetworkTestSuite({
-    agents: ["analyst", "researcher", "writer"],
-    connections: {
-      analyst: ["researcher"],
-      researcher: ["writer"],
-    },
-  })
-
-  test("should propagate messages through network", async () => {
-    const result = await network.simulate({
-      input: "analyze market trends",
-      startNode: "analyst",
-    })
-
-    expect(result.path).toEqual(["analyst", "researcher", "writer"])
-    expect(result.output).toContain("market analysis")
-  })
-})
-```
-
-## Performance Testing
-
-### Load Testing
-
-```typescript
-import { LoadTest } from "@deanmachines/testing"
-
-const loadTest = new LoadTest({
-  target: "https://api.deanmachines.com/agent",
-  phases: [
-    { duration: "1m", target: 50 },  // Warm up
-    { duration: "5m", target: 200 }, // Load test
-    { duration: "1m", target: 0 },   // Cool down
-  ],
-  thresholds: {
-    http_req_duration: ["p(95)<500"], // 95% of requests within 500ms
-    http_req_failed: ["rate<0.01"],   // Less than 1% error rate
-  },
-})
-
-loadTest.run()
-```
-
-### Stress Testing
-
-```typescript
-import { StressTest } from "@deanmachines/testing"
-
-const stressTest = new StressTest({
-  maxVirtualUsers: 1000,
-  rampUpTime: "5m",
-  holdTime: "10m",
-  scenarios: [
-    {
-      name: "heavy_processing",
-      weight: 70,
-      function: "processLargeDataset",
-    },
-    {
-      name: "memory_intensive",
-      weight: 30,
-      function: "complexAnalysis",
-    },
-  ],
-})
-```
-
-## Behavioral Testing
-
-### Scenario Testing
-
-```typescript
-import { ScenarioTest } from "@deanmachines/testing"
-
-const scenario = new ScenarioTest({
-  name: "Customer Support Flow",
-  steps: [
-    {
-      action: "USER_MESSAGE",
-      input: "I have a billing issue",
-      expect: {
-        intent: "billing_support",
-        confidence: ">0.8",
-      },
-    },
-    {
-      action: "AGENT_RESPONSE",
-      expect: {
-        type: "clarification",
-        contains: ["billing", "specific", "help"],
-      },
-    },
-  ],
-})
-```
-
-## Security Testing
-
-### Penetration Testing
-
-```typescript
-import { SecurityTest } from "@deanmachines/testing"
-
-const securityTest = new SecurityTest({
-  target: "agent-api",
-  tests: [
-    "injection",
-    "authentication",
-    "authorization",
-    "data_exposure",
-    "rate_limiting",
-  ],
-  compliance: ["OWASP10", "GDPR"],
-})
-```
-
-## Validation Framework
-
-### Test Configuration
-
-```typescript
-const testConfig = {
-  environments: ["dev", "staging", "prod"],
-  suites: ["unit", "integration", "e2e"],
-  reporting: {
-    format: ["junit", "html"],
-    artifacts: ["logs", "traces"],
-  },
-  ci: {
-    trigger: ["push", "pr"],
-    parallel: true,
-    timeout: "30m",
-  },
-}
-```
-
-## Best Practices
-
-1. **Test Coverage**
-   - Aim for high test coverage
-   - Include edge cases
-   - Test error scenarios
-
-2. **Test Data**
-   - Use realistic test data
-   - Maintain test data sets
-   - Handle sensitive data properly
-
-3. **Continuous Testing**
-   - Automate test execution
-   - Integrate with CI/CD
-   - Monitor test metrics
-
-4. **Documentation**
-   - Document test cases
-   - Maintain test plans
-   - Update documentation regularly
-
-<Callout type="info">
-  Regular testing and validation are essential for maintaining reliable AI applications.
-</Callout>
-
-## Next Steps
-
-- [Performance Optimization](/docs/guides/performance)
-- [Security Testing](/docs/guides/security-testing)
-- [CI/CD Integration](/docs/guides/ci-cd)
-````
-
-## File: src/content/docs/index.mdx
-````
----
-title: Documentation
-description: Documentation and guides for deanmachines AI platform.
----
-
-# deanmachines AI Documentation
-
-Welcome to the deanmachines AI documentation. Here you'll find everything you need to build and deploy intelligent AI solutions.
-
-## Getting Started
-
-<div className="grid sm:grid-cols-2 gap-4 mt-6">
-
-<Card href="/docs/getting-started/installation">
-  ### Installation
-  Set up your development environment and install required dependencies.
-</Card>
-
-<Card href="/docs/getting-started/quick-start">
-  ### Quick Start
-  Create your first AI application in minutes with our quick start guide.
-</Card>
-
-</div>
-
-## Core Concepts
-
-<div className="grid sm:grid-cols-2 gap-4 mt-6">
-
-<Card href="/docs/core-concepts/agents">
-  ### AI Agents
-  Learn about autonomous AI agents and their capabilities.
-</Card>
-
-<Card href="/docs/core-concepts/memory">
-  ### Memory Management
-  Understand how agents maintain context and learn from interactions.
-</Card>
-
-<Card href="/docs/core-concepts/agent-networks">
-  ### Agent Networks
-  Discover how to create networks of cooperating AI agents.
-</Card>
-
-<Card href="/docs/core-concepts/deployment">
-  ### Deployment
-  Deploy and scale your AI applications in production.
-</Card>
-
-</div>
-
-## Examples & Tutorials
-
-<div className="grid sm:grid-cols-2 gap-4 mt-6">
-
-<Card href="/docs/examples/chatbot">
-  ### Build a Chatbot
-  Create an intelligent chatbot with memory and natural language understanding.
-</Card>
-
-<Card href="/docs/examples/data-processor">
-  ### Data Processing Agent
-  Build an agent that processes and analyzes data automatically.
-</Card>
-
-</div>
-
-## Popular Guides
-
-<div className="grid sm:grid-cols-2 gap-4 mt-6">
-
-<Card href="/docs/guides/security">
-  ### Security Best Practices
-  Learn how to secure your AI applications.
-</Card>
-
-<Card href="/docs/guides/monitoring">
-  ### Monitoring & Observability
-  Set up monitoring and logging for your agents.
-</Card>
-
-<Card href="/docs/guides/scaling">
-  ### Scaling Strategies
-  Scale your AI applications from prototype to production.
-</Card>
-
-<Card href="/docs/guides/testing">
-  ### Testing & Validation
-  Test and validate your AI agents effectively.
-</Card>
-
-</div>
-
-## Additional Resources
-
-- [API Reference](/docs/api) - Detailed API documentation
-- [Examples Repository](https://github.com/deanmachines/examples) - Sample projects and templates
-- [Community Forum](https://discord.gg/deanmachinesai) - Join our Discord community
-- [Blog](/blog) - Latest updates and technical articles
-
-<Callout type="info">
-  Need help? Check our [FAQ](/docs/faq) or join our [Discord community](https://discord.gg/deanmachinesai) for support.
-</Callout>
-````
-
-## File: src/content/docs/introduction/index.mdx
-````
----
-title: Introduction to Deanmachines AI
-description: Learn about the core concepts and features of our AI development platform.
----
-
-# Welcome to Deanmachines AI
-
-Deanmachines AI provides a powerful platform for building, deploying, and scaling intelligent AI solutions. Our platform makes it easy to create sophisticated AI applications that can adapt to your specific needs.
-
-## What We Offer
-
-Our platform provides a comprehensive suite of tools and services for AI development:
-
-- **AI Development Tools**: Build custom AI solutions with our intuitive development tools
-- **Intelligent Agents**: Create and deploy autonomous AI agents that learn and adapt
-- **MLOps Solutions**: End-to-end machine learning operations infrastructure
-- **Network Orchestration**: Manage complex networks of AI agents efficiently
-
-## Key Features
-
-### Advanced AI Development
-Build sophisticated AI solutions using our state-of-the-art development tools and frameworks.
-
-### Cloud Native Architecture
-Deploy anywhere with our cloud-agnostic infrastructure. Scale seamlessly across any cloud provider.
-
-### Enterprise Security
-Bank-grade security with end-to-end encryption and comprehensive compliance features.
-
-### Rapid Deployment
-Go from prototype to production in minutes with our automated deployment pipelines.
-
-## Platform Benefits
-
-- **Flexibility**: Build any type of AI solution you need
-- **Scalability**: Grow your AI infrastructure effortlessly
-- **Security**: Enterprise-grade security built-in
-- **Support**: Comprehensive documentation and expert support
-
-## Getting Started
-
-Ready to start building? Here's how to begin:
-
-1. [Installation Guide](/docs/getting-started/installation)
-2. [Quick Start Tutorial](/docs/getting-started/quick-start)
-3. [Core Concepts](/docs/core-concepts/overview)
-
-## Next Steps
-
-- Follow our [Installation Guide](/docs/getting-started/installation) to set up your environment
-- Check out our [Examples](/docs/examples) for inspiration
-- Join our [Discord Community](https://discord.gg/deanmachinesai) for support
-````
-
 ## File: src/hooks/use-mobile.ts
 ````typescript
 export function useIsMobile()
@@ -6958,40 +2619,6 @@ export function generateMockData()
 // ML Metrics data
 ⋮----
 // Resource metrics data
-````
-
-## File: src/lib/mock-docs.ts
-````typescript
-/**
- * Mock documentation data for use while Contentlayer integration is being fixed
- *
- * This file provides temporary mock document content for each documentation page
- * to ensure proper Table of Contents generation and page rendering.
- *
- * @remarks
- * Once Contentlayer integration is complete, this file can be removed and
- * real document data from Contentlayer should be used instead.
- */
-⋮----
-import type { Doc } from "@/types/docs";
-⋮----
-/**
- * Collection of mock document data organized by slugAsParams path
- */
-⋮----
-// Introduction / Index
-⋮----
-// Core Concepts
-⋮----
-// Agents
-⋮----
-// Memory Management
-⋮----
-// Agent Networks
-⋮----
-// Add more mock documents for other sections as needed...
-⋮----
-// Getting Started
 ````
 
 ## File: src/lib/utils.ts
@@ -11714,6 +7341,45 @@ function summarizeRewards(records: RewardRecord[]):
 // Get top and worst performers
 ````
 
+## File: src/mastra/tools/stdlib.ts
+````typescript
+//export * from "@agentic/airtable";
+//xport * from "@agentic/apollo";
+⋮----
+//export * from "@agentic/clearbit";
+//xport * from "@agentic/dexa";
+//export * from "@agentic/diffbot";
+//export * from "@agentic/duck-duck-go";
+⋮----
+//export * from "@agentic/gravatar";
+//export * from "@agentic/hacker-news";
+//export * from "@agentic/hunter";
+⋮----
+//export * from "@agentic/leadmagic";
+⋮----
+//export * from "@agentic/novu";
+//export * from "@agentic/open-meteo";
+//export * from "@agentic/people-data-labs";
+//export * from "@agentic/perigon";
+//export * from "@agentic/polygon";
+//export * from "@agentic/predict-leads";
+//export * from "@agentic/proxycurl";
+⋮----
+//export * from "@agentic/rocketreach";
+⋮----
+//export * from "@agentic/serpapi";
+⋮----
+//export * from "@agentic/slack";
+⋮----
+//export * from "@agentic/twilio";
+//export * from "@agentic/twitter";
+//export * from "@agentic/typeform";
+//export * from "@agentic/weather";
+⋮----
+//export * from "@agentic/youtube";
+//export * from "@agentic/zoominfo";
+````
+
 ## File: src/mastra/tools/tavily.ts
 ````typescript
 import { createTool } from "@mastra/core/tools";
@@ -13697,6 +9363,115 @@ async session(
 async jwt(
 ````
 
+## File: CHANGELOG.md
+````markdown
+# Changelog
+
+## [Unreleased]
+
+### Added
+
+- Added support for additional weather data metrics
+- Enhanced Weather component UI with responsive design
+- Implemented caching for weather API requests
+
+### Changed
+
+- Optimized Mastra agent response handling
+- Updated documentation for weather functionality
+
+## [0.1.1] - 2025-04-11
+
+### Added
+
+- Installed comprehensive AI package ecosystem:
+  - **Mastra AI packages:**
+    - @mastra/client-js (v0.1.16): Client-side SDK for Mastra integration
+    - @mastra/core (v0.8.2): Core functionality for agent management
+    - @mastra/loggers (v0.1.17): Logging utilities for Mastra agents
+    - @mastra/memory (v0.2.9): Memory management for conversational agents
+    - @mastra/pinecone (v0.2.7): Pinecone vector database integration
+    - @mastra/upstash (v0.2.4): Upstash database integration
+    - @mastra/vector-pinecone (v0.1.5): Vector operations with Pinecone
+    - @mastra/voice-elevenlabs (v0.1.12): ElevenLabs voice integration
+    - @mastra/voice-google (v0.1.12): Google voice integration
+  - **@agentic ecosystem packages:**
+    - @agentic/ai-sdk (v7.6.4): Core AI SDK functionality
+    - @agentic/arxiv (v7.6.4): ArXiv research paper integration
+    - @agentic/brave-search (v7.6.4): Brave search integration
+    - @agentic/calculator (v7.6.4): Mathematical calculation capabilities
+    - @agentic/core (v7.6.4): Core agent framework
+    - @agentic/e2b (v7.6.4): E2B agent integration
+    - @agentic/exa (v7.6.4): Exa search integration
+    - @agentic/firecrawl (v7.6.4): Web crawling functionality
+    - @agentic/genkit (v7.6.4): Generation toolkit
+    - @agentic/google-custom-search (v7.6.4): Google Custom Search integration
+    - @agentic/google-docs (v7.6.4): Google Docs integration
+    - @agentic/google-drive (v7.6.4): Google Drive integration
+    - @agentic/langchain (v7.6.4): LangChain integration
+    - @agentic/llamaindex (v7.6.4): LlamaIndex integration
+    - @agentic/mastra (v7.6.4): Mastra AI integration
+    - @agentic/mcp (v7.6.4): Model Context Protocol integration
+    - @agentic/stdlib (v7.6.4): Standard library for agent operations
+    - @agentic/tavily (v7.6.4): Tavily search integration
+    - @agentic/wikipedia (v7.6.4): Wikipedia integration
+  - **AI SDK packages:**
+    - @ai-sdk/google (v1.2.10): Google AI integration
+    - @ai-sdk/google-vertex (v2.2.14): Google Vertex AI integration
+    - @ai-sdk/provider (v1.1.2): Provider abstractions
+    - @ai-sdk/provider-utils (v2.2.6): Utility functions for providers
+  - **MCP integration:**
+    - @modelcontextprotocol/sdk (v1.9.0): Model Context Protocol SDK
+- Initialized Mastra with `pnpm dlx mastra@latest init`
+- Added Mastra server packages to `serverExternalPackages` in Next.js config
+- Created Weather API endpoint using Mastra agent
+- Implemented server action `getWeatherInfo` for weather data
+- Added Weather component with form for city input
+- Set up API route for chat streaming with Mastra
+
+### Changed
+
+- Updated Next.js configuration to support Mastra integration
+- Updated project version to 0.1.1
+
+### Technical Details
+
+- Configured `next.config.ts` to allow server-side external packages for Mastra
+- Created a streaming API endpoint for chat responses
+- Implemented server action for direct agent invocation
+- Built React component with form data submission
+- Integrated vector database capabilities through Pinecone (v5.1.1)
+- Added support for LangChain (v0.3.21) and LangChain Community (v0.3.40)
+- Set up integration with various AI providers through unified SDK interfaces
+- Enabled voice capabilities through ElevenLabs and Google voice integrations
+
+### Mastra Implementation Details
+
+- **Core Setup (`/src/mastra/index.ts`):**
+  - Configured Mastra instance with custom workflows, agents and logging
+  - Centralized agent and workflow registration in a single export
+- **Weather Agent (`/src/mastra/agents/index.ts`):**
+  - Implemented a specialized weather assistant using Google's Gemini 1.5 Pro model
+  - Defined detailed contextual instructions for consistent, accurate weather responses
+  - Integrated with custom weather tool for real-time data retrieval
+- **Custom Weather Tool (`/src/mastra/tools/index.ts`):**
+  - Created a weather data retrieval tool using Open Meteo API
+  - Implemented geocoding for location-to-coordinates conversion
+  - Built comprehensive weather condition mapping for 30+ weather codes
+  - Schema validation using Zod for type safety and input/output validation
+- **Weather Workflow (`/src/mastra/workflows/index.ts`):**
+  - Designed a multi-step workflow for advanced weather processing
+  - Created an activity recommendation system based on weather conditions
+  - Implemented structured output formatting with emojis and sectioned content
+
+## [0.1.0] - 2025-04-11
+
+### Initial Release
+
+- Project scaffolding with Next.js 15.3.0
+- Base configuration setup
+````
+
 ## File: src/app/(admin)/users/page.tsx
 ````typescript
 import { useState, useEffect } from "react";
@@ -14309,22 +10084,6 @@ interface DocsLayoutWrapperProps {
 export function DocsLayoutWrapper(
 ````
 
-## File: src/components/docs/DocsPageLayout.tsx
-````typescript
-import { TableOfContents } from "@/types/toc"
-import { Toc } from "./Toc"
-import { DocsPagination } from "./DocsPagination"
-⋮----
-interface DocsPageLayoutProps {
-  children: React.ReactNode
-  toc: TableOfContents
-  pagination?: {
-    prev?: { title: string; href: string }
-    next?: { title: string; href: string }
-  }
-}
-````
-
 ## File: src/components/docs/DocsPagination.tsx
 ````typescript
 import Link from "next/link"
@@ -14677,617 +10436,6 @@ import { NavSection } from "@/types/nav";
 export interface DocsConfig {
   sidebarNav: NavSection[];
 }
-````
-
-## File: src/content/docs/api-reference/index.mdx
-````
----
-title: API Reference | DeanMachines AI
-description: Comprehensive API reference documentation for the DeanMachines AI platform. Learn about endpoints, parameters, and implementation examples.
-keywords: API reference, DeanMachines AI, AI development, API documentation, AI agents API, machine learning API
-seo:
-  title: "DeanMachines AI - Complete API Reference Documentation"
-  description: "Comprehensive API documentation for DeanMachines AI platform. Includes detailed endpoint references, authentication guides, and implementation examples."
-  keywords: ["API documentation", "AI development", "RESTful API", "AI agents", "DeanMachines API", "machine learning API"]
----
-
-# API Reference
-
-Welcome to the DeanMachines AI API reference documentation. This section provides detailed information about the APIs, their parameters, and usage examples.
-
-## Core APIs
-
-<div className="grid sm:grid-cols-2 gap-4 mt-6">
-
-<Card href="/docs/api-reference/agent">
-  ### Agent API
-  Create, manage, and control AI agents in your applications.
-</Card>
-
-<Card href="/docs/api-reference/memory">
-  ### Memory API
-  Manage agent memory and context storage systems.
-</Card>
-
-<Card href="/docs/api-reference/network">
-  ### Network API
-  Build and manage networks of cooperating AI agents.
-</Card>
-
-<Card href="/docs/api-reference/deployment">
-  ### Deployment API
-  Deploy and manage your AI applications in production.
-</Card>
-
-</div>
-
-## API Versioning
-
-The deanmachines AI API is versioned to ensure compatibility and smooth upgrades:
-
-```typescript
-import { DeanMachinesClient } from "@deanmachines/core"
-
-const client = new DeanMachinesClient({
-  apiKey: process.env.DEANMACHINES_API_KEY,
-  version: "v1", // Specify API version
-})
-```
-
-## Authentication
-
-All API requests require authentication using your API key:
-
-```typescript
-const headers = {
-  "Authorization": `Bearer ${process.env.DEANMACHINES_API_KEY}`,
-  "Content-Type": "application/json",
-}
-```
-
-## Rate Limiting
-
-Our APIs implement rate limiting to ensure fair usage:
-
-| Plan      | Requests/min | Burst |
-|-----------|-------------|-------|
-| Free      | 60          | 100   |
-| Pro       | 300         | 500   |
-| Enterprise| 3000        | 5000  |
-
-## Error Handling
-
-API errors follow a consistent format:
-
-```typescript
-interface ApiError {
-  code: string;        // Error code
-  message: string;     // Human-readable message
-  details?: unknown;   // Additional error details
-  requestId?: string;  // Request ID for support
-}
-```
-
-Common error codes:
-
-| Code               | Description                           |
-|-------------------|---------------------------------------|
-| auth_failed       | Authentication failed                 |
-| invalid_request   | Invalid request parameters            |
-| rate_limited      | Rate limit exceeded                   |
-| internal_error    | Internal server error                 |
-
-## SDK Support
-
-Official SDKs are available for multiple languages:
-
-- [TypeScript/JavaScript](/docs/api-reference/sdk/typescript)
-- [Python](/docs/api-reference/sdk/python)
-- [Go](/docs/api-reference/sdk/go)
-- [Java](/docs/api-reference/sdk/java)
-
-## API Endpoints
-
-Base URLs:
-
-```
-Production: https://api.deanmachines.com/v1
-Staging: https://api.staging.deanmachines.com/v1
-```
-
-## WebSocket API
-
-For real-time communication with agents:
-
-```typescript
-const ws = new WebSocket("wss://api.deanmachines.com/v1/ws", {
-  headers: {
-    "Authorization": `Bearer ${process.env.DEANMACHINES_API_KEY}`,
-  },
-})
-```
-
-## OpenAPI Specification
-
-Our complete OpenAPI specification is available at:
-- [OpenAPI JSON](/api/openapi.json)
-- [OpenAPI YAML](/api/openapi.yaml)
-
-<Callout type="info">
-  Keep your API keys secure and never expose them in client-side code.
-</Callout>
-
-## Next Steps
-
-- [Agent API Reference](/docs/api-reference/agent)
-- [Memory API Reference](/docs/api-reference/memory)
-- [Network API Reference](/docs/api-reference/network)
-- [Deployment API Reference](/docs/api-reference/deployment)
-````
-
-## File: src/content/docs/api-reference/sdk/go.mdx
-````
----
-title: "Go SDK Reference"
----
-
-[Existing content]
-````
-
-## File: src/content/docs/api-reference/sdk/java.mdx
-````
----
-title: "Java SDK Reference"
----
-````
-
-## File: src/content/docs/api-reference/sdk/python.mdx
-````
----
-title: "Python SDK Reference"
----
-````
-
-## File: src/content/docs/api-reference/sdk/typescript.mdx
-````
----
-title: "TypeScript SDK Reference"
----
-
-[Existing content]
-````
-
-## File: src/content/docs/core-concepts/app.mdx
-````
----
-title: "Application Architecture Concepts"
----
-````
-
-## File: src/content/docs/examples/agents.mdx
-````
----
-title: "Agent Implementation Patterns"
----
-
-[Existing content]
-````
-
-## File: src/content/docs/examples/memory.mdx
-````
----
-title: "Memory Management Strategies"
----
-````
-
-## File: src/content/docs/examples/networks.mdx
-````
----
-title: "Network Configuration Examples"
----
-````
-
-## File: src/content/docs/getting-started/configuration.mdx
-````
----
-title: "Configuration"
-description: "Guide to configuring DeanMachines"
----
-
-# Configuration
-
-## Overview
-
-This guide will help you configure DeanMachines for your specific needs. Configuration can be done through various methods:
-
-1. Environment variables
-2. Configuration files
-3. Command-line options
-
-## Configuration Files
-
-### Default Configuration
-
-The default configuration file is located at `deanmachines.config.js`:
-
-```javascript
-module.exports = {
-  // Core settings
-  port: 3000,
-  environment: 'development',
-  
-  // Agent settings
-  agent: {
-    maxConcurrency: 5,
-    timeout: 30000
-  },
-  
-  // Network settings
-  network: {
-    type: 'local',
-    protocol: 'tcp'
-  }
-}
-```
-
-### Environment Variables
-
-All configuration options can be overridden using environment variables:
-
-```bash
-# Core settings
-DEANMACHINES_PORT=3000
-DEANMACHINES_ENVIRONMENT=production
-
-# Agent settings
-DEANMACHINES_AGENT_MAX_CONCURRENCY=5
-DEANMACHINES_AGENT_TIMEOUT=30000
-
-# Network settings
-DEANMACHINES_NETWORK_TYPE=local
-DEANMACHINES_NETWORK_PROTOCOL=tcp
-```
-
-## Configuration Options
-
-### Core Settings
-
-- `port`: Application port
-- `environment`: Environment mode (development/production)
-- `logLevel`: Logging verbosity
-
-### Agent Settings
-
-- `maxConcurrency`: Maximum concurrent operations
-- `timeout`: Operation timeout
-- `retryCount`: Number of retries
-
-### Network Settings
-
-- `type`: Network type (local/distributed/cloud)
-- `protocol`: Communication protocol
-- `encryption`: Enable encryption
-
-## Best Practices
-
-1. Keep sensitive information in environment variables
-2. Use separate configuration files for different environments
-3. Document all custom configurations
-4. Regularly review and update configurations
-5. Implement configuration validation
-````
-
-## File: src/content/docs/getting-started/installation.mdx
-````
----
-title: Installation Guide | DeanMachines AI
-description: Step-by-step guide to install and set up your development environment for DeanMachines AI platform. Learn how to get started with AI agent development.
-keywords: AI development, installation guide, development setup, AI platform setup, DeanMachines AI
----
-
-# Installation
-
-This guide will help you set up your development environment for working with DeanMachines AI.
-
-## Prerequisites
-
-Before you begin, ensure you have:
-
-- Node.js 18.x or later
-- pnpm 8.x or later (recommended) or npm 9.x
-- A code editor (we recommend VS Code)
-- Git for version control
-
-## Quick Installation
-
-The fastest way to get started is using our CLI:
-
-```bash
-pnpm add @deanmachines/cli -g
-deanmachines init my-ai-project
-cd my-ai-project
-pnpm install
-```
-
-## Core Packages
-
-Install the core packages for your project:
-
-```bash
-pnpm add @deanmachines/core @deanmachines/client-js @deanmachines/memory
-```
-
-### Optional Packages
-
-Depending on your needs, you might want to install additional packages:
-
-```bash
-# For voice capabilities
-pnpm add @deanmachines/voice-openai
-
-# For advanced memory management
-pnpm add @deanmachines/memory-pg
-
-# For deployment
-pnpm add @deanmachines/deployer
-```
-
-## Environment Setup
-
-Create a `.env` file in your project root:
-
-```env
-DEANMACHINES_API_KEY=your_api_key_here
-DEANMACHINES_PROJECT_ID=your_project_id
-```
-
-<Callout>
-  Get your API key and project ID from the [DeanMachines AI Dashboard](https://dashboard.deanmachines.ai).
-</Callout>
-
-## IDE Setup
-
-We recommend using Visual Studio Code with the following extensions:
-
-- Mastra AI Tools
-- TypeScript and JavaScript Language Features
-- ESLint
-- Prettier
-
-## Verifying Installation
-
-Test your installation by creating a simple agent:
-
-```typescript
-import { Agent } from '@deanmachines/core'
-
-const agent = new Agent({
-  name: 'test-agent',
-  description: 'A test agent'
-})
-
-console.log('Agent created:', agent.id)
-```
-
-Run the test:
-
-```bash
-pnpm tsx test.ts
-```
-
-## Next Steps
-
-- [Quick Start Guide](/docs/getting-started/quick-start) - Build your first agent
-- [Configuration](/docs/getting-started/configuration) - Configure your development environment
-- [Core Concepts](/docs/core-concepts/overview) - Learn about DeanMachines AI architecture
-````
-
-## File: src/content/docs/getting-started/quick-start.mdx
-````
----
-title: Quick Start Guide
-description: Learn how to create your first AI agent in just a few minutes.
----
-
-# Quick Start Guide
-
-Learn how to create your first AI agent in just a few minutes. This guide will walk you through creating a simple conversational agent.
-
-## Create a New Project
-
-Start by creating a new project:
-
-```bash
-pnpm add @mastra/cli -g
-mastra init my-first-agent
-cd my-first-agent
-pnpm install
-```
-
-## Create Your First Agent
-
-Create a new file called `agent.ts`:
-
-```typescript
-import { Agent, type Message } from '@mastra/core'
-import { Memory } from '@mastra/memory'
-
-// Initialize memory system
-const memory = new Memory({
-  type: 'short-term',
-  capacity: 10
-})
-
-// Create the agent
-const assistant = new Agent({
-  name: 'helpful-assistant',
-  description: 'A helpful AI assistant that answers questions',
-  memory,
-  async process(message: Message) {
-    // Store the incoming message in memory
-    await this.memory.store({
-      role: 'user',
-      content: message.content
-    })
-
-    // Get recent conversation history
-    const history = await this.memory.retrieve()
-
-    // Generate a response based on context
-    const response = await this.think({
-      task: 'generate friendly response',
-      context: history
-    })
-
-    return {
-      content: response,
-      type: 'text'
-    }
-  }
-})
-
-export default assistant
-```
-
-## Run Your Agent
-
-Create an `index.ts` file to interact with your agent:
-
-```typescript
-import assistant from './agent'
-
-async function main() {
-  // Send a message to the agent
-  const response = await assistant.send({
-    content: 'Hello! Can you help me learn about AI?',
-    type: 'text'
-  })
-
-  console.log('Agent response:', response.content)
-}
-
-main().catch(console.error)
-```
-
-Run your application:
-
-```bash
-pnpm tsx index.ts
-```
-
-## Add Advanced Features
-
-### Memory Management
-
-Enhance your agent with persistent memory:
-
-```typescript
-import { PgMemory } from '@mastra/memory-pg'
-
-const memory = new PgMemory({
-  connectionString: process.env.DATABASE_URL,
-  tableName: 'agent_memory'
-})
-```
-
-### Voice Capabilities
-
-Add voice interactions:
-
-```typescript
-import { VoiceProcessor } from '@mastra/voice-openai'
-
-const voice = new VoiceProcessor({
-  apiKey: process.env.OPENAI_API_KEY
-})
-
-// In your agent's process method:
-if (message.type === 'voice') {
-  const text = await voice.transcribe(message.content)
-  // Process the transcribed text...
-}
-```
-
-## Next Steps
-
-- [Core Concepts](/docs/core-concepts/overview) - Understand how DeanMachines AI works
-- [Examples](/docs/examples/chatbot) - Explore more complex examples
-- [API Reference](/docs/api-reference/agent) - Learn about the full API
-
-<Callout>
-  Remember to handle errors appropriately in production code and follow security best practices when deploying your agents.
-</Callout>
-````
-
-## File: src/content/docs/guides/ci-cd.mdx
-````
----
-title: "CI/CD Setup Guide"
----
-
-[Existing content]
-````
-
-## File: src/content/docs/guides/compliance.mdx
-````
----
-title: "Compliance and Security Guide"
----
-````
-
-## File: src/content/docs/guides/cost-optimization.mdx
-````
----
-title: "Cost Optimization Best Practices"
----
-
-[Existing content]
-````
-
-## File: src/content/docs/guides/high-availability.mdx
-````
----
-title: "High Availability Architecture"
----
-````
-
-## File: src/content/docs/guides/performance-testing.mdx
-````
----
-title: "Performance Testing Guide"
----
-````
-
-## File: src/content/docs/guides/performance.mdx
-````
----
-title: "Performance Optimization Guide"
----
-````
-
-## File: src/content/docs/guides/troubleshooting.mdx
-````
----
-title: "Troubleshooting Guide"
----
-
-[Existing content]
-````
-
-## File: src/content/docs/tutorials/creating-agents.mdx
-````
----
-title: "Creating AI Agents"
----
-
-[Existing content]
-````
-
-## File: src/content/docs/tutorials/getting-started.mdx
-````
----
-title: "Getting Started Guide"
----
 ````
 
 ## File: src/lib/api/mastra/index.ts
@@ -16260,6 +11408,460 @@ count: Math.floor(Math.random() * 100) + 500 + index * 10, // Increasing trend
 count: Math.floor(Math.random() * 5000) + 10000 + index * 500, // Increasing trend
 ````
 
+## File: src/lib/content-data.ts
+````typescript
+/**
+ * Content data structures for documentation and blog content
+ *
+ * This file provides type definitions and utilities for structured content
+ * without requiring MDX or Contentlayer.
+ */
+⋮----
+/**
+ * Base content interface with common properties
+ */
+export interface ContentBase {
+  /** Unique identifier */
+  id: string;
+  /** Content title */
+  title: string;
+  /** Optional description */
+  description?: string;
+  /** URL-friendly slug */
+  slug: string;
+  /** The slug as URL parameters */
+  slugAsParams: string;
+  /** Publication date */
+  date?: string;
+  /** Content authors */
+  authors?: string[];
+  /** Content tags/categories */
+  tags?: string[];
+  /** Content type identifier */
+  contentType: "doc" | "blog";
+}
+⋮----
+/** Unique identifier */
+⋮----
+/** Content title */
+⋮----
+/** Optional description */
+⋮----
+/** URL-friendly slug */
+⋮----
+/** The slug as URL parameters */
+⋮----
+/** Publication date */
+⋮----
+/** Content authors */
+⋮----
+/** Content tags/categories */
+⋮----
+/** Content type identifier */
+⋮----
+/**
+ * Available section types
+ */
+export enum SectionType {
+  Paragraph = "paragraph",
+  Heading = "heading",
+  List = "list",
+  Code = "code",
+  Callout = "callout",
+  Image = "image",
+  Table = "table",
+  Quote = "quote",
+  Divider = "divider",
+  Card = "card",
+}
+⋮----
+/**
+ * Base section interface
+ */
+export interface BaseSection {
+  /** Section type */
+  type: SectionType;
+  /** Optional CSS class names */
+  className?: string;
+  /** Optional section ID for anchors */
+  id?: string;
+}
+⋮----
+/** Section type */
+⋮----
+/** Optional CSS class names */
+⋮----
+/** Optional section ID for anchors */
+⋮----
+/**
+ * Text formatting options
+ */
+export interface TextFormatting {
+  /** Bold text */
+  bold?: boolean;
+  /** Italic text */
+  italic?: boolean;
+  /** Code formatting */
+  code?: boolean;
+  /** Link information */
+  link?: { href: string; title?: string };
+}
+⋮----
+/** Bold text */
+⋮----
+/** Italic text */
+⋮----
+/** Code formatting */
+⋮----
+/** Link information */
+⋮----
+/**
+ * A segment of formatted text
+ */
+export interface TextSpan {
+  /** The text content */
+  text: string;
+  /** Optional formatting */
+  format?: TextFormatting;
+}
+⋮----
+/** The text content */
+⋮----
+/** Optional formatting */
+⋮----
+/**
+ * A standard paragraph with optional formatted text
+ */
+export interface ParagraphSection extends BaseSection {
+  type: SectionType.Paragraph;
+  /** The paragraph content */
+  content: TextSpan[];
+}
+⋮----
+/** The paragraph content */
+⋮----
+/**
+ * A heading with a specific level and optional formatted text
+ */
+export interface HeadingSection extends BaseSection {
+  type: SectionType.Heading;
+  /** Heading level (1-6) */
+  level: 1 | 2 | 3 | 4 | 5 | 6;
+  /** The heading content */
+  content: TextSpan[];
+}
+⋮----
+/** Heading level (1-6) */
+⋮----
+/** The heading content */
+⋮----
+/**
+ * Types of lists
+ */
+export enum ListType {
+  Unordered = "unordered",
+  Ordered = "ordered",
+}
+⋮----
+/**
+ * A list item with optional nested items
+ */
+export interface ListItem {
+  /** The item content */
+  content: TextSpan[];
+  /** Optional nested items */
+  items?: ListItem[];
+}
+⋮----
+/** The item content */
+⋮----
+/** Optional nested items */
+⋮----
+/**
+ * A list section (ordered or unordered)
+ */
+export interface ListSection extends BaseSection {
+  type: SectionType.List;
+  /** List type (ordered or unordered) */
+  listType: ListType;
+  /** List items */
+  items: ListItem[];
+}
+⋮----
+/** List type (ordered or unordered) */
+⋮----
+/** List items */
+⋮----
+/**
+ * A code block with syntax highlighting
+ */
+export interface CodeSection extends BaseSection {
+  type: SectionType.Code;
+  /** The code content */
+  code: string;
+  /** Programming language for syntax highlighting */
+  language?: string;
+  /** Optional file name or title */
+  filename?: string;
+  /** Lines to highlight */
+  highlightLines?: number[];
+  /** Whether to show line numbers */
+  showLineNumbers?: boolean;
+}
+⋮----
+/** The code content */
+⋮----
+/** Programming language for syntax highlighting */
+⋮----
+/** Optional file name or title */
+⋮----
+/** Lines to highlight */
+⋮----
+/** Whether to show line numbers */
+⋮----
+/**
+ * Types of callouts
+ */
+export enum CalloutType {
+  Info = "info",
+  Warning = "warning",
+  Success = "success",
+  Error = "error",
+}
+⋮----
+/**
+ * A callout box for important information
+ */
+export interface CalloutSection extends BaseSection {
+  type: SectionType.Callout;
+  /** Callout type */
+  calloutType: CalloutType;
+  /** Optional callout title */
+  title?: string;
+  /** Callout content */
+  content: TextSpan[];
+}
+⋮----
+/** Callout type */
+⋮----
+/** Optional callout title */
+⋮----
+/** Callout content */
+⋮----
+/**
+ * An image with optional caption
+ */
+export interface ImageSection extends BaseSection {
+  type: SectionType.Image;
+  /** Image source URL */
+  src: string;
+  /** Alternative text */
+  alt: string;
+  /** Optional caption */
+  caption?: string;
+  /** Optional width */
+  width?: number;
+  /** Optional height */
+  height?: number;
+}
+⋮----
+/** Image source URL */
+⋮----
+/** Alternative text */
+⋮----
+/** Optional caption */
+⋮----
+/** Optional width */
+⋮----
+/** Optional height */
+⋮----
+/**
+ * A table cell
+ */
+export interface TableCell {
+  /** Cell content */
+  content: TextSpan[];
+  /** Optional column span */
+  colSpan?: number;
+  /** Optional row span */
+  rowSpan?: number;
+  /** Text alignment */
+  align?: "left" | "center" | "right";
+}
+⋮----
+/** Cell content */
+⋮----
+/** Optional column span */
+⋮----
+/** Optional row span */
+⋮----
+/** Text alignment */
+⋮----
+/**
+ * A table row
+ */
+export interface TableRow {
+  /** Row cells */
+  cells: TableCell[];
+}
+⋮----
+/** Row cells */
+⋮----
+/**
+ * A table section
+ */
+export interface TableSection extends BaseSection {
+  type: SectionType.Table;
+  /** Table header rows */
+  header: TableRow[];
+  /** Table body rows */
+  rows: TableRow[];
+  /** Optional table caption */
+  caption?: string;
+}
+⋮----
+/** Table header rows */
+⋮----
+/** Table body rows */
+⋮----
+/** Optional table caption */
+⋮----
+/**
+ * A blockquote
+ */
+export interface QuoteSection extends BaseSection {
+  type: SectionType.Quote;
+  /** Quote content */
+  content: TextSpan[];
+  /** Optional attribution */
+  attribution?: string;
+}
+⋮----
+/** Quote content */
+⋮----
+/** Optional attribution */
+⋮----
+/**
+ * A divider/horizontal rule
+ */
+export interface DividerSection extends BaseSection {
+  type: SectionType.Divider;
+}
+⋮----
+/**
+ * A card with title, content and optional link
+ */
+export interface CardSection extends BaseSection {
+  type: SectionType.Card;
+  /** Card title */
+  title: string;
+  /** Card content */
+  content: TextSpan[];
+  /** Optional link */
+  href?: string;
+  /** Optional image */
+  image?: string;
+}
+⋮----
+/** Card title */
+⋮----
+/** Card content */
+⋮----
+/** Optional link */
+⋮----
+/** Optional image */
+⋮----
+/**
+ * Union type of all section types
+ */
+export type ContentSection =
+  | ParagraphSection
+  | HeadingSection
+  | ListSection
+  | CodeSection
+  | CalloutSection
+  | ImageSection
+  | TableSection
+  | QuoteSection
+  | DividerSection
+  | CardSection;
+⋮----
+/**
+ * Documentation content type
+ */
+export interface DocContent extends ContentBase {
+  contentType: "doc";
+  /** Content sections */
+  sections: ContentSection[];
+  /** Related documentation */
+  related?: { title: string; href: string }[];
+  /** Previous page */
+  prev?: { title: string; slug: string };
+  /** Next page */
+  next?: { title: string; slug: string };
+}
+⋮----
+/** Content sections */
+⋮----
+/** Related documentation */
+⋮----
+/** Previous page */
+⋮----
+/** Next page */
+⋮----
+/**
+ * Blog content type
+ */
+export interface BlogContent extends ContentBase {
+  contentType: "blog";
+  /** Content sections */
+  sections: ContentSection[];
+  /** Featured image */
+  image?: string;
+  /** Reading time in minutes */
+  readingTime?: number;
+}
+⋮----
+/** Content sections */
+⋮----
+/** Featured image */
+⋮----
+/** Reading time in minutes */
+````
+
+## File: src/lib/mock-docs.ts
+````typescript
+/**
+ * Mock documentation data using structured content
+ *
+ * This file provides sample document content for documentation pages
+ * without requiring MDX or Contentlayer.
+ */
+⋮----
+import {
+  DocContent,
+  SectionType,
+  ListType,
+  CalloutType,
+} from "@/lib/content-data";
+⋮----
+/**
+ * Collection of document content organized by slugAsParams path
+ */
+⋮----
+// Documentation index page
+⋮----
+// Core Concepts Overview
+⋮----
+// AI Agents
+⋮----
+// Memory Management
+⋮----
+// Agent Networks
+⋮----
+// Getting Started
+````
+
 ## File: src/lib/toc.ts
 ````typescript
 import { toc } from "mdast-util-toc";
@@ -16887,20 +12489,6 @@ export interface NavSection {
 }
 ````
 
-## File: contentlayer.config.ts
-````typescript
-import { defineDocumentType, makeSource } from "contentlayer/source-files";
-import rehypeAutolinkHeadings from "rehype-autolink-headings";
-import rehypePrettyCode from "rehype-pretty-code";
-import rehypeSlug from "rehype-slug";
-import remarkGfm from "remark-gfm";
-import remarkMdxFrontmatter from "remark-mdx-frontmatter";
-import remarkParse from "remark-parse";
-import remarkRehype from "remark-rehype";
-⋮----
-/** @type {import('rehype-pretty-code').Options} */
-````
-
 ## File: src/app/(public)/contact/page.tsx
 ````typescript
 import { useState } from "react";
@@ -16954,19 +12542,6 @@ reset(); // Clear the form
 <form onSubmit=
 ````
 
-## File: src/app/(public)/docs/page.tsx
-````typescript
-import { type Metadata } from "next"
-import { getTableOfContents } from "@/lib/toc"
-import { Mdx } from "@/components/docs/mdx"
-import { DocsPageLayout } from "@/components/docs/DocsPageLayout"
-import { DocsLayoutWrapper } from "@/components/docs/DocsLayoutWrapper"
-⋮----
-// Temporary mock until Contentlayer is properly generating
-⋮----
-// Temporary mock doc while Contentlayer is not working in dev mode
-````
-
 ## File: src/app/(public)/services/page.tsx
 ````typescript
 import { Metadata } from "next"
@@ -16990,6 +12565,54 @@ type Service = {
 {/* Services Grid */}
 ⋮----
 {/* CTA Section */}
+````
+
+## File: src/components/docs/DocsPageLayout.tsx
+````typescript
+import { TableOfContents } from "@/types/toc"
+import { Toc } from "./Toc"
+import { DocsPagination } from "./DocsPagination"
+import { ContentRenderer } from "./ContentRenderer"
+import { type ContentSection } from "@/lib/content-data"
+⋮----
+interface DocsPageLayoutProps {
+  /**
+   * Content to display in the main area
+   * Can be either structured content sections or React children for backward compatibility
+   */
+  children?: React.ReactNode
+  /**
+   * Table of contents for the page
+   */
+  toc: TableOfContents
+  /**
+   * Pagination links
+   */
+  pagination?: {
+    prev?: { title: string; href: string }
+    next?: { title: string; href: string }
+  }  /**
+   * Structured content sections (alternative to children)
+   */
+  sections?: ContentSection[]
+}
+⋮----
+/**
+   * Content to display in the main area
+   * Can be either structured content sections or React children for backward compatibility
+   */
+⋮----
+/**
+   * Table of contents for the page
+   */
+⋮----
+/**
+   * Pagination links
+   */
+⋮----
+}  /**
+   * Structured content sections (alternative to children)
+   */
 ````
 
 ## File: src/components/layout/Footer.tsx
@@ -17065,76 +12688,6 @@ const handleMouseLeave = () =>
 className=
 ````
 
-## File: src/content/blog/my-first-post.mdx
-````
----
-title: "Getting Started with DeanMachines AI"
-description: "Learn core concepts and best practices for deploying intelligent AI agents at scale using DeanMachines AI platform"
-date: "2025-04-07"
-authors: ["Sam"]
-tags: [Tutorial, AI Agents, Machine Learning, Enterprise AI]
-ogImage: "/images/blog/getting-started-banner.png"
-seo:
-  title: "Getting Started with DeanMachines AI - Complete Tutorial Guide"
-  description: "Learn how to build and deploy scalable AI agents with DeanMachines AI platform. Step-by-step guide with best practices and real-world examples."
-  keywords: ["AI development", "machine learning", "AI agents", "enterprise AI", "DeanMachines AI", "AI deployment", "AI scaling"]
----
-
-# Introducing DeanMachines AI
-... (rest of your existing content)
-````
-
-## File: src/content/docs/introduction/overview.mdx
-````
----
-title: "Platform Overview"
-description: "An overview of DeanMachines AI platform capabilities and features"
----
-
-# Welcome to DeanMachines AI
-
-DeanMachines AI is a powerful platform for building, deploying, and managing intelligent AI agents. Our platform provides developers with the tools they need to create sophisticated AI solutions that can learn, adapt, and work together.
-
-## What is DeanMachines AI?
-
-Mastra AI combines state-of-the-art AI capabilities with an intuitive development experience. Our platform enables you to:
-
-- Create autonomous AI agents that can understand and interact with their environment
-- Build networks of cooperating agents that can solve complex problems
-- Deploy agents to any cloud platform with enterprise-grade reliability
-- Monitor and optimize agent performance in real-time
-
-## Key Features
-
-### Intelligent Agents
-Build AI agents that can understand context, learn from interactions, and make autonomous decisions.
-
-### Memory Management
-Implement sophisticated memory systems that allow agents to maintain context and learn from past experiences.
-
-### Agent Networks
-Create networks of specialized agents that can communicate and collaborate to solve complex tasks.
-
-### Enterprise Ready
-Deploy with confidence using our production-grade infrastructure, complete with monitoring, scaling, and security features.
-
-## Getting Started
-
-Ready to start building? Head over to our [Quick Start Guide](/docs/getting-started/quick-start) to create your first AI agent in minutes.
-
-## Platform Status
-
-<Callout type="success">
-  DeanMachines AI platform is currently stable and running version 1.0.0
-</Callout>
-
-## Next Steps
-
-- [Installation Guide](/docs/getting-started/installation) - Set up your development environment
-- [Core Concepts](/docs/core-concepts/overview) - Learn about the fundamental concepts
-- [Examples](/docs/examples/chatbot) - Explore sample applications
-````
-
 ## File: src/app/(public)/about/page.tsx
 ````typescript
 import { Metadata } from "next";
@@ -17161,6 +12714,24 @@ export default function AboutPage(): JSX.Element
 {/* Guiding Principles Section */}
 ⋮----
 {/* Commitment to Responsible AI */}
+````
+
+## File: src/app/(public)/docs/page.tsx
+````typescript
+import { type Metadata } from "next"
+import { DocsPageLayout } from "@/components/docs/DocsPageLayout"
+import { DocsLayoutWrapper } from "@/components/docs/DocsLayoutWrapper"
+import { DocPage } from "@/components/docs/DocPage"
+import { mockDocs } from "@/lib/mock-docs"
+import { SectionType } from "@/lib/content-data"
+⋮----
+export default async function DocsPage()
+⋮----
+// Use the index document from our mockDocs
+⋮----
+// If for some reason the index doc isn't found, create a basic placeholder
+⋮----
+// Add next page link
 ````
 
 ## File: src/app/layout.tsx
@@ -17800,116 +13371,78 @@ graph TB
         direction TB
         NextApp["Next.js App<br>(Next.js 15)"]
 
-        subgraph "Layout Components"
-            NavBar["Navigation Bar<br>(React)"]
-            Footer["Footer<br>(React)"]
-            ThemeProvider["Theme Provider<br>(next-themes)"]
-            Toaster["Notifications<br>(Sonner)"]
-        end
-
-        subgraph "Page Components"
-            PublicPages["Public Pages<br>(Next.js Pages)"]
-            AdminPages["Admin Pages<br>(Next.js Pages)"]
-            UserPages["User Pages<br>(Next.js Pages)"]
-            DocsPages["Documentation<br>(MDX)"]
-        end
-
-        subgraph "UI Components"
-            CommonUI["Common UI<br>(shadcn/ui)"]
-            Forms["Form Components<br>(React)"]
-            Charts["Visualization<br>(React)"]
-            MDXComponents["MDX Components<br>(React)"]
+        subgraph "Frontend Components"
+            direction LR
+            NavBar["Navigation<br>(React)"]
+            Auth["Authentication<br>(NextAuth.js)"]
+            ThemeToggle["Theme System<br>(next-themes)"]
+            UIComponents["UI Components<br>(shadcn/ui)"]
+            DocsSystem["Documentation System<br>(MDX)"]
+            AdminDashboard["Admin Dashboard<br>(React)"]
+            UserDashboard["User Dashboard<br>(React)"]
         end
     end
 
-    subgraph "Authentication Container"
-        AuthService["Auth Service<br>(NextAuth.js)"]
-        FirebaseAuth["Firebase Auth<br>(Firebase)"]
-        FirestoreAdapter["Firestore Adapter<br>(Auth.js)"]
-    end
+    subgraph "Backend Container"
+        direction TB
+        APILayer["API Layer<br>(Next.js API Routes)"]
 
-    subgraph "AI System Container"
-        subgraph "Core AI Components"
-            AgentNetwork["Agent Network<br>(Mastra)"]
-            LangChainService["LangChain Service<br>(LangChain)"]
+        subgraph "Core Components"
+            direction LR
+            AuthService["Auth Service<br>(Firebase Auth)"]
+            MastraCore["Mastra Core<br>(Node.js)"]
+            AgentSystem["Agent System<br>(TypeScript)"]
             MemorySystem["Memory System<br>(LibSQL)"]
+            VectorStore["Vector Store<br>(Pinecone)"]
         end
 
         subgraph "Agent Components"
-            ResearchAgent["Research Agent<br>(AI)"]
-            AnalystAgent["Analyst Agent<br>(AI)"]
-            WriterAgent["Writer Agent<br>(AI)"]
-            CoderAgent["Coder Agent<br>(AI)"]
-            DataManager["Data Manager<br>(AI)"]
+            direction LR
+            BaseAgent["Base Agent<br>(TypeScript)"]
+            AgentNetwork["Agent Network<br>(TypeScript)"]
+            ToolSystem["Tool System<br>(TypeScript)"]
+            LangChainIntegration["LangChain Integration<br>(TypeScript)"]
         end
-
-        subgraph "Tool Components"
-            SearchTools["Search Tools<br>(Multiple APIs)"]
-            VectorTools["Vector Tools<br>(Pinecone)"]
-            FileTools["File Tools<br>(Node.js)"]
-            APITools["API Tools<br>(REST)"]
-        end
-    end
-
-    subgraph "Data Storage"
-        Firestore[("Firestore DB<br>Firebase")]
-        VectorDB[("Vector DB<br>Pinecone")]
-        LibSQLDB[("LibSQL DB<br>LibSQL")]
     end
 
     subgraph "External Services"
+        direction LR
+        Firebase["Firebase<br>(Auth/Firestore)"]
         GoogleAI["Google AI<br>(Gemini)"]
-        ExaSearch["Exa Search<br>(API)"]
-        TavilyAPI["Tavily API<br>(API)"]
-        BraveSearch["Brave Search<br>(API)"]
+        Pinecone["Pinecone<br>(Vector DB)"]
+        LibSQL["LibSQL<br>(Storage)"]
     end
 
-    %% Connections
+    %% Frontend Relationships
     User -->|"Accesses"| NextApp
     Admin -->|"Manages"| NextApp
-
     NextApp -->|"Uses"| NavBar
-    NextApp -->|"Uses"| Footer
-    NextApp -->|"Uses"| ThemeProvider
-    NextApp -->|"Uses"| Toaster
+    NextApp -->|"Uses"| Auth
+    NextApp -->|"Uses"| ThemeToggle
+    NextApp -->|"Uses"| UIComponents
+    NextApp -->|"Uses"| DocsSystem
+    NextApp -->|"Uses"| AdminDashboard
+    NextApp -->|"Uses"| UserDashboard
 
-    NextApp -->|"Routes to"| PublicPages
-    NextApp -->|"Routes to"| AdminPages
-    NextApp -->|"Routes to"| UserPages
-    NextApp -->|"Routes to"| DocsPages
+    %% Backend Relationships
+    NextApp -->|"API Calls"| APILayer
+    APILayer -->|"Authenticates"| AuthService
+    APILayer -->|"Uses"| MastraCore
+    MastraCore -->|"Manages"| AgentSystem
+    AgentSystem -->|"Uses"| MemorySystem
+    AgentSystem -->|"Uses"| VectorStore
 
-    PublicPages -->|"Uses"| CommonUI
-    AdminPages -->|"Uses"| CommonUI
-    UserPages -->|"Uses"| CommonUI
-    DocsPages -->|"Uses"| MDXComponents
+    %% Agent Component Relationships
+    AgentSystem -->|"Extends"| BaseAgent
+    AgentSystem -->|"Orchestrates"| AgentNetwork
+    AgentSystem -->|"Uses"| ToolSystem
+    AgentSystem -->|"Integrates"| LangChainIntegration
 
-    NextApp -->|"Authenticates"| AuthService
-    AuthService -->|"Uses"| FirebaseAuth
-    AuthService -->|"Adapts"| FirestoreAdapter
-    FirestoreAdapter -->|"Stores"| Firestore
-
-    AgentNetwork -->|"Coordinates"| ResearchAgent
-    AgentNetwork -->|"Coordinates"| AnalystAgent
-    AgentNetwork -->|"Coordinates"| WriterAgent
-    AgentNetwork -->|"Coordinates"| CoderAgent
-    AgentNetwork -->|"Coordinates"| DataManager
-
-    ResearchAgent -->|"Uses"| SearchTools
-    AnalystAgent -->|"Uses"| VectorTools
-    WriterAgent -->|"Uses"| FileTools
-    CoderAgent -->|"Uses"| APITools
-    DataManager -->|"Uses"| FileTools
-
-    SearchTools -->|"Queries"| ExaSearch
-    SearchTools -->|"Queries"| TavilyAPI
-    SearchTools -->|"Queries"| BraveSearch
-
-    AgentNetwork -->|"Uses"| LangChainService
-    LangChainService -->|"Calls"| GoogleAI
-
-    AgentNetwork -->|"Uses"| MemorySystem
-    MemorySystem -->|"Stores in"| LibSQLDB
-    VectorTools -->|"Stores in"| VectorDB
+    %% External Service Relationships
+    AuthService -->|"Uses"| Firebase
+    AgentSystem -->|"Uses"| GoogleAI
+    VectorStore -->|"Stores in"| Pinecone
+    MemorySystem -->|"Persists in"| LibSQL
 ```
 
 ## 🎯 Technical Goals & Implementation Status
@@ -18168,6 +13701,7 @@ Made with ❤️ by the DeanMachines team
   "dependencies": {
     "@agentic/ai-sdk": "^7.6.4",
     "@agentic/arxiv": "^7.6.4",
+    "@agentic/bing": "^7.6.4",
     "@agentic/brave-search": "^7.6.4",
     "@agentic/calculator": "^7.6.4",
     "@agentic/core": "^7.6.4",
@@ -18175,16 +13709,27 @@ Made with ❤️ by the DeanMachines team
     "@agentic/exa": "^7.6.4",
     "@agentic/firecrawl": "^7.6.4",
     "@agentic/genkit": "^7.6.4",
+    "@agentic/github": "^7.6.4",
     "@agentic/google-custom-search": "^7.6.4",
     "@agentic/google-docs": "^7.6.4",
     "@agentic/google-drive": "^7.6.4",
+    "@agentic/jina": "^7.6.4",
     "@agentic/langchain": "^7.6.4",
     "@agentic/llamaindex": "^7.6.4",
     "@agentic/mastra": "^7.6.4",
     "@agentic/mcp": "^7.6.4",
+    "@agentic/midjourney": "^7.6.4",
+    "@agentic/notion": "^7.6.4",
+    "@agentic/openapi-to-ts": "^7.6.4",
+    "@agentic/reddit": "^7.6.4",
+    "@agentic/searxng": "^7.6.4",
+    "@agentic/serper": "^7.6.4",
+    "@agentic/social-data": "^7.6.4",
     "@agentic/stdlib": "^7.6.4",
     "@agentic/tavily": "^7.6.4",
+    "@agentic/wikidata": "^7.6.4",
     "@agentic/wikipedia": "^7.6.4",
+    "@agentic/wolfram-alpha": "^7.6.4",
     "@ai-sdk/anthropic": "^1.2.9",
     "@ai-sdk/google": "^1.2.10",
     "@ai-sdk/google-vertex": "^2.2.14",
@@ -18270,7 +13815,6 @@ Made with ❤️ by the DeanMachines team
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "commander": "^13.1.0",
-    "contentlayer": "0.3.4",
     "d3": "^7.9.0",
     "date-fns": "^2.30.0",
     "embla-carousel-react": "^8.6.0",
@@ -18278,7 +13822,7 @@ Made with ❤️ by the DeanMachines team
     "fast-xml-parser": "^5.2.0",
     "firebase": "^11.6.0",
     "firebase-admin": "^12.0.0",
-    "framer-motion": "^12.6.3",
+    "framer-motion": "^12.6.5",
     "fs-extra": "^11.3.0",
     "geist": "^1.3.1",
     "genkit": "^1.6.0",
@@ -18296,7 +13840,6 @@ Made with ❤️ by the DeanMachines team
     "mdast-util-toc": "^7.1.0",
     "next": "15.3.0",
     "next-auth": "5.0.0-beta.25",
-    "next-contentlayer": "0.3.4",
     "next-themes": "^0.4.6",
     "octokit": "^4.1.3",
     "p-throttle": "^7.0.0",
@@ -18331,16 +13874,16 @@ Made with ❤️ by the DeanMachines team
     "zod": "^3.24.2"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "^3",
-    "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
+    "@eslint/eslintrc": "^3.3.1",
+    "@tailwindcss/postcss": "^4.1.3",
+    "@types/node": "^22.14.1",
     "@types/react": "^18.3.20",
     "@types/react-dom": "^18.3.6",
     "@types/react-plotly.js": "^2.6.3",
     "eslint": "^9.24.0",
-    "eslint-config-next": "15.2.4",
+    "eslint-config-next": "15.3.0",
     "js-tiktoken": "^1.0.19",
-    "tailwindcss": "^4",
+    "tailwindcss": "^4.1.3",
     "typescript": "^5.8.3"
   },
   "compilerOptions": {
