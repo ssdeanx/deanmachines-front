@@ -1,9 +1,7 @@
 import { type Metadata } from "next"
 import { notFound } from "next/navigation"
-
 import { type DocContent, SectionType } from "@/lib/content-data"
 import { DocPage } from "@/components/docs/DocPage"
-import { DocsLayoutWrapper } from "@/components/docs/DocsLayoutWrapper"
 import { mockDocs } from "@/lib/mock-docs"
 
 export const metadata: Metadata = {
@@ -42,16 +40,16 @@ export default async function NetworksPage() {
         next: { title: "Deployment", slug: "core-concepts/deployment" },
       }
       return (
-        <DocsLayoutWrapper>
+
           <DocPage doc={fallbackDoc} />
-        </DocsLayoutWrapper>
+
       )
     }
 
     return (
-      <DocsLayoutWrapper>
+
         <DocPage doc={doc} />
-      </DocsLayoutWrapper>
+
     )
   } catch (error) {
     console.error("Error loading NetworksPage:", error)

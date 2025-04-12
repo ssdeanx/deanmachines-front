@@ -97,7 +97,21 @@ const plans: Plan[] = [
 ]
 
 export function PricingTable() {
-  const [isAnnual, setIsAnnual] = React.useState(false)
+  // Use null for initial state to indicate "not initialized yet"
+  const [isAnnual, setIsAnnual] = React.useState<boolean | null>(null)
+
+  // Initialize state on client-side only to prevent hydration mismatch
+  React.useEffect(() => {
+    // Check localStorage for saved preference, default to false if not found
+    const savedPreference = localStorage.getItem('pricingPreference') === 'annual'
+    setIsAnnual(savedPreference)
+  }, [])
+
+  // Handle switching between billing periods
+  const handleBillingChange = (checked: boolean) => {
+    setIsAnnual(checked)
+    localStorage.setItem('pricingPreference', checked ? 'annual' : 'monthly')
+  }
 
   return (
     <section
@@ -120,11 +134,10 @@ export function PricingTable() {
 
         <div className="mt-8 flex justify-center">
           <div className="relative flex items-center gap-x-4">
-            <span className="text-sm font-semibold">Monthly</span>
-            <Switch
+            <span className="text-sm font-semibold">Monthly</span>            <Switch
               id="billing-toggle"
-              checked={isAnnual}
-              onCheckedChange={setIsAnnual}
+              checked={isAnnual === null ? false : isAnnual}
+              onCheckedChange={handleBillingChange}
               aria-label="Toggle annual billing"
             />
             <span className="text-sm font-semibold">

@@ -1,11 +1,7 @@
 import { type Metadata } from "next"
 import { notFound } from "next/navigation"
-
-// Import structured content types and components instead of MDX ones
 import { type DocContent, SectionType } from "@/lib/content-data"
 import { DocPage } from "@/components/docs/DocPage"
-import { DocsLayoutWrapper } from "@/components/docs/DocsLayoutWrapper"
-// Keep using mockDocs (replace with your actual data source later)
 import { mockDocs } from "@/lib/mock-docs"
 
 export const metadata: Metadata = {
@@ -50,9 +46,7 @@ export default async function AgentsPage() {
       }
       // Render the fallback page
       return (
-        <DocsLayoutWrapper>
           <DocPage doc={fallbackDoc} />
-        </DocsLayoutWrapper>
       )
       // Alternatively, uncomment the line below to show a standard 404 page
       // notFound()
@@ -61,9 +55,7 @@ export default async function AgentsPage() {
     // Render the DocPage component, passing the fetched structured content.
     // DocPage handles the layout, table of contents, and content rendering internally.
     return (
-      <DocsLayoutWrapper>
         <DocPage doc={doc} />
-      </DocsLayoutWrapper>
     )
   } catch (error) {
     console.error("Error loading AgentsPage:", error)

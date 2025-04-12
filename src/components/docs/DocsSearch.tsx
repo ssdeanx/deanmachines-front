@@ -20,10 +20,21 @@ import { mockDocs } from "@/lib/mock-docs"
 import { type DocContent, type TextSpan, SectionType, type ListItem } from "@/lib/content-data"
 import { type Doc } from "@/types/docs"
 
-// Helper function to extract text from DocContent sections
+/**
+ * Helper function to extract searchable text from DocContent sections
+ * This transforms structured content into a flat text representation for searching
+ *
+ * @param sections - The structured content sections to extract text from
+ * @returns A string containing all the searchable text
+ */
 function extractTextFromSections(sections: DocContent['sections']): string {
   let text = "";
-  const extractFromSpans = (spans: TextSpan[]) => spans.map(span => span.text).join(" ");
+
+  // Helper function to extract text from TextSpan arrays
+  const extractFromSpans = (spans: TextSpan[]) =>
+    spans.map(span => span.text).join(" ");
+
+  // Helper function to recursively extract text from list items
   const extractFromListItems = (items: ListItem[]): string => {
     return items.map(item => {
       const itemText = extractFromSpans(item.content);
@@ -32,33 +43,40 @@ function extractTextFromSections(sections: DocContent['sections']): string {
     }).join(" ");
   };
 
+  // Process each section type and extract its textual content
   sections.forEach(section => {
     switch (section.type) {
       case SectionType.Paragraph:
       case SectionType.Heading:
       case SectionType.Callout:
       case SectionType.Quote:
-      case SectionType.Card: // Assuming Card content is searchable
+      case SectionType.Card:
         text += extractFromSpans(section.content) + " ";
         break;
       case SectionType.List:
         text += extractFromListItems(section.items) + " ";
         break;
-      case SectionType.Table: // Simple text extraction from table cells
-        section.header.forEach(row => row.cells.forEach(cell => text += extractFromSpans(cell.content) + " "));
-        section.rows.forEach(row => row.cells.forEach(cell => text += extractFromSpans(cell.content) + " "));
+      case SectionType.Table:
+        // Extract text from table cells
+        section.header.forEach(row =>
+          row.cells.forEach(cell => text += extractFromSpans(cell.content) + " "));
+        section.rows.forEach(row =>
+          row.cells.forEach(cell => text += extractFromSpans(cell.content) + " "));
         break;
-      case SectionType.Code: // Optionally include code in search
-        // text += section.code + " ";
+      case SectionType.Code:
+        // Optionally include code in search
+        text += section.code + " ";
         break;
-      // Ignore Image, Divider
+      // Ignore Image, Divider and other non-text sections
     }
   });
+
   return text;
 }
 
 /**
- * Custom hook for fuzzy searching through documentation content
+ * Custom hook for searching through documentation content
+ * Implements immediate search for navigation items and content
  *
  * @param query - The search query string
  * @returns An array of search results with title, content snippet, and href
@@ -80,7 +98,7 @@ function useDocsSearch(query: string) {
 
     const lowercaseQuery = query.toLowerCase();
 
-    // Search through navigation items
+    // Search through navigation items (sidebar)
     const navResults = docsConfig.sidebarNav.flatMap((section) =>
       section.items
         .filter((item) =>
@@ -88,8 +106,8 @@ function useDocsSearch(query: string) {
         )
         .map((item) => ({
           title: item.title,
-          content: "Navigation item",
-          href: item.href,
+          content: item.description || "Navigation item",
+          href: item.href || `/docs/${item.slug || ""}`,
           type: "nav" as const,
         }))
     );
@@ -108,6 +126,7 @@ function useDocsSearch(query: string) {
         const rawContent = extractTextFromSections(doc.sections);
         const queryIndex = rawContent.toLowerCase().indexOf(lowercaseQuery);
 
+        // Generate a content snippet that highlights where the match occurs
         let contentSnippet = "";
         if (queryIndex >= 0) {
           const start = Math.max(0, queryIndex - 40);
@@ -127,7 +146,7 @@ function useDocsSearch(query: string) {
         };
       });
 
-    // Sort results to prioritize titles matches over content matches
+    // Sort results to prioritize title matches over content matches
     const sortedResults = [...navResults, ...contentResults].sort((a, b) => {
       // Title matches come first
       const aHasTitle = a.title.toLowerCase().includes(lowercaseQuery);
@@ -140,8 +159,8 @@ function useDocsSearch(query: string) {
       return a.title.localeCompare(b.title);
     });
 
-    // Limit results
-    setResults(sortedResults.slice(0, 10));
+    // Limit results and update state
+    setResults(sortedResults.slice(0, 12));
   }, [query]);
 
   return results;
@@ -149,6 +168,7 @@ function useDocsSearch(query: string) {
 
 /**
  * Documentation search component with keyboard shortcut support
+ * Provides a command palette-style search interface for the documentation
  */
 export function DocsSearch({ className, ...props }: React.ComponentPropsWithoutRef<typeof Button>) {
   const router = useRouter()
@@ -156,9 +176,10 @@ export function DocsSearch({ className, ...props }: React.ComponentPropsWithoutR
   const [query, setQuery] = React.useState("")
   const results = useDocsSearch(query)
 
+  // Register keyboard shortcut (Cmd+K or Ctrl+K)
   React.useEffect(() => {
     const down = (e: KeyboardEvent) => {
-      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+      if ((e.key === "k" || e.key === "K") && (e.metaKey || e.ctrlKey)) {
         e.preventDefault()
         setOpen((open) => !open)
       }
@@ -168,6 +189,7 @@ export function DocsSearch({ className, ...props }: React.ComponentPropsWithoutR
     return () => document.removeEventListener("keydown", down)
   }, [])
 
+  // Handle command selection
   const runCommand = React.useCallback((command: () => unknown) => {
     setOpen(false)
     setQuery("")
@@ -191,68 +213,81 @@ export function DocsSearch({ className, ...props }: React.ComponentPropsWithoutR
           <span className="text-xs">⌘</span>K
         </kbd>
       </Button>
-      <CommandDialog open={open} onOpenChange={(open) => {
-        setOpen(open)
-        if (!open) {
-          // Reset search when dialog closes
-          setQuery("")
-        }
-      }}>
+      <CommandDialog
+        open={open}
+        onOpenChange={(open) => {
+          setOpen(open)
+          if (!open) {
+            // Reset search when dialog closes
+            setQuery("")
+          }
+        }}
+        shouldFilter={false} // Disable built-in filtering since we handle it in the hook
+      >
         <CommandInput
           placeholder="Search documentation..."
           value={query}
           onValueChange={setQuery}
+          className="border-b"
         />
-        <CommandList>
-          <CommandEmpty>No results found.</CommandEmpty>
-          {results.length > 0 && (
+        <CommandList className="max-h-[80vh] overflow-y-auto">
+          <CommandEmpty>No results found</CommandEmpty>
+
+          {/* Navigation results */}
+          {results.some(result => result.type === "nav") && (
+            <CommandGroup heading="Navigation">
+              {results
+                .filter(result => result.type === "nav")
+                .map((result, index) => (
+                  <CommandItem
+                    key={`nav-${result.href}-${index}`}
+                    value={`${result.title}-nav-${index}`}
+                    onSelect={() => {
+                      runCommand(() => router.push(result.href))
+                    }}
+                  >
+                    <FileIcon className="mr-2 h-4 w-4" />
+                    <div className="overflow-hidden text-ellipsis">
+                      {result.title}
+                    </div>
+                  </CommandItem>
+                ))}
+            </CommandGroup>
+          )}
+
+          {/* Content results - show only if we have any */}
+          {results.some(result => result.type === "content") && (
             <>
-              <CommandGroup heading="Documentation">
+              {results.some(result => result.type === "nav") && <CommandSeparator />}
+              <CommandGroup heading="Content">
                 {results
-                  .filter(result => result.type === "nav")
+                  .filter(result => result.type === "content")
                   .map((result, index) => (
                     <CommandItem
-                      key={`${result.href}-${index}`}
-                      value={`${result.title}-nav`}
+                      key={`content-${result.href}-${index}`}
+                      value={`${result.title}-content-${index}`}
                       onSelect={() => {
                         runCommand(() => router.push(result.href))
                       }}
                     >
-                      <FileIcon className="mr-2 h-4 w-4" />
-                      <div>
-                        {result.title}
+                      <BookIcon className="mr-2 h-4 w-4 shrink-0" />
+                      <div className="overflow-hidden">
+                        <div className="font-medium">{result.title}</div>
+                        <p className="truncate text-xs text-muted-foreground">
+                          {result.content}
+                        </p>
                       </div>
                     </CommandItem>
                   ))}
               </CommandGroup>
-
-              {results.some(result => result.type === "content") && (
-                <>
-                  <CommandSeparator />
-                  <CommandGroup heading="Content Results">
-                    {results
-                      .filter(result => result.type === "content")
-                      .map((result, index) => (
-                        <CommandItem
-                          key={`${result.href}-${index}`}
-                          value={`${result.title}-content-${index}`}
-                          onSelect={() => {
-                            runCommand(() => router.push(result.href))
-                          }}
-                        >
-                          <BookIcon className="mr-2 h-4 w-4 shrink-0" />
-                          <div className="overflow-hidden">
-                            <div className="font-medium">{result.title}</div>
-                            <p className="truncate text-xs text-muted-foreground">
-                              {result.content}
-                            </p>
-                          </div>
-                        </CommandItem>
-                      ))}
-                  </CommandGroup>
-                </>
-              )}
             </>
+          )}
+
+          {/* Show welcome message when no search is entered */}
+          {query.length < 2 && (
+            <div className="py-6 text-center text-sm text-muted-foreground">
+              Type at least 2 characters to search...
+            </div>
           )}
         </CommandList>
       </CommandDialog>

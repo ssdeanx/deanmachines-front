@@ -2,18 +2,105 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Helper functions for role-based access
+    function isAuthenticated() {
+      return request.auth != null;
+    }
 
-    // This rule allows anyone with your Firestore database reference to view, edit,
-    // and delete all data in your Firestore database. It is useful for getting
-    // started, but it is configured to expire after 30 days because it
-    // leaves your app open to attackers. At that time, all client
-    // requests to your Firestore database will be denied.
-    //
-    // Make sure to write security rules for your app before that time, or else
-    // all client requests to your Firestore database will be denied until you Update
-    // your rules
+    function isAdmin() {
+      return isAuthenticated() &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    function isUser() {
+      return isAuthenticated() &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Default deny all
     match /{document=**} {
-      allow read, write: if request.time < timestamp.date(2025, 5, 12);
+      allow read, write: if false;
+    }
+
+    // Users collection - auth rules
+    match /users/{userId} {
+      // Users can read their own profile
+      // Admins can read any profile
+      allow read: if isOwner(userId) || isAdmin();
+
+      // Users can only update their own profile, but cannot change their role
+      allow update: if isOwner(userId) &&
+                     !("role" in request.resource.data) ||
+                     (request.resource.data.role == resource.data.role);
+
+      // Only admins can create user documents or update roles
+      // This protects role escalation attacks
+      allow create, delete: if isAdmin();
+      allow update: if isAdmin();
+    }
+
+    // Threads collection - for chat messages and agent interactions
+    match /threads/{threadId} {
+      // Users can read/write their own threads
+      // Admin can read all threads
+      allow read: if resource.data.userId == request.auth.uid || isAdmin();
+      allow create: if isAuthenticated() &&
+                     request.resource.data.userId == request.auth.uid;
+      allow update, delete: if resource.data.userId == request.auth.uid;
+    }
+
+    // Messages subcollection
+    match /threads/{threadId}/messages/{messageId} {
+      // Users can read/write messages in their own threads
+      // Admins can read messages in any thread
+      allow read: if get(/databases/$(database)/documents/threads/$(threadId)).data.userId == request.auth.uid || isAdmin();
+      allow create: if isAuthenticated() &&
+                     get(/databases/$(database)/documents/threads/$(threadId)).data.userId == request.auth.uid;
+      allow update, delete: if get(/databases/$(database)/documents/threads/$(threadId)).data.userId == request.auth.uid;
+    }
+
+    // Documents collection - for user created documents
+    match /documents/{docId} {
+      // Users can read/write their own documents
+      // Admin can read all documents
+      allow read: if resource.data.userId == request.auth.uid || isAdmin();
+      allow create: if isAuthenticated() &&
+                     request.resource.data.userId == request.auth.uid;
+      allow update, delete: if resource.data.userId == request.auth.uid || isAdmin();
+    }
+
+    // Projects collection
+    match /projects/{projectId} {
+      // Project members can read, project owner can write
+      // Admin can read/write all projects
+      allow read: if resource.data.members[request.auth.uid] != null || isAdmin();
+      allow create: if isAuthenticated() &&
+                     request.resource.data.owner == request.auth.uid;
+      allow update: if resource.data.owner == request.auth.uid || isAdmin();
+      allow delete: if resource.data.owner == request.auth.uid || isAdmin();
+    }
+
+    // Analytics data - admin only
+    match /analytics/{docId} {
+      allow read, write: if isAdmin();
+    }
+
+    // Public content collections
+    match /public/{docId} {
+      // Anyone can read public content
+      // Only admins can write
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // System settings - admin only
+    match /settings/{settingId} {
+      allow read, write: if isAdmin();
     }
   }
 }

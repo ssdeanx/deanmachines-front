@@ -1,5 +1,4 @@
 import { type Metadata } from "next"
-import { DocsPageLayout } from "@/components/docs/DocsPageLayout"
 import { DocPage } from "@/components/docs/DocPage"
 import { mockDocs } from "@/lib/mock-docs"
 import { SectionType, type DocContent } from "@/lib/content-data"

@@ -4,8 +4,7 @@ import { notFound } from "next/navigation"
 // Import structured content types and components instead of MDX ones
 import { type DocContent, SectionType } from "@/lib/content-data"
 import { DocPage } from "@/components/docs/DocPage"
-import { DocsLayoutWrapper } from "@/components/docs/DocsLayoutWrapper"
-// Temporarily use mockDocs. Replace this with your actual data source/fetching logic.
+
 import { mockDocs } from "@/lib/mock-docs"
 
 export const metadata: Metadata = {
@@ -50,24 +49,20 @@ export default async function MemoryApiPage() {
         prev: { title: "Agent API", slug: "api-reference/agent" }, // Example based on original code
         next: { title: "Network API", slug: "api-reference/network" }, // Example based on original code
       }
-      // Render the fallback page
-      return (
-        <DocsLayoutWrapper>
-          <DocPage doc={fallbackDoc} />
-        </DocsLayoutWrapper>
-      )
+      // Render the fallback page      return <DocPage doc={fallbackDoc} />
+      // Alternatively, uncomment the line below to show a standard 404 page
+      // notFound();
+    }
+
       // Alternatively, uncomment the line below to show a standard 404 page
       // notFound();
     }
 
     // Render the DocPage component, passing the fetched structured content.
     // DocPage handles the layout, table of contents, and content rendering internally.
-    return (
-      <DocsLayoutWrapper>
-        <DocPage doc={doc} />
-      </DocsLayoutWrapper>
-    )
-  } catch (error) {
+    // Render the DocPage component, passing the fetched structured content.
+    // DocPage handles the layout, table of contents, and content rendering internally.    return <DocPage doc={doc} />
+   catch (error) {
     console.error("Error loading MemoryApiPage:", error)
     // Optionally, render a specific error page or component
     notFound() // Or throw error;

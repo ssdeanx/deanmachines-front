@@ -38,20 +38,48 @@ The content is organized as follows:
 
 # Directory Structure
 ```
+dataconnect-generated/js/default-connector/angular/esm/
 src/content/
 src/mastra/tools/config/
 .gitignore
+apphosting.yaml
 auth.ts
 CHANGELOG.md
 components.json
+dataconnect-generated/js/default-connector/esm/index.esm.js
+dataconnect-generated/js/default-connector/esm/package.json
+dataconnect-generated/js/default-connector/index.cjs.js
+dataconnect-generated/js/default-connector/index.d.ts
+dataconnect-generated/js/default-connector/package.json
+dataconnect-generated/js/default-connector/react/esm/package.json
+dataconnect-generated/js/default-connector/react/index.d.ts
+dataconnect-generated/js/default-connector/react/package.json
+dataconnect-generated/js/default-connector/react/README.md
+dataconnect-generated/js/default-connector/README.md
+dataconnect/connector/connector.yaml
+dataconnect/connector/mutations.gql
+dataconnect/connector/queries.gql
+dataconnect/dataconnect.yaml
+dataconnect/schema/schema.gql
 eslint.config.mjs
+firestore.indexes.json
+firestore.rules
 fix.md
+functions/.eslintrc.js
+functions/.gitignore
+functions/package.json
+functions/src/genkit-sample.ts
+functions/src/index.ts
+functions/tsconfig.dev.json
+functions/tsconfig.json
 middleware.ts
 next.config.ts
 package.json
 postcss.config.mjs
+public/404.html
 public/file.svg
 public/globe.svg
+public/index.html
 public/next.svg
 public/vercel.svg
 public/window.svg
@@ -322,6 +350,33 @@ tsconfig.json
 
 # Files
 
+## File: apphosting.yaml
+````yaml
+# Settings for Backend (on Cloud Run).
+# See https://firebase.google.com/docs/app-hosting/configure#cloud-run
+runConfig:
+  minInstances: 0
+  # maxInstances: 100
+  # concurrency: 80
+  # cpu: 1
+  # memoryMiB: 512
+
+# Environment variables and secrets.
+# env:
+  # Configure environment variables.
+  # See https://firebase.google.com/docs/app-hosting/configure#user-defined-environment
+  # - variable: MESSAGE
+  #   value: Hello world!
+  #   availability:
+  #     - BUILD
+  #     - RUNTIME
+
+  # Grant access to secrets in Cloud Secret Manager.
+  # See https://firebase.google.com/docs/app-hosting/configure#secret-parameters
+  # - variable: MY_SECRET
+  #   secret: mySecretRef
+````
+
 ## File: components.json
 ````json
 {
@@ -347,6 +402,459 @@ tsconfig.json
 }
 ````
 
+## File: dataconnect-generated/js/default-connector/esm/index.esm.js
+````javascript
+
+````
+
+## File: dataconnect-generated/js/default-connector/esm/package.json
+````json
+{"type":"module"}
+````
+
+## File: dataconnect-generated/js/default-connector/index.cjs.js
+````javascript
+
+````
+
+## File: dataconnect-generated/js/default-connector/index.d.ts
+````typescript
+import { ConnectorConfig } from 'firebase/data-connect';
+⋮----
+export type TimestampString = string;
+export type UUIDString = string;
+export type Int64String = string;
+export type DateString = string;
+````
+
+## File: dataconnect-generated/js/default-connector/package.json
+````json
+{
+  "name": "@firebasegen/default-connector",
+  "version": "1.0.0",
+  "author": "Firebase <firebase-support@google.com> (https://firebase.google.com/)",
+  "description": "Generated SDK For default",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": " >=18.0"
+  },
+  "typings": "index.d.ts",
+  "module": "esm/index.esm.js",
+  "main": "index.cjs.js",
+  "browser": "esm/index.esm.js",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "require": "./index.cjs.js",
+      "default": "./esm/index.esm.js"
+    },
+    "./react": {
+      "types": "./react/index.d.ts",
+      "require": "./react/index.cjs.js",
+      "import": "./react/esm/index.esm.js",
+      "default": "./react/esm/index.esm.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "peerDependencies": {
+    "firebase": "^11.3.0",
+    "@tanstack-query-firebase/react": "^2.0.0"
+  }
+}
+````
+
+## File: dataconnect-generated/js/default-connector/react/esm/package.json
+````json
+{"type":"module"}
+````
+
+## File: dataconnect-generated/js/default-connector/react/index.d.ts
+````typescript
+import { DataConnect } from 'firebase/data-connect';
+import { FirebaseError } from 'firebase/app';
+````
+
+## File: dataconnect-generated/js/default-connector/react/package.json
+````json
+{
+  "name": "@firebasegen/default-connector-react",
+  "version": "1.0.0",
+  "author": "Firebase <firebase-support@google.com> (https://firebase.google.com/)",
+  "description": "Generated SDK For default",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": " >=18.0"
+  },
+  "typings": "index.d.ts",
+  "main": "index.cjs.js",
+  "module": "esm/index.esm.js",
+  "browser": "esm/index.esm.js",
+  "peerDependencies": {
+    "@tanstack-query-firebase/react": "^2.0.0"
+  }
+}
+````
+
+## File: dataconnect-generated/js/default-connector/react/README.md
+````markdown
+# Table of Contents
+- [**Overview**](#generated-react-readme)
+- [**TanStack Query Firebase & TanStack React Query**](#tanstack-query-firebase-tanstack-react-query)
+  - [*Package Installation*](#installing-tanstack-query-firebase-and-tanstack-react-query-packages)
+  - [*Configuring TanStack Query*](#configuring-tanstack-query)
+- [**Accessing the connector**](#accessing-the-connector)
+  - [*Connecting to the local Emulator*](#connecting-to-the-local-emulator)
+- [**Queries**](#queries)
+- [**Mutations**](#mutations)
+
+# Generated React README
+This README will guide you through the process of using the generated React SDK package for the connector `default`. It will also provide examples on how to use your generated SDK to call your Data Connect queries and mutations.
+
+***NOTE:** This README is generated alongside the generated SDK. If you make changes to this file, they will be overwritten when the SDK is regenerated.*
+
+You can use this generated SDK by importing from the package `@firebasegen/default-connector/react` as shown below. Both CommonJS and ESM imports are supported.
+
+You can also follow the instructions from the [Data Connect documentation](https://firebase.google.com/docs/data-connect/web-sdk#react).
+
+# TanStack Query Firebase & TanStack React Query
+This SDK provides [React](https://react.dev/) hooks generated specific to your application, for the operations found in the connector `default`. These hooks are generated using [TanStack Query Firebase](https://react-query-firebase.invertase.dev/) by our partners at Invertase, a library built on top of [TanStack React Query v5](https://tanstack.com/query/v5/docs/framework/react/overview).
+
+***You do not need to be familiar with Tanstack Query or Tanstack Query Firebase to use this SDK.*** However, you may find it useful to learn more about them, as they will empower you as a user of this Generated React SDK.
+
+## Installing TanStack Query Firebase and TanStack React Query Packages
+In order to use the React generated SDK, you must install the `TanStack React Query` and `TanStack Query Firebase` packages.
+```bash
+npm i --save @tanstack/react-query @tanstack-query-firebase/react
+```
+```bash
+npm i --save firebase@latest # Note: React has a peer dependency on ^11.3.0
+```
+
+You can also follow the installation instructions from the [Data Connect documentation](https://firebase.google.com/docs/data-connect/web-sdk#install_tanstack_query_firebase_packages), or the [TanStack Query Firebase documentation](https://react-query-firebase.invertase.dev/react) and [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/installation).
+
+## Configuring TanStack Query
+In order to use the React generated SDK in your application, you must wrap your application's component tree in a `QueryClientProvider` component from TanStack React Query. None of your generated React SDK hooks will work without this provider.
+
+```javascript
+import { QueryClientProvider } from '@tanstack/react-query';
+
+// Create a TanStack Query client instance
+const queryClient = new QueryClient()
+
+function App() {
+  return (
+    // Provide the client to your App
+    <QueryClientProvider client={queryClient}>
+      <MyApplication />
+    </QueryClientProvider>
+  )
+}
+```
+
+To learn more about `QueryClientProvider`, see the [TanStack React Query documentation](https://tanstack.com/query/latest/docs/framework/react/quick-start) and the [TanStack Query Firebase documentation](https://invertase.docs.page/tanstack-query-firebase/react#usage).
+
+# Accessing the connector
+A connector is a collection of Queries and Mutations. One SDK is generated for each connector - this SDK is generated for the connector `default`.
+
+You can find more information about connectors in the [Data Connect documentation](https://firebase.google.com/docs/data-connect#how-does).
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig } from '@firebasegen/default-connector';
+
+const dataConnect = getDataConnect(connectorConfig);
+```
+
+## Connecting to the local Emulator
+By default, the connector will connect to the production service.
+
+To connect to the emulator, you can use the following code.
+You can also follow the emulator instructions from the [Data Connect documentation](https://firebase.google.com/docs/data-connect/web-sdk#emulator-react).
+
+```javascript
+import { connectDataConnectEmulator, getDataConnect } from 'firebase/data-connect';
+import { connectorConfig } from '@firebasegen/default-connector';
+
+const dataConnect = getDataConnect(connectorConfig);
+connectDataConnectEmulator(dataConnect, 'localhost', 9399);
+```
+
+After it's initialized, you can call your Data Connect [queries](#queries) and [mutations](#mutations) using the hooks provided from your generated React SDK.
+
+# Queries
+
+No Queries were generated for the `default` connector.
+
+If you want to learn more about how to use queries in Data Connect, you can follow the examples from the [Data Connect documentation](https://firebase.google.com/docs/data-connect/web-sdk#use_queries_and_mutations_in_your_react_client).
+
+# Mutations
+
+No Mutations were generated for the `default` connector.
+
+If you want to learn more about how to use Mutations in Data Connect, you can follow the examples from the [Data Connect documentation](https://firebase.google.com/docs/data-connect/web-sdk#use_queries_and_mutations_in_your_react_client).
+````
+
+## File: dataconnect-generated/js/default-connector/README.md
+````markdown
+# Table of Contents
+- [**Overview**](#generated-typescript-readme)
+- [**Accessing the connector**](#accessing-the-connector)
+  - [*Connecting to the local Emulator*](#connecting-to-the-local-emulator)
+- [**Queries**](#queries)
+- [**Mutations**](#mutations)
+
+# Generated TypeScript README
+This README will guide you through the process of using the generated TypeScript SDK package for the connector `default`. It will also provide examples on how to use your generated SDK to call your Data Connect queries and mutations.
+
+***NOTE:** This README is generated alongside the generated SDK. If you make changes to this file, they will be overwritten when the SDK is regenerated.*
+
+You can use this generated SDK by importing from the package `@firebasegen/default-connector` as shown below. Both CommonJS and ESM imports are supported.
+
+You can also follow the instructions from the [Data Connect documentation](https://firebase.google.com/docs/data-connect/web-sdk#set-client).
+
+# Accessing the connector
+A connector is a collection of Queries and Mutations. One SDK is generated for each connector - this SDK is generated for the connector `default`.
+
+You can find more information about connectors in the [Data Connect documentation](https://firebase.google.com/docs/data-connect#how-does).
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig } from '@firebasegen/default-connector';
+
+const dataConnect = getDataConnect(connectorConfig);
+```
+
+## Connecting to the local Emulator
+By default, the connector will connect to the production service.
+
+To connect to the emulator, you can use the following code.
+You can also follow the emulator instructions from the [Data Connect documentation](https://firebase.google.com/docs/data-connect/web-sdk#instrument-clients).
+
+```javascript
+import { connectDataConnectEmulator, getDataConnect } from 'firebase/data-connect';
+import { connectorConfig } from '@firebasegen/default-connector';
+
+const dataConnect = getDataConnect(connectorConfig);
+connectDataConnectEmulator(dataConnect, 'localhost', 9399);
+```
+
+After it's initialized, you can call your Data Connect [queries](#queries) and [mutations](#mutations) from your generated SDK.
+
+# Queries
+
+No queries were generated for the `default` connector.
+
+If you want to learn more about how to use queries in Data Connect, you can follow the examples from the [Data Connect documentation](https://firebase.google.com/docs/data-connect/web-sdk#using-queries).
+
+# Mutations
+
+No mutations were generated for the `default` connector.
+
+If you want to learn more about how to use mutations in Data Connect, you can follow the examples from the [Data Connect documentation](https://firebase.google.com/docs/data-connect/web-sdk#using-mutations).
+````
+
+## File: dataconnect/connector/connector.yaml
+````yaml
+connectorId: default
+generate:
+  javascriptSdk:
+    outputDir: ..\..\dataconnect-generated\js\default-connector
+    package: "@firebasegen/default-connector"
+    packageJsonDir: ..\..
+    react: true
+````
+
+## File: dataconnect/connector/mutations.gql
+````graphql
+# # Example mutations for a simple movie app
+
+# # Create a movie based on user input
+# mutation CreateMovie($title: String!, $genre: String!, $imageUrl: String!)
+# @auth(level: USER_EMAIL_VERIFIED) {
+#   movie_insert(data: { title: $title, genre: $genre, imageUrl: $imageUrl })
+# }
+
+# # Upsert (update or insert) a user's username based on their auth.uid
+# mutation UpsertUser($username: String!) @auth(level: USER) {
+#   # The "auth.uid" server value ensures that users can only register their own user.
+#   user_upsert(data: { id_expr: "auth.uid", username: $username })
+# }
+
+# # Add a review for a movie
+# mutation AddReview($movieId: UUID!, $rating: Int!, $reviewText: String!)
+# @auth(level: USER) {
+#   review_upsert(
+#     data: {
+#       userId_expr: "auth.uid"
+#       movieId: $movieId
+#       rating: $rating
+#       reviewText: $reviewText
+#       # reviewDate defaults to today in the schema. No need to set it manually.
+#     }
+#   )
+# }
+
+# # Logged in user can delete their review for a movie
+# mutation DeleteReview($movieId: UUID!) @auth(level: USER) {
+#   # The "auth.uid" server value ensures that users can only delete their own reviews.
+#   review_delete(key: { userId_expr: "auth.uid", movieId: $movieId })
+# }
+````
+
+## File: dataconnect/connector/queries.gql
+````graphql
+# # Example queries for a simple movie app.
+
+# # @auth() directives control who can call each operation.
+# # Anyone should be able to list all movies, so the auth level is set to PUBLIC
+# query ListMovies @auth(level: PUBLIC) {
+#   movies {
+#     id
+#     title
+#     imageUrl
+#     genre
+#   }
+# }
+
+# # List all users, only admins should be able to list all users, so we use NO_ACCESS
+# query ListUsers @auth(level: NO_ACCESS) {
+#   users {
+#     id
+#     username
+#   }
+# }
+
+# # Logged in users can list all their reviews and movie titles associated with the review
+# # Since the query uses the uid of the current authenticated user, we set auth level to USER
+# query ListUserReviews @auth(level: USER) {
+#   user(key: { id_expr: "auth.uid" }) {
+#     id
+#     username
+#     # <field>_on_<foreign_key_field> makes it easy to grab info from another table
+#     # Here, we use it to grab all the reviews written by the user.
+#     reviews: reviews_on_user {
+#       rating
+#       reviewDate
+#       reviewText
+#       movie {
+#         id
+#         title
+#       }
+#     }
+#   }
+# }
+
+# # Get movie by id
+# query GetMovieById($id: UUID!) @auth(level: PUBLIC) {
+#   movie(id: $id) {
+#     id
+#     title
+#     imageUrl
+#     genre
+#     metadata: movieMetadata_on_movie {
+#       rating
+#       releaseYear
+#       description
+#     }
+#     reviews: reviews_on_movie {
+#       reviewText
+#       reviewDate
+#       rating
+#       user {
+#         id
+#         username
+#       }
+#     }
+#   }
+# }
+
+# # Search for movies, actors, and reviews
+# query SearchMovie($titleInput: String, $genre: String) @auth(level: PUBLIC) {
+#   movies(
+#     where: {
+#       _and: [{ genre: { eq: $genre } }, { title: { contains: $titleInput } }]
+#     }
+#   ) {
+#     id
+#     title
+#     genre
+#     imageUrl
+#   }
+# }
+````
+
+## File: dataconnect/dataconnect.yaml
+````yaml
+specVersion: "v1"
+serviceId: "deanmachines"
+location: "us-central1"
+schema:
+  source: "./schema"
+  datasource:
+    postgresql:
+      database: "fdcdb"
+      cloudSql:
+        instanceId: "deanmachines-fdc"
+      # schemaValidation: "COMPATIBLE"
+connectorDirs: ["./connector"]
+````
+
+## File: dataconnect/schema/schema.gql
+````graphql
+# # Example schema for simple movie review app
+
+# # User table is keyed by Firebase Auth UID.
+# type User @table {
+#   # `@default(expr: "auth.uid")` sets it to Firebase Auth UID during insert and upsert.
+#   id: String! @default(expr: "auth.uid")
+#   username: String! @col(dataType: "varchar(50)")
+#   # The `user: User!` field in the Review table generates the following one-to-many query field.
+#   #  reviews_on_user: [Review!]!
+#   # The `Review` join table the following many-to-many query field.
+#   #  movies_via_Review: [Movie!]!
+# }
+
+# # Movie is keyed by a randomly generated UUID.
+# type Movie @table {
+#   # If you do not pass a 'key' to `@table`, Data Connect automatically adds the following 'id' column.
+#   # Feel free to uncomment and customize it.
+#   #  id: UUID! @default(expr: "uuidV4()")
+#   title: String!
+#   imageUrl: String!
+#   genre: String
+# }
+
+# # MovieMetadata is a metadata attached to a Movie.
+# # Movie <-> MovieMetadata is a one-to-one relationship
+# type MovieMetadata @table {
+#   # @unique ensures each Movie can only one MovieMetadata.
+#   movie: Movie! @unique
+#   # The movie field adds the following foreign key field. Feel free to uncomment and customize it.
+#   #  movieId: UUID!
+#   rating: Float
+#   releaseYear: Int
+#   description: String
+# }
+
+# # Reviews is a join table between User and Movie.
+# # It has a composite primary keys `userUid` and `movieId`.
+# # A user can leave reviews for many movies. A movie can have reviews from many users.
+# # User  <-> Review is a one-to-many relationship
+# # Movie <-> Review is a one-to-many relationship
+# # Movie <-> User is a many-to-many relationship
+# type Review @table(name: "Reviews", key: ["movie", "user"]) {
+#   user: User!
+#   # The user field adds the following foreign key field. Feel free to uncomment and customize it.
+#   #  userUid: String!
+#   movie: Movie!
+#   # The movie field adds the following foreign key field. Feel free to uncomment and customize it.
+#   #  movieId: UUID!
+#   rating: Int
+#   reviewText: String
+#   reviewDate: Date! @default(expr: "request.time")
+# }
+````
+
 ## File: eslint.config.mjs
 ````
 const __filename = fileURLToPath(import.meta.url);
@@ -355,6 +863,37 @@ const __dirname = dirname(__filename);
 const compat = new FlatCompat({
 ⋮----
 ...compat.extends("next/core-web-vitals", "next/typescript"),
+````
+
+## File: firestore.indexes.json
+````json
+{
+  "indexes": [],
+  "fieldOverrides": []
+}
+````
+
+## File: firestore.rules
+````
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // This rule allows anyone with your Firestore database reference to view, edit,
+    // and delete all data in your Firestore database. It is useful for getting
+    // started, but it is configured to expire after 30 days because it
+    // leaves your app open to attackers. At that time, all client
+    // requests to your Firestore database will be denied.
+    //
+    // Make sure to write security rules for your app before that time, or else
+    // all client requests to your Firestore database will be denied until you Update
+    // your rules
+    match /{document=**} {
+      allow read, write: if request.time < timestamp.date(2025, 5, 12);
+    }
+  }
+}
 ````
 
 ## File: fix.md
@@ -440,9 +979,199 @@ __registerPrimitives
 d28c547f8522fdab26f600e21b015f71 4/11/2025, 6:41:44 PM 0.080ms
 ````
 
+## File: functions/.eslintrc.js
+````javascript
+"/lib/**/*", // Ignore built files.
+"/generated/**/*", // Ignore generated files.
+````
+
+## File: functions/.gitignore
+````
+# Compiled JavaScript files
+lib/**/*.js
+lib/**/*.js.map
+
+# TypeScript v1 declaration files
+typings/
+
+# Node.js dependency directory
+node_modules/
+*.local
+````
+
+## File: functions/package.json
+````json
+{
+  "name": "functions",
+  "scripts": {
+    "lint": "eslint --ext .js,.ts .",
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "serve": "npm run build && firebase emulators:start --only functions",
+    "shell": "npm run build && firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "22"
+  },
+  "main": "lib/index.js",
+  "dependencies": {
+    "firebase-admin": "^12.6.0",
+    "firebase-functions": "^6.0.1"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.12.0",
+    "@typescript-eslint/parser": "^5.12.0",
+    "eslint": "^8.9.0",
+    "eslint-config-google": "^0.14.0",
+    "eslint-plugin-import": "^2.25.4",
+    "firebase-functions-test": "^3.1.0",
+    "typescript": "^4.9.0"
+  },
+  "private": true
+}
+````
+
+## File: functions/src/genkit-sample.ts
+````typescript
+// Import the Genkit core libraries and plugins.
+import {genkit, z} from "genkit";
+import {vertexAI} from "@genkit-ai/vertexai";
+⋮----
+// Import models from the Vertex AI plugin. The Vertex AI API provides access to
+// several generative models. Here, we import Gemini 1.5 Flash.
+import {gemini15Flash} from "@genkit-ai/vertexai";
+⋮----
+// Cloud Functions for Firebase supports Genkit natively. The onCallGenkit function creates a callable
+// function from a Genkit action. It automatically implements streaming if your flow does.
+// The https library also has other utility methods such as hasClaim, which verifies that
+// a caller's token has a specific claim (optionally matching a specific value)
+import { onCallGenkit, hasClaim } from "firebase-functions/https";
+⋮----
+// Genkit models generally depend on an API key. APIs should be stored in Cloud Secret Manager so that
+// access to these sensitive values can be controlled. defineSecret does this for you automatically.
+// If you are using Google generative AI you can get an API key at https://aistudio.google.com/app/apikey
+import { defineSecret } from "firebase-functions/params";
+⋮----
+// Load the Vertex AI plugin. You can optionally specify your project ID
+// by passing in a config object; if you don't, the Vertex AI plugin uses
+// the value from the GCLOUD_PROJECT environment variable.
+⋮----
+// Define a simple flow that prompts an LLM to generate menu suggestions.
+⋮----
+// Construct a request and send it to the model API.
+⋮----
+// Handle the response from the model API. In this sample, we just
+// convert it to a string, but more complicated flows might coerce the
+// response into structured output or chain the response into another
+// LLM call, etc.
+⋮----
+// Uncomment to enable AppCheck. This can reduce costs by ensuring only your Verified
+// app users can use your API. Read more at https://firebase.google.com/docs/app-check/cloud-functions
+// enforceAppCheck: true,
+⋮----
+// authPolicy can be any callback that accepts an AuthData (a uid and tokens dictionary) and the
+// request data. The isSignedIn() and hasClaim() helpers can be used to simplify. The following
+// will require the user to have the email_verified claim, for example.
+// authPolicy: hasClaim("email_verified"),
+⋮----
+// Grant access to the API key to this function:
+````
+
+## File: functions/src/index.ts
+````typescript
+/**
+ * Import function triggers from their respective submodules:
+ *
+ * import {onCall} from "firebase-functions/v2/https";
+ * import {onDocumentWritten} from "firebase-functions/v2/firestore";
+ *
+ * See a full list of supported triggers at https://firebase.google.com/docs/functions
+ */
+⋮----
+import {onRequest} from "firebase-functions/v2/https";
+⋮----
+// Start writing functions
+// https://firebase.google.com/docs/functions/typescript
+⋮----
+// export const helloWorld = onRequest((request, response) => {
+//   logger.info("Hello logs!", {structuredData: true});
+//   response.send("Hello from Firebase!");
+// });
+````
+
+## File: functions/tsconfig.dev.json
+````json
+{
+  "include": [
+    ".eslintrc.js"
+  ]
+}
+````
+
+## File: functions/tsconfig.json
+````json
+{
+  "compilerOptions": {
+    "module": "NodeNext",
+    "esModuleInterop": true,
+    "moduleResolution": "nodenext",
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "outDir": "lib",
+    "sourceMap": true,
+    "strict": true,
+    "target": "es2017"
+  },
+  "compileOnSave": true,
+  "include": [
+    "src"
+  ]
+}
+````
+
 ## File: postcss.config.mjs
 ````
 
+````
+
+## File: public/404.html
+````html
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Page Not Found</title>
+
+    <style media="screen">
+      body { background: #ECEFF1; color: rgba(0,0,0,0.87); font-family: Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; }
+      #message { background: white; max-width: 360px; margin: 100px auto 16px; padding: 32px 24px 16px; border-radius: 3px; }
+      #message h3 { color: #888; font-weight: normal; font-size: 16px; margin: 16px 0 12px; }
+      #message h2 { color: #ffa100; font-weight: bold; font-size: 16px; margin: 0 0 8px; }
+      #message h1 { font-size: 22px; font-weight: 300; color: rgba(0,0,0,0.6); margin: 0 0 16px;}
+      #message p { line-height: 140%; margin: 16px 0 24px; font-size: 14px; }
+      #message a { display: block; text-align: center; background: #039be5; text-transform: uppercase; text-decoration: none; color: white; padding: 16px; border-radius: 4px; }
+      #message, #message a { box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24); }
+      #load { color: rgba(0,0,0,0.4); text-align: center; font-size: 13px; }
+      @media (max-width: 600px) {
+        body, #message { margin-top: 0; background: white; box-shadow: none; }
+        body { border-top: 16px solid #ffa100; }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="message">
+      <h2>404</h2>
+      <h1>Page Not Found</h1>
+      <p>The specified file was not found on this website. Please check the URL for mistakes and try again.</p>
+      <h3>Why am I seeing this?</h3>
+      <p>This page was generated by the Firebase Command-Line Interface. To modify it, edit the <code>404.html</code> file in your project's configured <code>public</code> directory.</p>
+    </div>
+  </body>
+</html>
 ````
 
 ## File: public/file.svg
@@ -453,6 +1182,99 @@ d28c547f8522fdab26f600e21b015f71 4/11/2025, 6:41:44 PM 0.080ms
 ## File: public/globe.svg
 ````
 <svg fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><g clip-path="url(#a)"><path fill-rule="evenodd" clip-rule="evenodd" d="M10.27 14.1a6.5 6.5 0 0 0 3.67-3.45q-1.24.21-2.7.34-.31 1.83-.97 3.1M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m.48-1.52a7 7 0 0 1-.96 0H7.5a4 4 0 0 1-.84-1.32q-.38-.89-.63-2.08a40 40 0 0 0 3.92 0q-.25 1.2-.63 2.08a4 4 0 0 1-.84 1.31zm2.94-4.76q1.66-.15 2.95-.43a7 7 0 0 0 0-2.58q-1.3-.27-2.95-.43a18 18 0 0 1 0 3.44m-1.27-3.54a17 17 0 0 1 0 3.64 39 39 0 0 1-4.3 0 17 17 0 0 1 0-3.64 39 39 0 0 1 4.3 0m1.1-1.17q1.45.13 2.69.34a6.5 6.5 0 0 0-3.67-3.44q.65 1.26.98 3.1M8.48 1.5l.01.02q.41.37.84 1.31.38.89.63 2.08a40 40 0 0 0-3.92 0q.25-1.2.63-2.08a4 4 0 0 1 .85-1.32 7 7 0 0 1 .96 0m-2.75.4a6.5 6.5 0 0 0-3.67 3.44 29 29 0 0 1 2.7-.34q.31-1.83.97-3.1M4.58 6.28q-1.66.16-2.95.43a7 7 0 0 0 0 2.58q1.3.27 2.95.43a18 18 0 0 1 0-3.44m.17 4.71q-1.45-.12-2.69-.34a6.5 6.5 0 0 0 3.67 3.44q-.65-1.27-.98-3.1" fill="#666"/></g><defs><clipPath id="a"><path fill="#fff" d="M0 0h16v16H0z"/></clipPath></defs></svg>
+````
+
+## File: public/index.html
+````html
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Welcome to Firebase Hosting</title>
+
+    <!-- update the version number as needed -->
+    <script defer src="/__/firebase/11.6.0/firebase-app-compat.js"></script>
+    <!-- include only the Firebase features as you need -->
+    <script defer src="/__/firebase/11.6.0/firebase-auth-compat.js"></script>
+    <script defer src="/__/firebase/11.6.0/firebase-database-compat.js"></script>
+    <script defer src="/__/firebase/11.6.0/firebase-firestore-compat.js"></script>
+    <script defer src="/__/firebase/11.6.0/firebase-functions-compat.js"></script>
+    <script defer src="/__/firebase/11.6.0/firebase-messaging-compat.js"></script>
+    <script defer src="/__/firebase/11.6.0/firebase-storage-compat.js"></script>
+    <script defer src="/__/firebase/11.6.0/firebase-analytics-compat.js"></script>
+    <script defer src="/__/firebase/11.6.0/firebase-remote-config-compat.js"></script>
+    <script defer src="/__/firebase/11.6.0/firebase-performance-compat.js"></script>
+    <!-- 
+      initialize the SDK after all desired features are loaded, set useEmulator to false
+      to avoid connecting the SDK to running emulators.
+    -->
+    <script defer src="/__/firebase/init.js?useEmulator=true"></script>
+
+    <style media="screen">
+      body { background: #ECEFF1; color: rgba(0,0,0,0.87); font-family: Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; }
+      #message { background: white; max-width: 360px; margin: 100px auto 16px; padding: 32px 24px; border-radius: 3px; }
+      #message h2 { color: #ffa100; font-weight: bold; font-size: 16px; margin: 0 0 8px; }
+      #message h1 { font-size: 22px; font-weight: 300; color: rgba(0,0,0,0.6); margin: 0 0 16px;}
+      #message p { line-height: 140%; margin: 16px 0 24px; font-size: 14px; }
+      #message a { display: block; text-align: center; background: #039be5; text-transform: uppercase; text-decoration: none; color: white; padding: 16px; border-radius: 4px; }
+      #message, #message a { box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24); }
+      #load { color: rgba(0,0,0,0.4); text-align: center; font-size: 13px; }
+      @media (max-width: 600px) {
+        body, #message { margin-top: 0; background: white; box-shadow: none; }
+        body { border-top: 16px solid #ffa100; }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="message">
+      <h2>Welcome</h2>
+      <h1>Firebase Hosting Setup Complete</h1>
+      <p>You're seeing this because you've successfully setup Firebase Hosting. Now it's time to go build something extraordinary!</p>
+      <a target="_blank" href="https://firebase.google.com/docs/hosting/">Open Hosting Documentation</a>
+    </div>
+    <p id="load">Firebase SDK Loading&hellip;</p>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const loadEl = document.querySelector('#load');
+        // // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
+        // // The Firebase SDK is initialized and available here!
+        //
+        // firebase.auth().onAuthStateChanged(user => { });
+        // firebase.database().ref('/path/to/ref').on('value', snapshot => { });
+        // firebase.firestore().doc('/foo/bar').get().then(() => { });
+        // firebase.functions().httpsCallable('yourFunction')().then(() => { });
+        // firebase.messaging().requestPermission().then(() => { });
+        // firebase.storage().ref('/path/to/ref').getDownloadURL().then(() => { });
+        // firebase.analytics(); // call to activate
+        // firebase.analytics().logEvent('tutorial_completed');
+        // firebase.performance(); // call to activate
+        //
+        // // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
+
+        try {
+          let app = firebase.app();
+          let features = [
+            'auth', 
+            'database', 
+            'firestore',
+            'functions',
+            'messaging', 
+            'storage', 
+            'analytics', 
+            'remoteConfig',
+            'performance',
+          ].filter(feature => typeof app[feature] === 'function');
+          loadEl.textContent = `Firebase SDK loaded with ${features.join(', ')}`;
+        } catch (e) {
+          console.error(e);
+          loadEl.textContent = 'Error loading the Firebase SDK, check the console.';
+        }
+      });
+    </script>
+  </body>
+</html>
 ````
 
 ## File: public/next.svg
@@ -14982,245 +15804,6 @@ const items = [...siteConfig.mainNav]; // Create a copy to avoid mutating the or
 import type { NextConfig } from "next";
 ````
 
-## File: package.json
-````json
-{
-  "name": "deanmachines-front",
-  "version": "0.1.1",
-  "private": true,
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
-  },
-  "dependencies": {
-    "@agentic/ai-sdk": "^7.6.4",
-    "@agentic/arxiv": "^7.6.4",
-    "@agentic/bing": "^7.6.4",
-    "@agentic/brave-search": "^7.6.4",
-    "@agentic/calculator": "^7.6.4",
-    "@agentic/core": "^7.6.4",
-    "@agentic/e2b": "^7.6.4",
-    "@agentic/exa": "^7.6.4",
-    "@agentic/firecrawl": "^7.6.4",
-    "@agentic/genkit": "^7.6.4",
-    "@agentic/github": "^7.6.4",
-    "@agentic/google-custom-search": "^7.6.4",
-    "@agentic/google-docs": "^7.6.4",
-    "@agentic/google-drive": "^7.6.4",
-    "@agentic/jina": "^7.6.4",
-    "@agentic/langchain": "^7.6.4",
-    "@agentic/llamaindex": "^7.6.4",
-    "@agentic/mastra": "^7.6.4",
-    "@agentic/mcp": "^7.6.4",
-    "@agentic/midjourney": "^7.6.4",
-    "@agentic/notion": "^7.6.4",
-    "@agentic/openapi-to-ts": "^7.6.4",
-    "@agentic/reddit": "^7.6.4",
-    "@agentic/searxng": "^7.6.4",
-    "@agentic/serper": "^7.6.4",
-    "@agentic/social-data": "^7.6.4",
-    "@agentic/stdlib": "^7.6.4",
-    "@agentic/tavily": "^7.6.4",
-    "@agentic/wikidata": "^7.6.4",
-    "@agentic/wikipedia": "^7.6.4",
-    "@agentic/wolfram-alpha": "^7.6.4",
-    "@ai-sdk/anthropic": "^1.2.9",
-    "@ai-sdk/google": "^1.2.10",
-    "@ai-sdk/google-vertex": "^2.2.14",
-    "@ai-sdk/openai": "^1.3.10",
-    "@ai-sdk/provider": "^1.1.2",
-    "@ai-sdk/provider-utils": "^2.2.6",
-    "@auth/firebase-adapter": "^2.8.0",
-    "@codemirror/autocomplete": "^6.18.6",
-    "@codemirror/commands": "^6.8.1",
-    "@codemirror/lang-javascript": "^6.2.3",
-    "@codemirror/lang-markdown": "^6.3.2",
-    "@codemirror/language": "^6.11.0",
-    "@codemirror/language-data": "^6.5.1",
-    "@codemirror/lint": "^6.8.5",
-    "@codemirror/search": "^6.5.10",
-    "@codemirror/state": "^6.5.2",
-    "@codemirror/theme-one-dark": "^6.1.2",
-    "@codemirror/view": "^6.36.5",
-    "@e2b/code-interpreter": "^1.1.1",
-    "@firebase/component": "^0.6.13",
-    "@firebase/database": "^1.0.14",
-    "@google-cloud/local-auth": "^3.0.1",
-    "@google/generative-ai": "^0.1.3",
-    "@hookform/resolvers": "^5.0.1",
-    "@langchain/anthropic": "^0.3.17",
-    "@langchain/community": "^0.3.40",
-    "@langchain/core": "^0.3.44",
-    "@langchain/google-genai": "^0.2.3",
-    "@langchain/openai": "^0.5.5",
-    "@langchain/pinecone": "^0.2.0",
-    "@lezer/highlight": "^1.2.1",
-    "@mastra/clickhouse": "^0.2.9",
-    "@mastra/client-js": "^0.1.16",
-    "@mastra/core": "^0.8.2",
-    "@mastra/github": "^1.1.17",
-    "@mastra/loggers": "^0.1.17",
-    "@mastra/memory": "^0.2.9",
-    "@mastra/pg": "^0.2.9",
-    "@mastra/pinecone": "^0.2.7",
-    "@mastra/rag": "^0.1.17",
-    "@mastra/upstash": "^0.2.4",
-    "@mastra/vector-pinecone": "^0.1.5",
-    "@mastra/vectorize": "^0.2.4",
-    "@mastra/voice-elevenlabs": "^0.1.12",
-    "@mastra/voice-google": "^0.1.12",
-    "@modelcontextprotocol/sdk": "^1.9.0",
-    "@nanostores/react": "^1.0.0",
-    "@next/env": "^15.3.0",
-    "@opentelemetry/api": "1.4.1",
-    "@pinecone-database/pinecone": "^5.1.1",
-    "@radix-ui/react-accordion": "^1.2.4",
-    "@radix-ui/react-alert-dialog": "^1.1.7",
-    "@radix-ui/react-aspect-ratio": "^1.1.3",
-    "@radix-ui/react-avatar": "^1.1.4",
-    "@radix-ui/react-checkbox": "^1.1.5",
-    "@radix-ui/react-collapsible": "^1.1.4",
-    "@radix-ui/react-context-menu": "^2.2.7",
-    "@radix-ui/react-dialog": "^1.1.7",
-    "@radix-ui/react-dropdown-menu": "^2.1.7",
-    "@radix-ui/react-hover-card": "^1.1.7",
-    "@radix-ui/react-label": "^2.1.3",
-    "@radix-ui/react-menubar": "^1.1.7",
-    "@radix-ui/react-navigation-menu": "^1.2.6",
-    "@radix-ui/react-popover": "^1.1.7",
-    "@radix-ui/react-progress": "^1.1.3",
-    "@radix-ui/react-radio-group": "^1.2.4",
-    "@radix-ui/react-scroll-area": "^1.2.4",
-    "@radix-ui/react-select": "^2.1.7",
-    "@radix-ui/react-separator": "^1.1.3",
-    "@radix-ui/react-slider": "^1.2.4",
-    "@radix-ui/react-slot": "^1.2.0",
-    "@radix-ui/react-switch": "^1.1.4",
-    "@radix-ui/react-tabs": "^1.1.4",
-    "@radix-ui/react-toggle": "^1.1.3",
-    "@radix-ui/react-toggle-group": "^1.1.3",
-    "@radix-ui/react-tooltip": "^1.2.0",
-    "@types/d3": "^7.4.3",
-    "@types/mdast": "^4.0.4",
-    "@types/mdx": "2.0.13",
-    "@types/plotly.js": "^2.35.5",
-    "@types/unist": "^3.0.3",
-    "@uiw/react-codemirror": "^4.23.10",
-    "@upstash/vector": "^1.2.1",
-    "@visx/visx": "^3.12.0",
-    "ai": "^4.3.5",
-    "class-variance-authority": "^0.7.1",
-    "clsx": "^2.1.1",
-    "cmdk": "^1.1.1",
-    "commander": "^13.1.0",
-    "d3": "^7.9.0",
-    "date-fns": "^2.30.0",
-    "embla-carousel-react": "^8.6.0",
-    "exa-js": "^1.5.13",
-    "fast-xml-parser": "^5.2.0",
-    "firebase": "^11.6.0",
-    "firebase-admin": "^12.0.0",
-    "framer-motion": "^12.6.5",
-    "fs-extra": "^11.3.0",
-    "geist": "^1.3.1",
-    "genkit": "^1.6.0",
-    "google-auth-library": "^9.15.1",
-    "googleapis": "^148.0.0",
-    "husky": "^9.1.7",
-    "input-otp": "^1.4.2",
-    "json": "^11.0.0",
-    "ky": "^1.8.0",
-    "langchain": "^0.3.21",
-    "langfuse": "^3.37.1",
-    "langsmith": "^0.3.15",
-    "llamaindex": "^0.9.17",
-    "lucide-react": "^0.487.0",
-    "mdast-util-toc": "^7.1.0",
-    "next": "15.3.0",
-    "next-auth": "5.0.0-beta.25",
-    "next-themes": "^0.4.6",
-    "octokit": "^4.1.3",
-    "p-throttle": "^7.0.0",
-    "plotly": "^1.0.6",
-    "plotly.js-dist": "^3.0.1",
-    "plotly.js-dist-min": "^3.0.1",
-    "puppeteer-core": "^24.6.1",
-    "ramda": "^0.30.1",
-    "react": "^18.3.1",
-    "react-day-picker": "^8.10.1",
-    "react-dom": "^18.3.1",
-    "react-hook-form": "^7.55.0",
-    "react-plotly.js": "^2.6.0",
-    "react-resizable-panels": "^2.1.7",
-    "recharts": "^2.15.2",
-    "rehype-autolink-headings": "7.1.0",
-    "rehype-pretty-code": "0.14.1",
-    "rehype-slug": "6.0.0",
-    "remark": "^15.0.1",
-    "remark-gfm": "4.0.1",
-    "remark-mdx-frontmatter": "5.1.0",
-    "remark-parse": "11.0.0",
-    "remark-rehype": "11.1.2",
-    "shiki": "^3.2.2",
-    "sonner": "^2.0.3",
-    "tailwind-merge": "^3.2.0",
-    "ts-node": "^10.9.2",
-    "tw-animate-css": "^1.2.5",
-    "unist-util-visit": "^5.0.0",
-    "uuid": "^11.1.0",
-    "vaul": "^1.1.2",
-    "zod": "^3.24.2"
-  },
-  "devDependencies": {
-    "@eslint/eslintrc": "^3.3.1",
-    "@tailwindcss/postcss": "^4.1.3",
-    "@types/node": "^22.14.1",
-    "@types/react": "^18.3.20",
-    "@types/react-dom": "^18.3.6",
-    "@types/react-plotly.js": "^2.6.3",
-    "eslint": "^9.24.0",
-    "eslint-config-next": "15.3.0",
-    "js-tiktoken": "^1.0.19",
-    "tailwindcss": "^4.1.3",
-    "typescript": "^5.8.3"
-  },
-  "compilerOptions": {
-    "baseUrl": ".",
-    "paths": {
-      "contentlayer/generated": [
-        "./.contentlayer/generated"
-      ]
-    }
-  },
-  "include": [
-    "next-env.d.ts",
-    "**/*.ts",
-    "**/*.tsx",
-    ".contentlayer/generated"
-  ],
-  "pnpm": {
-    "overrides": {
-      "pathe": "^1.1.2"
-    },
-    "onlyBuiltDependencies": [
-      "@firebase/util",
-      "@parcel/watcher",
-      "canvas",
-      "contentlayer",
-      "es5-ext",
-      "esbuild",
-      "onnxruntime-node",
-      "openai-zod-to-json-schema",
-      "protobufjs",
-      "sharp",
-      "tree-sitter"
-    ]
-  }
-}
-````
-
 ## File: README.md
 ````markdown
 # DeanMachines AI Platform
@@ -15809,4 +16392,331 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 Made with ❤️ by the DeanMachines team
+
+```mermaid
+graph TB
+    User((External User))
+    Admin((Admin User))
+
+    subgraph "Frontend Container"
+        direction TB
+        NextApp["Next.js Application<br>(Next.js 15.3)"]
+
+        subgraph "Frontend Components"
+            direction TB
+            AuthModule["Authentication Module<br>(NextAuth)"]
+            ThemeProvider["Theme Provider<br>(next-themes)"]
+            UIComponents["UI Components<br>(Radix UI, Geist)"]
+
+            subgraph "Layout Components"
+                NavBar["Navigation Bar<br>(React)"]
+                Footer["Footer<br>(React)"]
+                MobileNav["Mobile Navigation<br>(React)"]
+            end
+
+            subgraph "Feature Components"
+                DocsSection["Documentation Section<br>(MDX)"]
+                AdminDashboard["Admin Dashboard<br>(React)"]
+                UserDashboard["User Dashboard<br>(React)"]
+            end
+        end
+    end
+
+    subgraph "Backend Container"
+        direction TB
+        APILayer["API Layer<br>(Next.js API Routes)"]
+
+        subgraph "Core Services"
+            AuthService["Auth Service<br>(Firebase Admin)"]
+            MastraService["Mastra AI Service<br>(Custom)"]
+
+            subgraph "Mastra Components"
+                AgentNetwork["Agent Network<br>(TypeScript)"]
+                MemorySystem["Memory System<br>(LibSQL)"]
+                ToolRegistry["Tool Registry<br>(TypeScript)"]
+                LangChainIntegration["LangChain Integration<br>(LangChain)"]
+            end
+        end
+    end
+
+    subgraph "Data Layer"
+        FirestoreDB[("Firestore DB<br>Firebase")]
+        VectorStore[("Vector Store<br>Pinecone")]
+        LibSQLDB[("Memory Store<br>LibSQL")]
+    end
+
+    subgraph "External Services"
+        GoogleAI["Google AI<br>(Gemini)"]
+        FirebaseAuth["Firebase Auth<br>(Firebase)"]
+        DataConnect["Data Connect<br>(PostgreSQL)"]
+    end
+
+    %% Connections
+    User --> NextApp
+    Admin --> NextApp
+
+    NextApp --> AuthModule
+    NextApp --> ThemeProvider
+    NextApp --> UIComponents
+
+    AuthModule --> AuthService
+    AuthService --> FirebaseAuth
+    AuthService --> FirestoreDB
+
+    APILayer --> MastraService
+    MastraService --> AgentNetwork
+    AgentNetwork --> MemorySystem
+    AgentNetwork --> ToolRegistry
+    AgentNetwork --> LangChainIntegration
+
+    MemorySystem --> LibSQLDB
+    MemorySystem --> VectorStore
+
+    LangChainIntegration --> GoogleAI
+
+    MastraService --> DataConnect
+```
+````
+
+## File: package.json
+````json
+{
+  "name": "deanmachines-front",
+  "version": "0.1.1",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@agentic/ai-sdk": "^7.6.4",
+    "@agentic/arxiv": "^7.6.4",
+    "@agentic/bing": "^7.6.4",
+    "@agentic/brave-search": "^7.6.4",
+    "@agentic/calculator": "^7.6.4",
+    "@agentic/core": "^7.6.4",
+    "@agentic/e2b": "^7.6.4",
+    "@agentic/exa": "^7.6.4",
+    "@agentic/firecrawl": "^7.6.4",
+    "@agentic/genkit": "^7.6.4",
+    "@agentic/github": "^7.6.4",
+    "@agentic/google-custom-search": "^7.6.4",
+    "@agentic/google-docs": "^7.6.4",
+    "@agentic/google-drive": "^7.6.4",
+    "@agentic/jina": "^7.6.4",
+    "@agentic/langchain": "^7.6.4",
+    "@agentic/llamaindex": "^7.6.4",
+    "@agentic/mastra": "^7.6.4",
+    "@agentic/mcp": "^7.6.4",
+    "@agentic/midjourney": "^7.6.4",
+    "@agentic/notion": "^7.6.4",
+    "@agentic/openapi-to-ts": "^7.6.4",
+    "@agentic/reddit": "^7.6.4",
+    "@agentic/searxng": "^7.6.4",
+    "@agentic/serper": "^7.6.4",
+    "@agentic/social-data": "^7.6.4",
+    "@agentic/stdlib": "^7.6.4",
+    "@agentic/tavily": "^7.6.4",
+    "@agentic/wikidata": "^7.6.4",
+    "@agentic/wikipedia": "^7.6.4",
+    "@agentic/wolfram-alpha": "^7.6.4",
+    "@ai-sdk/anthropic": "^1.2.9",
+    "@ai-sdk/google": "^1.2.10",
+    "@ai-sdk/google-vertex": "^2.2.14",
+    "@ai-sdk/openai": "^1.3.10",
+    "@ai-sdk/provider": "^1.1.2",
+    "@ai-sdk/provider-utils": "^2.2.6",
+    "@auth/firebase-adapter": "^2.8.0",
+    "@codemirror/autocomplete": "^6.18.6",
+    "@codemirror/commands": "^6.8.1",
+    "@codemirror/lang-javascript": "^6.2.3",
+    "@codemirror/lang-markdown": "^6.3.2",
+    "@codemirror/language": "^6.11.0",
+    "@codemirror/language-data": "^6.5.1",
+    "@codemirror/lint": "^6.8.5",
+    "@codemirror/search": "^6.5.10",
+    "@codemirror/state": "^6.5.2",
+    "@codemirror/theme-one-dark": "^6.1.2",
+    "@codemirror/view": "^6.36.5",
+    "@e2b/code-interpreter": "^1.1.1",
+    "@firebase/component": "^0.6.13",
+    "@firebase/database": "^1.0.14",
+    "@genkit-ai/vertexai": "^1.6.0",
+    "@google-cloud/local-auth": "^3.0.1",
+    "@google/generative-ai": "^0.1.3",
+    "@hookform/resolvers": "^5.0.1",
+    "@langchain/anthropic": "^0.3.17",
+    "@langchain/community": "^0.3.40",
+    "@langchain/core": "^0.3.44",
+    "@langchain/google-genai": "^0.2.3",
+    "@langchain/openai": "^0.5.5",
+    "@langchain/pinecone": "^0.2.0",
+    "@lezer/highlight": "^1.2.1",
+    "@mastra/clickhouse": "^0.2.9",
+    "@mastra/client-js": "^0.1.16",
+    "@mastra/core": "^0.8.2",
+    "@mastra/github": "^1.1.17",
+    "@mastra/loggers": "^0.1.17",
+    "@mastra/memory": "^0.2.9",
+    "@mastra/pg": "^0.2.9",
+    "@mastra/pinecone": "^0.2.7",
+    "@mastra/rag": "^0.1.17",
+    "@mastra/upstash": "^0.2.4",
+    "@mastra/vector-pinecone": "^0.1.5",
+    "@mastra/vectorize": "^0.2.4",
+    "@mastra/voice-elevenlabs": "^0.1.12",
+    "@mastra/voice-google": "^0.1.12",
+    "@modelcontextprotocol/sdk": "^1.9.0",
+    "@nanostores/react": "^1.0.0",
+    "@next/env": "^15.3.0",
+    "@opentelemetry/api": "1.4.1",
+    "@pinecone-database/pinecone": "^5.1.1",
+    "@radix-ui/react-accordion": "^1.2.4",
+    "@radix-ui/react-alert-dialog": "^1.1.7",
+    "@radix-ui/react-aspect-ratio": "^1.1.3",
+    "@radix-ui/react-avatar": "^1.1.4",
+    "@radix-ui/react-checkbox": "^1.1.5",
+    "@radix-ui/react-collapsible": "^1.1.4",
+    "@radix-ui/react-context-menu": "^2.2.7",
+    "@radix-ui/react-dialog": "^1.1.7",
+    "@radix-ui/react-dropdown-menu": "^2.1.7",
+    "@radix-ui/react-hover-card": "^1.1.7",
+    "@radix-ui/react-label": "^2.1.3",
+    "@radix-ui/react-menubar": "^1.1.7",
+    "@radix-ui/react-navigation-menu": "^1.2.6",
+    "@radix-ui/react-popover": "^1.1.7",
+    "@radix-ui/react-progress": "^1.1.3",
+    "@radix-ui/react-radio-group": "^1.2.4",
+    "@radix-ui/react-scroll-area": "^1.2.4",
+    "@radix-ui/react-select": "^2.1.7",
+    "@radix-ui/react-separator": "^1.1.3",
+    "@radix-ui/react-slider": "^1.2.4",
+    "@radix-ui/react-slot": "^1.2.0",
+    "@radix-ui/react-switch": "^1.1.4",
+    "@radix-ui/react-tabs": "^1.1.4",
+    "@radix-ui/react-toggle": "^1.1.3",
+    "@radix-ui/react-toggle-group": "^1.1.3",
+    "@radix-ui/react-tooltip": "^1.2.0",
+    "@types/d3": "^7.4.3",
+    "@types/mdast": "^4.0.4",
+    "@types/mdx": "2.0.13",
+    "@types/plotly.js": "^2.35.5",
+    "@types/unist": "^3.0.3",
+    "@uiw/react-codemirror": "^4.23.10",
+    "@upstash/vector": "^1.2.1",
+    "@visx/visx": "^3.12.0",
+    "ai": "^4.3.5",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "cmdk": "^1.1.1",
+    "commander": "^13.1.0",
+    "d3": "^7.9.0",
+    "date-fns": "^2.30.0",
+    "default-connector": "link:../../AppData/Local/pnpm/global/5/node_modules/dataconnect-generated/js/default-connector",
+    "embla-carousel-react": "^8.6.0",
+    "exa-js": "^1.5.13",
+    "fast-xml-parser": "^5.2.0",
+    "firebase": "^11.6.0",
+    "firebase-admin": "^12.0.0",
+    "framer-motion": "^12.6.5",
+    "fs-extra": "^11.3.0",
+    "geist": "^1.3.1",
+    "google-auth-library": "^9.15.1",
+    "googleapis": "^148.0.0",
+    "husky": "^9.1.7",
+    "input-otp": "^1.4.2",
+    "json": "^11.0.0",
+    "ky": "^1.8.0",
+    "langchain": "^0.3.21",
+    "langfuse": "^3.37.1",
+    "langsmith": "^0.3.15",
+    "llamaindex": "^0.9.17",
+    "lucide-react": "^0.487.0",
+    "mdast-util-toc": "^7.1.0",
+    "next": "15.3.0",
+    "next-auth": "5.0.0-beta.25",
+    "next-themes": "^0.4.6",
+    "octokit": "^4.1.3",
+    "p-throttle": "^7.0.0",
+    "plotly": "^1.0.6",
+    "plotly.js-dist": "^3.0.1",
+    "plotly.js-dist-min": "^3.0.1",
+    "puppeteer-core": "^24.6.1",
+    "ramda": "^0.30.1",
+    "react": "^18.3.1",
+    "react-day-picker": "^8.10.1",
+    "react-dom": "^18.3.1",
+    "react-hook-form": "^7.55.0",
+    "react-plotly.js": "^2.6.0",
+    "react-resizable-panels": "^2.1.7",
+    "recharts": "^2.15.2",
+    "rehype-autolink-headings": "7.1.0",
+    "rehype-pretty-code": "0.14.1",
+    "rehype-slug": "6.0.0",
+    "remark": "^15.0.1",
+    "remark-gfm": "4.0.1",
+    "remark-mdx-frontmatter": "5.1.0",
+    "remark-parse": "11.0.0",
+    "remark-rehype": "11.1.2",
+    "shiki": "^3.2.2",
+    "sonner": "^2.0.3",
+    "tailwind-merge": "^3.2.0",
+    "ts-node": "^10.9.2",
+    "tw-animate-css": "^1.2.5",
+    "unist-util-visit": "^5.0.0",
+    "uuid": "^11.1.0",
+    "vaul": "^1.1.2",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.3.1",
+    "@genkit-ai/googleai": "^1.6.0",
+    "@tailwindcss/postcss": "^4.1.3",
+    "@types/node": "^22.14.1",
+    "@types/react": "^18.3.20",
+    "@types/react-dom": "^18.3.6",
+    "@types/react-plotly.js": "^2.6.3",
+    "eslint": "^9.24.0",
+    "eslint-config-next": "15.3.0",
+    "genkit": "^1.6.0",
+    "js-tiktoken": "^1.0.19",
+    "tailwindcss": "^4.1.3",
+    "typescript": "^5.8.3"
+  },
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "contentlayer/generated": [
+        "./.contentlayer/generated"
+      ]
+    }
+  },
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".contentlayer/generated"
+  ],
+  "pnpm": {
+    "overrides": {
+      "pathe": "^1.1.2",
+      "default-connector": "link:../../AppData/Local/pnpm/global/5/node_modules/dataconnect-generated/js/default-connector"
+    },
+    "onlyBuiltDependencies": [
+      "@firebase/util",
+      "@parcel/watcher",
+      "canvas",
+      "contentlayer",
+      "es5-ext",
+      "esbuild",
+      "onnxruntime-node",
+      "openai-zod-to-json-schema",
+      "protobufjs",
+      "sharp",
+      "tree-sitter"
+    ]
+  }
+}
 ````

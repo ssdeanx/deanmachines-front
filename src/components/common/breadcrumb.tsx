@@ -7,6 +7,7 @@ import { IconWrapper } from "./IconWrapper"
 
 /**
  * Represents an item in the breadcrumb navigation
+ *
  * @interface BreadcrumbItem
  * @property {string} title - The display text for the breadcrumb item
  * @property {string} [href] - The optional URL this breadcrumb links to
@@ -20,6 +21,7 @@ interface BreadcrumbItem {
 
 /**
  * Props for the Breadcrumb component
+ *
  * @interface BreadcrumbProps
  * @property {BreadcrumbItem[]} items - Array of breadcrumb items to display
  * @property {string} [className] - Optional additional CSS classes
@@ -39,7 +41,7 @@ interface BreadcrumbProps {
  * Renders a breadcrumb navigation component following WAI-ARIA guidelines
  *
  * @param props - Component props
- * @returns A breadcrumb navigation component
+ * @returns A breadcrumb navigation component with responsive design and accessibility features
  */
 export function Breadcrumb({
   items,
@@ -48,10 +50,11 @@ export function Breadcrumb({
   homeHref = "/",
   separator = "chevron"
 }: BreadcrumbProps) {
-  const lastIndex = items.length - 1
+  // Memoize last index calculation to avoid recalculation on re-renders
+  const lastIndex = React.useMemo(() => items.length - 1, [items]);
 
-  // Choose separator based on prop
-  const renderSeparator = React.useCallback(() => {
+  // Memoize separator element to prevent unnecessary re-renders
+  const separatorElement = React.useMemo(() => {
     switch (separator) {
       case "slash":
         return <span className="text-muted-foreground/60" aria-hidden="true">/</span>
@@ -61,7 +64,7 @@ export function Breadcrumb({
       default:
         return <ChevronRight className="size-4 text-muted-foreground/60" aria-hidden="true" />
     }
-  }, [separator])
+  }, [separator]);
 
   return (
     <nav
@@ -72,17 +75,18 @@ export function Breadcrumb({
       )}
     >
       <ol
-        className="flex items-center flex-wrap gap-x-2 gap-y-1"
+        className="flex items-center flex-wrap gap-x-2 gap-y-1 w-full"
         role="list"
       >
+        {/* Home item */}
         {showHomeIcon && (
           <li className="flex items-center">
             <Link
               href={homeHref}
-              className="flex items-center gap-1 hover:text-foreground transition-all duration-300
-                rounded-md p-0.5 hover:bg-accent/30 active:scale-95"
+              className="flex items-center gap-1 hover:text-foreground transition-colors duration-300
+                rounded-md p-0.5 hover:bg-accent/30 active:scale-95 motion-reduce:transform-none"
               aria-label="Home"
-              legacyBehavior>
+            >
               <IconWrapper
                 icon={Home}
                 size="sm"
@@ -94,19 +98,23 @@ export function Breadcrumb({
           </li>
         )}
 
+        {/* Breadcrumb items */}
         {items.map((item, index) => (
           <li
-            key={item.title}
+            key={`breadcrumb-${item.title}-${index}`}
             className="flex items-center gap-2 truncate"
+            aria-hidden={item.href ? undefined : "false"}
           >
-            {index > 0 || showHomeIcon ? renderSeparator() : null}
+            {/* Show separator except for the first item when home icon is hidden */}
+            {index > 0 || showHomeIcon ? separatorElement : null}
 
+            {/* Render as link if it has href and is not the last item */}
             {item.href && index !== lastIndex ? (
               <Link
                 href={item.href}
-                className="group flex items-center gap-1.5 hover:text-foreground transition-all duration-300
-                  truncate rounded-md py-0.5 px-1 hover:bg-accent/20"
-                legacyBehavior>
+                className="group inline-flex items-center gap-1.5 hover:text-foreground transition-all duration-300
+                  truncate rounded-md py-0.5 px-1 hover:bg-accent/20 active:scale-95 motion-reduce:transform-none"
+              >
                 {item.icon && (
                   <IconWrapper
                     icon={item.icon}
@@ -114,12 +122,14 @@ export function Breadcrumb({
                     className="text-muted-foreground/70 group-hover:text-muted-foreground transition-colors"
                   />
                 )}
-                <span className="truncate max-w-[180px] @md:max-w-[240px]">{item.title}</span>
+                <span className="truncate max-w-[180px] @md:max-w-[240px] @lg:max-w-none">
+                  {item.title}
+                </span>
               </Link>
             ) : (
               <span
                 className="flex items-center gap-1.5 text-foreground font-medium truncate
-                  py-0.5 px-1 max-w-[200px] @md:max-w-[unset]"
+                  py-0.5 px-1 max-w-[200px] @md:max-w-[300px] @lg:max-w-none"
                 {...(index === lastIndex && { "aria-current": "page" })}
               >
                 {item.icon && (

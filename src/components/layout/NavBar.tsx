@@ -318,40 +318,9 @@ function MobileNavItem({
  * Primary navigation component including desktop and mobile navigation
  */
 export function NavBar() {
-  const pathname = usePathname();
-  // Using try/catch to handle case when SessionProvider is not available
-  // This prevents the "useSession must be wrapped in SessionProvider" error
-  // Initialize with a default session state
-  const [sessionData, setSessionData] = React.useState<{
-    data: any;
-    status: "loading" | "authenticated" | "unauthenticated";
-  }>({
-    data: null,
-    status: "loading"
-  });
-
-  // Safely try to get session after component mounts
-  React.useEffect(() => {
-    try {
-      // Get real session data from useSession() directly
-      const sessionResult = useSession();
-      if (sessionResult) {
-        setSessionData({
-          data: sessionResult.data,
-          status: sessionResult.status
-        });
-      }
-    } catch (e) {
-      // If SessionProvider is not available, set to unauthenticated
-      setSessionData({
-        data: null,
-        status: "unauthenticated"
-      });
-    }
-  }, []);
-
-  // Destructure from our safe state
-  const { data: session, status } = sessionData;
+  const pathname = usePathname();  // Properly use the useSession hook at the top level of the component
+  // This avoids hydration mismatches between server and client renders
+  const { data: session, status } = useSession();
 
   const [isScrolled, setIsScrolled] = React.useState(false);
   const isAuthenticated = status === "authenticated" && !!session?.user;

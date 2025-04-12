@@ -1,6 +1,6 @@
 {
   "name": "deanmachines-front",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -206,16 +206,15 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "contentlayer/generated": [
-        "./.contentlayer/generated"
+      "@/*": [
+        "src/*"
       ]
     }
   },
   "include": [
     "next-env.d.ts",
     "**/*.ts",
-    "**/*.tsx",
-    ".contentlayer/generated"
+    "**/*.tsx"
   ],
   "pnpm": {
     "overrides": {
