@@ -6,7 +6,7 @@
 ![TailwindCSS](https://img.shields.io/badge/TailwindCSS-4.1.3-06B6D4)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 
-A modern, high-performance front-end for the DeanMachines AI platform, built with Next.js 15, TypeScript, and TailwindCSS. This platform provides comprehensive AI development and deployment services, intelligent agent systems, and workflow automation tools for businesses and developers.
+A modern, high-performance front-end for the DeanMachines AI platform, built with Next.js 15, TypeScript, and TailwindCSS. This platform provides comprehensive AI development and deployment services, featuring a fully implemented backend with **Mastra/Agentic for intelligent agent systems and workflow automation tools** for businesses and developers.
 
 ## 📊 Project Status & Roadmap
 
@@ -42,8 +42,8 @@ gantt
     Contact Page               :crit,    pages4,    2025-04-12, 2025-04-15
 
     section 5️⃣ Documentation
-    Docs Architecture          :active,  docs1,     2025-04-01, 2025-04-05
-    Contentlayer Integration   :active,  docs2,     2025-04-05, 2025-04-10
+    Docs Architecture          :done,    docs1,     2025-04-01, 2025-04-05
+    Structured Content Sys.    :done,    docs2,     2025-04-05, 2025-04-10
     Search Implementation      :crit,    docs3,     2025-04-10, 2025-04-15
     API Reference Docs         :         docs4,     2025-04-15, 2025-04-20
 
@@ -84,7 +84,7 @@ gantt
 2. **Performance Optimization** - Achieve 90+ PageSpeed scores on all critical user paths
 3. **Accessibility Compliance** - Meet WCAG 2.1 AA standards across all pages and components
 4. **Developer Experience** - Establish a component system that facilitates rapid, maintainable development
-5. **Content Management** - Implement a flexible MDX-based content system for documentation and blog
+5. **Content Management** - Implement a flexible **structured content system** for documentation and blog (using `lib/content-data.ts` schema and custom renderers).
 
 ### Secondary Goals
 
@@ -138,25 +138,25 @@ gantt
 | Pricing Page | 🟠 Starting | Basic structure only | 25% |
 | Legal Pages | ⚪ Not Started | Terms, Privacy Policy | 0% |
 
-### 5️⃣ Documentation System (60% Complete)
+### 5️⃣ Documentation System (85% Complete)
 
 | Component | Status | Details | Progress |
 |-----------|--------|---------|----------|
-| Documentation Architecture | 🟡 In Progress | Page structure and navigation | 85% |
-| Contentlayer Integration | 🟡 In Progress | MDX processing pipeline | 70% |
+| Documentation Architecture | ✅ Complete | Page structure (`DocPage`) and navigation | 100% |
+| Structured Content System | ✅ Complete | Custom schema (`lib/content-data.ts`) and rendering (`ContentRenderer.tsx`) | 100% |
 | Table of Contents | ✅ Complete | Auto-generation from headings with mock data fallback | 100% |
-| Code Highlighting | 🟡 In Progress | Syntax highlighting with themes | 80% |
+| Code Highlighting | ✅ Complete | Syntax highlighting with themes via `CodeBlockWrapper` | 100% |
 | Search Implementation | 🟠 Starting | Basic structure only | 15% |
 | API Reference Docs | ⚪ Not Started | Endpoints, params, responses | 0% |
 
-> **Note:** A temporary mock data solution has been implemented in `src/lib/mock-docs.ts` to ensure documentation pages and Table of Contents functionality work properly while Contentlayer integration is being completed. Documentation pages now reference this centralized mock data instead of individual page mocks.
+> **Note:** A mock data solution is currently implemented in `src/lib/mock-docs.ts` for development and testing of documentation pages.
 
 ### 6️⃣ Blog System (10% Complete)
 
 | Component | Status | Details | Progress |
 |-----------|--------|---------|----------|
 | Blog Architecture | 🟠 Starting | Basic page structure | 25% |
-| Post Rendering | 🟠 Starting | MDX rendering setup | 15% |
+| Post Rendering | 🟠 Starting | MDX rendering setup (To be potentially refactored) | 15% |
 | Author System | ⚪ Not Started | Author profiles, bios | 0% |
 | Category System | ⚪ Not Started | Filtering, category pages | 0% |
 | Social Sharing | ⚪ Not Started | Share buttons, meta tags | 0% |
@@ -201,24 +201,22 @@ flowchart TB
         end
 
         subgraph "Content Pipeline"
-            MDX[MDX Processing]
-            TOC[Table of Contents Generation]
+            ContentSchema[Structured Content Schema]
+            ContentRenderer[Content Renderer Component]
             CodeHighlighting[Code Syntax Highlighting]
             SearchIndex[Search Indexing]
         end
     end
 
-    subgraph "External Services"
-        Analytics[Analytics]
+    subgraph "Backend Services (Mastra/Agentic)"
+        APIL --> AIBackend[AI Backend Services]
         Auth[Authentication]
-        AIBackend[AI Backend Services]
     end
 
     NextServer --> APIL
-    APIL --> AIBackend
     NextServer --> Auth
     ClientSideAPI --> APIL
-    NextServer --> Analytics
+    NextServer --> Analytics[Analytics]
 ```
 
 ### Code Organization
@@ -228,10 +226,9 @@ flowchart TD
     src[src/] --> app[app/]
     src --> components[components/]
     src --> config[config/]
-    src --> content[content/]
-    src --> hooks[hooks/]
     src --> lib[lib/]
     src --> types[types/]
+    src --> mastra[mastra/]
 
     app --> publicPages["(public)/"]
     app --> appPages["(app)/"]
@@ -256,14 +253,17 @@ flowchart TD
     components --> ui["ui/"]
     components --> app["app/"]
 
-    content --> blog["blog/*.mdx"]
-    content --> docs["docs/*.mdx"]
-
     lib --> utils["utils.ts"]
     lib --> api["api/"]
     lib --> auth["auth.ts"]
-    lib --> mdx["mdx.ts"]
+    lib --> contentData["content-data.ts"]
+    lib --> mockDocs["mock-docs.ts"]
     lib --> analytics["analytics.ts"]
+
+    mastra --> agents["agents/"]
+    mastra --> tools["tools/"]
+    mastra --> workflows["workflows/"]
+    mastra --> indexTs["index.ts"]
 ```
 
 ## 🧩 Component Architecture
@@ -283,7 +283,7 @@ graph TB
             Auth["Authentication<br>(NextAuth.js)"]
             ThemeToggle["Theme System<br>(next-themes)"]
             UIComponents["UI Components<br>(shadcn/ui)"]
-            DocsSystem["Documentation System<br>(MDX)"]
+            DocsSystem["Documentation System<br>(Structured Content)"]
             AdminDashboard["Admin Dashboard<br>(React)"]
             UserDashboard["User Dashboard<br>(React)"]
         end
@@ -293,7 +293,7 @@ graph TB
         direction TB
         APILayer["API Layer<br>(Next.js API Routes)"]
 
-        subgraph "Core Components"
+        subgraph "Core Components (Mastra/Agentic)"
             direction LR
             AuthService["Auth Service<br>(Firebase Auth)"]
             MastraCore["Mastra Core<br>(Node.js)"]
@@ -406,10 +406,17 @@ graph TB
 
 ### Content Management
 
-- **Content Framework**: [Contentlayer](https://contentlayer.dev/) - Type-safe content management
-- **Markdown**: [MDX](https://mdxjs.com/) - JSX in Markdown for interactive docs
+- **Structured Content**: Custom schema (`lib/content-data.ts`) & Rendering (`ContentRenderer.tsx`)
 - **Code Highlighting**: [rehype-pretty-code](https://github.com/atomiks/rehype-pretty-code) - Syntax highlighting
 - **Icons**: [Lucide Icons](https://lucide.dev/) - Consistent, customizable icon system
+
+### Backend / AI
+
+- **AI Orchestration**: Mastra / Agentic Ecosystem
+- **LLMs**: Google Gemini
+- **Vector Database**: Pinecone
+- **Databases**: Upstash, LibSQL
+- **Voice**: ElevenLabs, Google Voice
 
 ### Performance & Optimization
 
@@ -456,7 +463,7 @@ graph TB
 
    ```bash
    cp .env.example .env.local
-   # Edit .env.local with your configuration
+   # Edit .env.local with your configuration (API keys for Mastra/Agentic tools, etc.)
    ```
 
 4. Start the development server
@@ -501,28 +508,26 @@ pnpm test:coverage
 | `src/app` | Next.js App Router pages and layouts |
 | `src/components` | Reusable React components |
 | `src/config` | Application configuration |
-| `src/content` | MDX content (blog posts, documentation) |
-| `src/hooks` | Custom React hooks |
-| `src/lib` | Utility functions and libraries |
+| `src/lib` | Utility functions and libraries (including `content-data.ts`, `mock-docs.ts`) |
 | `src/types` | TypeScript type definitions |
+| `src/mastra` | Mastra/Agentic backend components (agents, tools, workflows) |
 
 ### Component Organization
 
 | Directory | Description |
 |-----------|-------------|
 | `components/common` | Shared utility components used across the app |
-| `components/docs` | Documentation-specific components |
+| `components/docs` | Documentation-specific components (`DocPage`, `ContentRenderer`, etc.) |
 | `components/layout` | Layout-related components (header, footer, etc.) |
 | `components/sections` | Page section components for marketing pages |
 | `components/ui` | Base UI components (buttons, inputs, etc.) |
 | `components/app` | Application-specific components for logged-in users |
 
-### Content Organization
+### Content Organization (Removed - Content is now structured data)
 
 | Directory | Description |
 |-----------|-------------|
-| `content/docs` | Documentation pages organized by category |
-| `content/blog` | Blog posts with frontmatter metadata |
+| `src/lib/mock-docs.ts` | Mock structured content data |
 | `public/images` | Static image assets |
 | `public/fonts` | Custom font files if needed |
 
@@ -554,7 +559,13 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-## 📝 Changelog
+## 📝 Changelog (Summary - See CHANGELOG.md for full details)
+
+### Recent Changes (Unreleased)
+
+- **Documentation Refactor**: Replaced MDX/Contentlayer with a structured content system (`lib/content-data.ts`, `ContentRenderer.tsx`) across all documentation pages. Fixed related component prop type errors.
+- **Mastra/Agentic Backend**: Fully implemented backend services for agents, tools, and workflows.
+- **Bug Fixes**: Resolved various TypeScript errors and component issues.
 
 ### April 8, 2025 - Major Frontend Improvements
 
@@ -566,26 +577,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 #### Added
 
 - **Contact Form Enhancement**: Implemented comprehensive form handling with React Hook Form and Zod validation
-  - Added robust form validation with meaningful error messages
-  - Implemented visual feedback for validation errors
-  - Added form submission handling with loading states
-  - Implemented success and error message display
-  - Improved accessibility with ARIA attributes
-
 - **Documentation Search**: Enhanced documentation search functionality
-  - Created custom `useDocsSearch` hook for efficient content searching
-  - Implemented searching through both navigation items and actual documentation content
-  - Added content snippets showing search term context in search results
-  - Created improved UI with separate sections for different result types
-  - Added result sorting to prioritize title matches
-  - Maintained keyboard shortcut functionality (Cmd/Ctrl+K)
-  - Implemented proper state management for query input
-
-#### In Progress
-
-- API integration layer structuring (`src/lib/api/mastra/`)
-- Agent chat UI components
-- User dashboard visualization components
 
 ---
 

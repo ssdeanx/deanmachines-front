@@ -151,10 +151,10 @@ export interface CodeSection extends BaseSection {
  * Types of callouts
  */
 export enum CalloutType {
-  Info = "info",
+  Default = "default",
   Warning = "warning",
   Success = "success",
-  Error = "error",
+  Danger = "danger",
 }
 
 /**

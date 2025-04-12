@@ -1,14 +1,10 @@
 import { type Metadata } from "next"
 import { notFound } from "next/navigation"
 
-import { type Doc } from "@/types/docs"
-import { getTableOfContents } from "@/lib/toc"
-import { Mdx } from "@/components/docs/mdx"
-import { DocsPageLayout } from "@/components/docs/DocsPageLayout"
+import { type DocContent, SectionType } from "@/lib/content-data"
+import { DocPage } from "@/components/docs/DocPage"
 import { DocsLayoutWrapper } from "@/components/docs/DocsLayoutWrapper"
-
-// Temporary mock for contentlayer until it's properly set up
-const allDocs: Doc[] = []
+import { mockDocs } from "@/lib/mock-docs"
 
 export const metadata: Metadata = {
   title: "CLI Reference - deanmachines AI",
@@ -17,31 +13,47 @@ export const metadata: Metadata = {
 
 export default async function CliReferencePage() {
   try {
-    const doc = allDocs.find((doc) => doc.slugAsParams === "api-reference/cli")
+    const doc: DocContent | undefined = mockDocs["api-reference/cli"]
 
     if (!doc) {
-      notFound()
+      const fallbackDoc: DocContent = {
+        id: "cli-reference-fallback",
+        slug: "api-reference/cli",
+        slugAsParams: "api-reference/cli",
+        title: "CLI Reference",
+        description: "CLI reference content could not be loaded.",
+        contentType: "doc",
+        sections: [
+          {
+            type: SectionType.Heading,
+            level: 1,
+            content: [{ text: "CLI Reference" }],
+          },
+          {
+            type: SectionType.Paragraph,
+            content: [
+              {
+                text: "The requested CLI reference content was not found. Please ensure it exists in the data source.",
+              },
+            ],
+          },
+        ],
+        prev: { title: "Deployment API", slug: "api-reference/deployment" },
+      }
+      return (
+        <DocsLayoutWrapper>
+          <DocPage doc={fallbackDoc} />
+        </DocsLayoutWrapper>
+      )
     }
-
-    const toc = await getTableOfContents(doc.body.raw)
 
     return (
       <DocsLayoutWrapper>
-        <DocsPageLayout
-          toc={{ items: toc }}
-          pagination={{
-            prev: {
-              title: "Deployment API",
-              href: "/docs/api-reference/deployment",
-            },
-          }}
-        >
-          <Mdx code={doc.body.code} />
-        </DocsPageLayout>
+        <DocPage doc={doc} />
       </DocsLayoutWrapper>
     )
   } catch (error) {
-    console.error("Error in CliReferencePage:", error)
-    throw error
+    console.error("Error loading CliReferencePage:", error)
+    notFound()
   }
 }

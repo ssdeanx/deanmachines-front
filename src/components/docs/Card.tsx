@@ -11,25 +11,33 @@ import { cn } from "@/lib/utils";
 export const Card = forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement> & {
-    href: string;
+    href?: string;
     className?: string;
     children: React.ReactNode;
+    image?: string;
+    title?: string;
   }
->(({ href, className, children, ...props }, ref) => {
-  return (
+>(({ href, className, children, image, title, ...props }, ref) => {
+  const cardContent = (
+    <div
+      ref={ref}
+      className={cn(
+        "group relative rounded-lg border p-4 transition-all",
+        href ? "hover:border-primary hover:shadow-sm hover:bg-accent/50 cursor-pointer" : "",
+        className
+      )}
+      {...props}
+    >
+      {children}
+    </div>
+  );
+
+  return href ? (
     <Link href={href} passHref>
-      <div
-        ref={ref}
-        className={cn(
-          "group relative rounded-lg border p-4 hover:border-primary hover:shadow-sm transition-all",
-          "hover:bg-accent/50 cursor-pointer",
-          className
-        )}
-        {...props}
-      >
-        {children}
-      </div>
+      {cardContent}
     </Link>
+  ) : (
+    cardContent
   );
 });
 

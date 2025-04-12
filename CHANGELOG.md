@@ -7,11 +7,24 @@
 - Added support for additional weather data metrics
 - Enhanced Weather component UI with responsive design
 - Implemented caching for weather API requests
+- Added missing props (`language`, `filename`, `showLineNumbers`, `highlightLines`, `image`, `title`) to `CodeBlockWrapper` component to resolve TypeScript errors in documentation pages.
+- Made `href` prop optional in `Card` component to align with data structure.
 
 ### Changed
 
 - Optimized Mastra agent response handling
 - Updated documentation for weather functionality
+- **Refactored documentation pages (`/src/app/(public)/docs/**/page.tsx`)**
+  - Replaced MDX rendering (`Mdx`, `DocsPageLayout`) with structured content rendering using `DocPage` and `ContentRenderer`.
+  - Standardized page structure to fetch `DocContent` and render using `<DocPage>`.
+  - Updated fallback logic for missing documents.
+  - Ensured consistent use of `<DocsLayoutWrapper>` within pages.
+- **Fixed issues in documentation components and types:**
+  - Imported `createTool` in `src/mastra/tools/index.ts`.
+  - Updated `CalloutType` enum values in `src/lib/content-data.ts` to match component expectations (`default`, `danger`).
+  - Explicitly typed `fallbackDoc` in `/docs/page.tsx` to resolve type incompatibility.
+- Removed redundant `<DocsLayoutWrapper>` from `/docs/layout.tsx`.
+- Removed unused `docsConfig` import from `/docs/layout.tsx`.
 
 ## [0.1.1] - 2025-04-11
 

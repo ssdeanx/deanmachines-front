@@ -14,7 +14,7 @@ import { env } from "process";
 
 // === Third-party imports ===
 import { z } from "zod";
-import { Tool } from "@mastra/core/tools";
+import { Tool, createTool } from "@mastra/core/tools";
 import { createLogger } from "@mastra/core/logger";
 import { createMastraTools } from "@agentic/mastra";
 

@@ -7,12 +7,20 @@ import { Button } from "@/components/ui/button"
 
 interface CodeBlockWrapperProps extends React.HTMLAttributes<HTMLPreElement> {
   expandable?: boolean
+  language?: string
+  filename?: string
+  showLineNumbers?: boolean
+  highlightLines?: number[]
 }
 
 export function CodeBlockWrapper({
   children,
   expandable,
   className,
+  language,
+  filename,
+  showLineNumbers,
+  highlightLines,
   ...props
 }: CodeBlockWrapperProps) {
   const [expanded, setExpanded] = React.useState(false)

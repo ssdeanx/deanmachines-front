@@ -1,4 +1,4 @@
-import { docsConfig } from "@/config/docs"
+
 import { DocsLayoutWrapper } from "@/components/docs/DocsLayoutWrapper"
 
 interface DocsLayoutProps {

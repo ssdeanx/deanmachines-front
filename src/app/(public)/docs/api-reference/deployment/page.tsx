@@ -1,14 +1,10 @@
 import { type Metadata } from "next"
 import { notFound } from "next/navigation"
 
-import { type Doc } from "@/types/docs"
-import { getTableOfContents } from "@/lib/toc"
-import { Mdx } from "@/components/docs/mdx"
-import { DocsPageLayout } from "@/components/docs/DocsPageLayout"
+import { type DocContent, SectionType } from "@/lib/content-data"
+import { DocPage } from "@/components/docs/DocPage"
 import { DocsLayoutWrapper } from "@/components/docs/DocsLayoutWrapper"
-
-// Temporary mock for contentlayer until it's properly set up
-const allDocs: Doc[] = []
+import { mockDocs } from "@/lib/mock-docs"
 
 export const metadata: Metadata = {
   title: "Deployment API Reference - deanmachines AI",
@@ -17,35 +13,48 @@ export const metadata: Metadata = {
 
 export default async function DeploymentApiPage() {
   try {
-    const doc = allDocs.find((doc) => doc.slugAsParams === "api-reference/deployment")
+    const doc: DocContent | undefined = mockDocs["api-reference/deployment"]
 
     if (!doc) {
-      notFound()
+      const fallbackDoc: DocContent = {
+        id: "deployment-api-fallback",
+        slug: "api-reference/deployment",
+        slugAsParams: "api-reference/deployment",
+        title: "Deployment API Reference",
+        description: "Deployment API reference content could not be loaded.",
+        contentType: "doc",
+        sections: [
+          {
+            type: SectionType.Heading,
+            level: 1,
+            content: [{ text: "Deployment API Reference" }],
+          },
+          {
+            type: SectionType.Paragraph,
+            content: [
+              {
+                text: "The requested Deployment API reference content was not found. Please ensure it exists in the data source.",
+              },
+            ],
+          },
+        ],
+        prev: { title: "Network API", slug: "api-reference/network" },
+        next: { title: "CLI Reference", slug: "api-reference/cli" },
+      }
+      return (
+        <DocsLayoutWrapper>
+          <DocPage doc={fallbackDoc} />
+        </DocsLayoutWrapper>
+      )
     }
-
-    const toc = await getTableOfContents(doc.body.raw)
 
     return (
       <DocsLayoutWrapper>
-        <DocsPageLayout
-          toc={{ items: toc }}
-          pagination={{
-            prev: {
-              title: "Network API",
-              href: "/docs/api-reference/network",
-            },
-            next: {
-              title: "CLI Reference",
-              href: "/docs/api-reference/cli",
-            },
-          }}
-        >
-          <Mdx code={doc.body.code} />
-        </DocsPageLayout>
+        <DocPage doc={doc} />
       </DocsLayoutWrapper>
     )
   } catch (error) {
-    console.error("Error in DeploymentApiPage:", error)
-    throw error
+    console.error("Error loading DeploymentApiPage:", error)
+    notFound()
   }
 }
