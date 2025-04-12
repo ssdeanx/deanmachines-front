@@ -6,6 +6,7 @@ settings:
 
 overrides:
   pathe: ^1.1.2
+  default-connector: link:../../AppData/Local/pnpm/global/5/node_modules/dataconnect-generated/js/default-connector
 
 importers:
 
@@ -377,6 +378,9 @@ importers:
       date-fns:
         specifier: ^2.30.0
         version: 2.30.0
+      default-connector:
+        specifier: link:../../AppData/Local/pnpm/global/5/node_modules/dataconnect-generated/js/default-connector
+        version: link:../../AppData/Local/pnpm/global/5/node_modules/dataconnect-generated/js/default-connector
       embla-carousel-react:
         specifier: ^8.6.0
         version: 8.6.0(react@18.3.1)
@@ -401,9 +405,6 @@ importers:
       geist:
         specifier: ^1.3.1
         version: 1.3.1(next@15.3.0(@opentelemetry/api@1.4.1)(@playwright/test@1.51.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.86.3))
-      genkit:
-        specifier: ^1.6.0
-        version: 1.6.0
       google-auth-library:
         specifier: ^9.15.1
         version: 9.15.1(encoding@0.1.13)
@@ -546,6 +547,9 @@ importers:
       '@eslint/eslintrc':
         specifier: ^3.3.1
         version: 3.3.1
+      '@genkit-ai/googleai':
+        specifier: ^1.6.0
+        version: 1.6.0(encoding@0.1.13)(genkit@1.6.0)
       '@tailwindcss/postcss':
         specifier: ^4.1.3
         version: 4.1.3
@@ -567,6 +571,9 @@ importers:
       eslint-config-next:
         specifier: 15.3.0
         version: 15.3.0(eslint@9.24.0(jiti@2.4.2))(typescript@5.8.3)
+      genkit:
+        specifier: ^1.6.0
+        version: 1.6.0
       js-tiktoken:
         specifier: ^1.0.19
         version: 1.0.19
@@ -1838,6 +1845,11 @@ packages:
 
   '@genkit-ai/core@1.6.0':
     resolution: {integrity: sha512-7qcdETsrzJO8rtzt2q3MeqF6SA/Uj6T+n7q82YPxfXE0XbiBI8ydlxzSEvfhlASnHSoF2Ve4HzjgEb9opgmWvw==}
+
+  '@genkit-ai/googleai@1.6.0':
+    resolution: {integrity: sha512-GjtsSn9ABYKG3YRINQ+R4Qf4mCFOLLZbexjApwk4SLuDrObsQpKbITvOtkwN9KV5nQqcW1zw64C5z3rdEWCxBQ==}
+    peerDependencies:
+      genkit: ^1.6.0
 
   '@google-cloud/common@5.0.2':
     resolution: {integrity: sha512-V7bmBKYQyu0eVG2BFejuUjlBt+zrya6vtsKdY+JxMM/dNntPF41vZ9+LhOshEUH01zOHEqBSvI7Dad7ZS6aUeA==}
@@ -14586,6 +14598,16 @@ snapshots:
       zod: 3.24.2
       zod-to-json-schema: 3.24.5(zod@3.24.2)
     transitivePeerDependencies:
+      - supports-color
+
+  '@genkit-ai/googleai@1.6.0(encoding@0.1.13)(genkit@1.6.0)':
+    dependencies:
+      '@google/generative-ai': 0.24.0
+      genkit: 1.6.0
+      google-auth-library: 9.15.1(encoding@0.1.13)
+      node-fetch: 3.3.2
+    transitivePeerDependencies:
+      - encoding
       - supports-color
 
   '@google-cloud/common@5.0.2(encoding@0.1.13)':
