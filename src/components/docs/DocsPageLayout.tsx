@@ -3,24 +3,48 @@ import * as React from "react"
 import { TableOfContents } from "@/types/toc"
 import { Toc } from "./Toc"
 import { DocsPagination } from "./DocsPagination"
+import { ContentRenderer } from "./ContentRenderer"
+import { type ContentSection } from "@/lib/content-data"
 
 interface DocsPageLayoutProps {
-  children: React.ReactNode
+  /**
+   * Content to display in the main area
+   * Can be either structured content sections or React children for backward compatibility
+   */
+  children?: React.ReactNode
+  /**
+   * Table of contents for the page
+   */
   toc: TableOfContents
+  /**
+   * Pagination links
+   */
   pagination?: {
     prev?: { title: string; href: string }
     next?: { title: string; href: string }
-  }
+  }  /**
+   * Structured content sections (alternative to children)
+   */
+  sections?: ContentSection[]
 }
 
-export function DocsPageLayout({ children, toc, pagination }: DocsPageLayoutProps) {
+export function DocsPageLayout({
+  children,
+  toc,
+  pagination,
+  sections
+}: DocsPageLayoutProps) {
   return (
     <div className="flex flex-1 flex-col">
       <div className="container flex-1">
         <div className="grid grid-cols-[1fr_300px] gap-12">
           <div>
             <article className="prose prose-slate dark:prose-invert max-w-none">
-              {children}
+              {sections ? (
+                <ContentRenderer sections={sections} />
+              ) : (
+                children
+              )}
             </article>
             {pagination && (
               <nav className="mt-8">

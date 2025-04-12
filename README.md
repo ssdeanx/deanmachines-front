@@ -277,116 +277,78 @@ graph TB
         direction TB
         NextApp["Next.js App<br>(Next.js 15)"]
 
-        subgraph "Layout Components"
-            NavBar["Navigation Bar<br>(React)"]
-            Footer["Footer<br>(React)"]
-            ThemeProvider["Theme Provider<br>(next-themes)"]
-            Toaster["Notifications<br>(Sonner)"]
-        end
-
-        subgraph "Page Components"
-            PublicPages["Public Pages<br>(Next.js Pages)"]
-            AdminPages["Admin Pages<br>(Next.js Pages)"]
-            UserPages["User Pages<br>(Next.js Pages)"]
-            DocsPages["Documentation<br>(MDX)"]
-        end
-
-        subgraph "UI Components"
-            CommonUI["Common UI<br>(shadcn/ui)"]
-            Forms["Form Components<br>(React)"]
-            Charts["Visualization<br>(React)"]
-            MDXComponents["MDX Components<br>(React)"]
+        subgraph "Frontend Components"
+            direction LR
+            NavBar["Navigation<br>(React)"]
+            Auth["Authentication<br>(NextAuth.js)"]
+            ThemeToggle["Theme System<br>(next-themes)"]
+            UIComponents["UI Components<br>(shadcn/ui)"]
+            DocsSystem["Documentation System<br>(MDX)"]
+            AdminDashboard["Admin Dashboard<br>(React)"]
+            UserDashboard["User Dashboard<br>(React)"]
         end
     end
 
-    subgraph "Authentication Container"
-        AuthService["Auth Service<br>(NextAuth.js)"]
-        FirebaseAuth["Firebase Auth<br>(Firebase)"]
-        FirestoreAdapter["Firestore Adapter<br>(Auth.js)"]
-    end
+    subgraph "Backend Container"
+        direction TB
+        APILayer["API Layer<br>(Next.js API Routes)"]
 
-    subgraph "AI System Container"
-        subgraph "Core AI Components"
-            AgentNetwork["Agent Network<br>(Mastra)"]
-            LangChainService["LangChain Service<br>(LangChain)"]
+        subgraph "Core Components"
+            direction LR
+            AuthService["Auth Service<br>(Firebase Auth)"]
+            MastraCore["Mastra Core<br>(Node.js)"]
+            AgentSystem["Agent System<br>(TypeScript)"]
             MemorySystem["Memory System<br>(LibSQL)"]
+            VectorStore["Vector Store<br>(Pinecone)"]
         end
 
         subgraph "Agent Components"
-            ResearchAgent["Research Agent<br>(AI)"]
-            AnalystAgent["Analyst Agent<br>(AI)"]
-            WriterAgent["Writer Agent<br>(AI)"]
-            CoderAgent["Coder Agent<br>(AI)"]
-            DataManager["Data Manager<br>(AI)"]
+            direction LR
+            BaseAgent["Base Agent<br>(TypeScript)"]
+            AgentNetwork["Agent Network<br>(TypeScript)"]
+            ToolSystem["Tool System<br>(TypeScript)"]
+            LangChainIntegration["LangChain Integration<br>(TypeScript)"]
         end
-
-        subgraph "Tool Components"
-            SearchTools["Search Tools<br>(Multiple APIs)"]
-            VectorTools["Vector Tools<br>(Pinecone)"]
-            FileTools["File Tools<br>(Node.js)"]
-            APITools["API Tools<br>(REST)"]
-        end
-    end
-
-    subgraph "Data Storage"
-        Firestore[("Firestore DB<br>Firebase")]
-        VectorDB[("Vector DB<br>Pinecone")]
-        LibSQLDB[("LibSQL DB<br>LibSQL")]
     end
 
     subgraph "External Services"
+        direction LR
+        Firebase["Firebase<br>(Auth/Firestore)"]
         GoogleAI["Google AI<br>(Gemini)"]
-        ExaSearch["Exa Search<br>(API)"]
-        TavilyAPI["Tavily API<br>(API)"]
-        BraveSearch["Brave Search<br>(API)"]
+        Pinecone["Pinecone<br>(Vector DB)"]
+        LibSQL["LibSQL<br>(Storage)"]
     end
 
-    %% Connections
+    %% Frontend Relationships
     User -->|"Accesses"| NextApp
     Admin -->|"Manages"| NextApp
-
     NextApp -->|"Uses"| NavBar
-    NextApp -->|"Uses"| Footer
-    NextApp -->|"Uses"| ThemeProvider
-    NextApp -->|"Uses"| Toaster
+    NextApp -->|"Uses"| Auth
+    NextApp -->|"Uses"| ThemeToggle
+    NextApp -->|"Uses"| UIComponents
+    NextApp -->|"Uses"| DocsSystem
+    NextApp -->|"Uses"| AdminDashboard
+    NextApp -->|"Uses"| UserDashboard
 
-    NextApp -->|"Routes to"| PublicPages
-    NextApp -->|"Routes to"| AdminPages
-    NextApp -->|"Routes to"| UserPages
-    NextApp -->|"Routes to"| DocsPages
+    %% Backend Relationships
+    NextApp -->|"API Calls"| APILayer
+    APILayer -->|"Authenticates"| AuthService
+    APILayer -->|"Uses"| MastraCore
+    MastraCore -->|"Manages"| AgentSystem
+    AgentSystem -->|"Uses"| MemorySystem
+    AgentSystem -->|"Uses"| VectorStore
 
-    PublicPages -->|"Uses"| CommonUI
-    AdminPages -->|"Uses"| CommonUI
-    UserPages -->|"Uses"| CommonUI
-    DocsPages -->|"Uses"| MDXComponents
+    %% Agent Component Relationships
+    AgentSystem -->|"Extends"| BaseAgent
+    AgentSystem -->|"Orchestrates"| AgentNetwork
+    AgentSystem -->|"Uses"| ToolSystem
+    AgentSystem -->|"Integrates"| LangChainIntegration
 
-    NextApp -->|"Authenticates"| AuthService
-    AuthService -->|"Uses"| FirebaseAuth
-    AuthService -->|"Adapts"| FirestoreAdapter
-    FirestoreAdapter -->|"Stores"| Firestore
-
-    AgentNetwork -->|"Coordinates"| ResearchAgent
-    AgentNetwork -->|"Coordinates"| AnalystAgent
-    AgentNetwork -->|"Coordinates"| WriterAgent
-    AgentNetwork -->|"Coordinates"| CoderAgent
-    AgentNetwork -->|"Coordinates"| DataManager
-
-    ResearchAgent -->|"Uses"| SearchTools
-    AnalystAgent -->|"Uses"| VectorTools
-    WriterAgent -->|"Uses"| FileTools
-    CoderAgent -->|"Uses"| APITools
-    DataManager -->|"Uses"| FileTools
-
-    SearchTools -->|"Queries"| ExaSearch
-    SearchTools -->|"Queries"| TavilyAPI
-    SearchTools -->|"Queries"| BraveSearch
-
-    AgentNetwork -->|"Uses"| LangChainService
-    LangChainService -->|"Calls"| GoogleAI
-
-    AgentNetwork -->|"Uses"| MemorySystem
-    MemorySystem -->|"Stores in"| LibSQLDB
-    VectorTools -->|"Stores in"| VectorDB
+    %% External Service Relationships
+    AuthService -->|"Uses"| Firebase
+    AgentSystem -->|"Uses"| GoogleAI
+    VectorStore -->|"Stores in"| Pinecone
+    MemorySystem -->|"Persists in"| LibSQL
 ```
 
 ## 🎯 Technical Goals & Implementation Status

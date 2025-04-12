@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+### Added
+
+- Added support for additional weather data metrics
+- Enhanced Weather component UI with responsive design
+- Implemented caching for weather API requests
+
+### Changed
+
+- Optimized Mastra agent response handling
+- Updated documentation for weather functionality
+
 ## [0.1.1] - 2025-04-11
 
 ### Added

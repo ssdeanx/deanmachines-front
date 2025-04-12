@@ -1,928 +1,714 @@
 /**
- * Mock documentation data for use while Contentlayer integration is being fixed
+ * Mock documentation data using structured content
  *
- * This file provides temporary mock document content for each documentation page
- * to ensure proper Table of Contents generation and page rendering.
- *
- * @remarks
- * Once Contentlayer integration is complete, this file can be removed and
- * real document data from Contentlayer should be used instead.
+ * This file provides sample document content for documentation pages
+ * without requiring MDX or Contentlayer.
  */
 
-import type { Doc } from "@/types/docs";
+import {
+  DocContent,
+  SectionType,
+  ListType,
+  CalloutType,
+} from "@/lib/content-data";
 
 /**
- * Collection of mock document data organized by slugAsParams path
+ * Collection of document content organized by slugAsParams path
  */
-export const mockDocs: Record<string, Doc> = {
-  // Introduction / Index
-  "index": {
+export const mockDocs: Record<string, DocContent> = {
+  // Documentation index page
+  index: {
+    id: "documentation",
     slug: "index",
     slugAsParams: "index",
-    body: {
-      raw: `# deanmachines AI Documentation
-
-Welcome to the deanmachines AI documentation. Here you'll find everything you need to build and deploy intelligent AI solutions.
-
-## Getting Started
-
-Our platform provides powerful tools for creating, deploying, and managing AI agents. Follow our guides to get started quickly.
-
-## Core Concepts
-
-Understanding the key concepts behind deanmachines AI will help you build more effective solutions.
-
-## Examples & Tutorials
-
-Learn by example with our comprehensive tutorials and example projects.
-
-## Popular Guides
-
-Explore our most popular guides to solve common challenges and implement best practices.
-
-## Additional Resources
-
-Find more resources to help you make the most of the deanmachines AI platform.`,
-      code: `# deanmachines AI Documentation
-
-Welcome to the deanmachines AI documentation. Here you'll find everything you need to build and deploy intelligent AI solutions.
-
-## Getting Started
-
-Our platform provides powerful tools for creating, deploying, and managing AI agents. Follow our guides to get started quickly.
-
-## Core Concepts
-
-Understanding the key concepts behind deanmachines AI will help you build more effective solutions.
-
-## Examples & Tutorials
-
-Learn by example with our comprehensive tutorials and example projects.
-
-## Popular Guides
-
-Explore our most popular guides to solve common challenges and implement best practices.
-
-## Additional Resources
-
-Find more resources to help you make the most of the deanmachines AI platform.`
-    },
     title: "Documentation",
-    description: "Documentation and guides for deanmachines AI platform."
+    description: "Documentation and guides for deanmachines AI platform.",
+    contentType: "doc",
+    sections: [
+      {
+        type: SectionType.Heading,
+        level: 1,
+        content: [{ text: "deanmachines AI Documentation" }],
+      },
+      {
+        type: SectionType.Paragraph,
+        content: [
+          {
+            text: "Welcome to the deanmachines AI documentation. Here you'll find everything you need to build and deploy intelligent AI solutions.",
+          },
+        ],
+      },
+      {
+        type: SectionType.Heading,
+        level: 2,
+        content: [{ text: "Getting Started" }],
+      },
+      {
+        type: SectionType.Paragraph,
+        content: [
+          {
+            text: "Our platform provides powerful tools for creating, deploying, and managing AI agents. Follow our guides to get started quickly.",
+          },
+        ],
+      },
+      {
+        type: SectionType.Heading,
+        level: 2,
+        content: [{ text: "Core Concepts" }],
+      },
+      {
+        type: SectionType.Paragraph,
+        content: [
+          {
+            text: "Understanding the key concepts behind deanmachines AI will help you build more effective solutions.",
+          },
+        ],
+      },
+      {
+        type: SectionType.Heading,
+        level: 2,
+        content: [{ text: "Examples & Tutorials" }],
+      },
+      {
+        type: SectionType.Paragraph,
+        content: [
+          {
+            text: "Learn by example with our comprehensive tutorials and example projects.",
+          },
+        ],
+      },
+      {
+        type: SectionType.Heading,
+        level: 2,
+        content: [{ text: "Popular Guides" }],
+      },
+      {
+        type: SectionType.Paragraph,
+        content: [
+          {
+            text: "Explore our most popular guides to solve common challenges and implement best practices.",
+          },
+        ],
+      },
+      {
+        type: SectionType.Heading,
+        level: 2,
+        content: [{ text: "Additional Resources" }],
+      },
+      {
+        type: SectionType.Paragraph,
+        content: [
+          {
+            text: "Find more resources to help you make the most of the deanmachines AI platform.",
+          },
+        ],
+      },
+    ],
+    next: {
+      title: "Getting Started",
+      slug: "getting-started",
+    },
   },
 
-  // Core Concepts
+  // Core Concepts Overview
   "core-concepts/overview": {
+    id: "core-concepts-overview",
     slug: "core-concepts/overview",
     slugAsParams: "core-concepts/overview",
-    body: {
-      raw: `# Core Concepts
-
-deanmachines AI is built on several key concepts that work together to create powerful AI applications.
-
-## Architectural Overview
-
-The platform is organized around a few central concepts:
-
-- **Agents** - Autonomous AI entities that can perform tasks
-- **Memory** - Contextual storage for agents
-- **Networks** - Systems of interconnected agents
-- **Tools** - Capabilities that agents can use to interact with external systems
-- **Workflows** - Structured sequences of agent interactions
-
-## Components
-
-Each deanmachines AI application consists of:
-
-### Core Engine
-The central system that orchestrates all AI activities.
-
-### Agent Framework
-Tools and libraries for creating and managing agents.
-
-### Memory Systems
-Storage mechanisms for maintaining context and knowledge.
-
-### Integration Layer
-Connectors for external systems and data sources.
-
-## Interaction Patterns
-
-The platform supports several interaction patterns:
-
-1. **Direct Interaction** - One-to-one conversations with agents
-2. **Workflow Execution** - Structured processes with multiple steps
-3. **Agent Networks** - Multiple agents collaborating on complex tasks
-4. **Hybrid Systems** - Combinations of the above patterns
-
-## Implementation Approaches
-
-There are several ways to implement deanmachines AI:
-
-- **Hosted Solutions** - Cloud-based, managed implementations
-- **Self-Hosted** - On-premise deployments for specialized needs
-- **Hybrid Deployments** - Combinations of hosted and self-hosted components
-
-## Further Reading
-
-- [Advanced Features](/docs/advanced-features)
-- [API Reference](/docs/api-reference)
-- [Example Projects](/docs/examples)`,
-      code: `# Core Concepts
-
-deanmachines AI is built on several key concepts that work together to create powerful AI applications.
-
-## Architectural Overview
-
-The platform is organized around a few central concepts:
-
-- **Agents** - Autonomous AI entities that can perform tasks
-- **Memory** - Contextual storage for agents
-- **Networks** - Systems of interconnected agents
-- **Tools** - Capabilities that agents can use to interact with external systems
-- **Workflows** - Structured sequences of agent interactions
-
-## Components
-
-Each deanmachines AI application consists of:
-
-### Core Engine
-The central system that orchestrates all AI activities.
-
-### Agent Framework
-Tools and libraries for creating and managing agents.
-
-### Memory Systems
-Storage mechanisms for maintaining context and knowledge.
-
-### Integration Layer
-Connectors for external systems and data sources.
-
-## Interaction Patterns
-
-The platform supports several interaction patterns:
-
-1. **Direct Interaction** - One-to-one conversations with agents
-2. **Workflow Execution** - Structured processes with multiple steps
-3. **Agent Networks** - Multiple agents collaborating on complex tasks
-4. **Hybrid Systems** - Combinations of the above patterns
-
-## Implementation Approaches
-
-There are several ways to implement deanmachines AI:
-
-- **Hosted Solutions** - Cloud-based, managed implementations
-- **Self-Hosted** - On-premise deployments for specialized needs
-- **Hybrid Deployments** - Combinations of hosted and self-hosted components
-
-## Further Reading
-
-- [Advanced Features](/docs/advanced-features)
-- [API Reference](/docs/api-reference)
-- [Example Projects](/docs/examples)`
-    },
     title: "Core Concepts",
-    description: "Understanding the fundamental concepts and architecture of deanmachines AI."
+    description:
+      "Understanding the fundamental concepts and architecture of deanmachines AI.",
+    contentType: "doc",
+    sections: [
+      {
+        type: SectionType.Heading,
+        level: 1,
+        content: [{ text: "Core Concepts" }],
+      },
+      {
+        type: SectionType.Paragraph,
+        content: [
+          {
+            text: "deanmachines AI is built on several key concepts that work together to create powerful AI applications.",
+          },
+        ],
+      },
+      {
+        type: SectionType.Heading,
+        level: 2,
+        content: [{ text: "Architectural Overview" }],
+      },
+      {
+        type: SectionType.Paragraph,
+        content: [
+          { text: "The platform is organized around a few central concepts:" },
+        ],
+      },
+      {
+        type: SectionType.List,
+        listType: ListType.Unordered,
+        items: [
+          {
+            content: [
+              { text: "Agents", format: { bold: true } },
+              { text: " - Autonomous AI entities that can perform tasks" },
+            ],
+          },
+          {
+            content: [
+              { text: "Memory", format: { bold: true } },
+              { text: " - Contextual storage for agents" },
+            ],
+          },
+          {
+            content: [
+              { text: "Networks", format: { bold: true } },
+              { text: " - Systems of interconnected agents" },
+            ],
+          },
+          {
+            content: [
+              { text: "Tools", format: { bold: true } },
+              {
+                text: " - Capabilities that agents can use to interact with external systems",
+              },
+            ],
+          },
+          {
+            content: [
+              { text: "Workflows", format: { bold: true } },
+              { text: " - Structured sequences of agent interactions" },
+            ],
+          },
+        ],
+      },
+      {
+        type: SectionType.Heading,
+        level: 2,
+        content: [{ text: "Components" }],
+      },
+      {
+        type: SectionType.Callout,
+        calloutType: CalloutType.Info,
+        title: "Key Components",
+        content: [
+          {
+            text: "Each deanmachines AI application consists of a Core Engine, Agent Framework, Memory Systems, and Integration Layer.",
+          },
+        ],
+      },
+      {
+        type: SectionType.Heading,
+        level: 3,
+        content: [{ text: "Core Engine" }],
+      },
+      {
+        type: SectionType.Paragraph,
+        content: [
+          { text: "The central system that orchestrates all AI activities." },
+        ],
+      },
+      {
+        type: SectionType.Code,
+        language: "typescript",
+        code: "import { Mastra } from '@deanmachines/core';\n\n// Initialize the core engine\nconst mastra = new Mastra({\n  apiKey: process.env.API_KEY,\n  projectId: 'my-project'\n});",
+      },
+      {
+        type: SectionType.Heading,
+        level: 3,
+        content: [{ text: "Agent Framework" }],
+      },
+      {
+        type: SectionType.Paragraph,
+        content: [
+          { text: "Tools and libraries for creating and managing agents." },
+        ],
+      },
+      {
+        type: SectionType.Heading,
+        level: 3,
+        content: [{ text: "Memory Systems" }],
+      },
+      {
+        type: SectionType.Paragraph,
+        content: [
+          { text: "Storage mechanisms for maintaining context and knowledge." },
+        ],
+      },
+      {
+        type: SectionType.Heading,
+        level: 3,
+        content: [{ text: "Integration Layer" }],
+      },
+      {
+        type: SectionType.Paragraph,
+        content: [
+          { text: "Connectors for external systems and data sources." },
+        ],
+      },
+      {
+        type: SectionType.Heading,
+        level: 2,
+        content: [{ text: "Interaction Patterns" }],
+      },
+      {
+        type: SectionType.Paragraph,
+        content: [
+          { text: "The platform supports several interaction patterns:" },
+        ],
+      },
+      {
+        type: SectionType.List,
+        listType: ListType.Ordered,
+        items: [
+          {
+            content: [
+              { text: "Direct Interaction", format: { bold: true } },
+              { text: " - One-to-one conversations with agents" },
+            ],
+          },
+          {
+            content: [
+              { text: "Workflow Execution", format: { bold: true } },
+              { text: " - Structured processes with multiple steps" },
+            ],
+          },
+          {
+            content: [
+              { text: "Agent Networks", format: { bold: true } },
+              { text: " - Multiple agents collaborating on complex tasks" },
+            ],
+          },
+          {
+            content: [
+              { text: "Hybrid Systems", format: { bold: true } },
+              { text: " - Combinations of the above patterns" },
+            ],
+          },
+        ],
+      },
+    ],
+    prev: {
+      title: "Documentation",
+      slug: "index",
+    },
+    next: {
+      title: "AI Agents",
+      slug: "core-concepts/agents",
+    },
   },
 
-  // Agents
+  // AI Agents
   "core-concepts/agents": {
+    id: "core-concepts-agents",
     slug: "core-concepts/agents",
     slugAsParams: "core-concepts/agents",
-    body: {
-      raw: `# AI Agents
-
-## What are AI Agents?
-
-AI agents are autonomous software entities that can perceive their environment, make decisions, and take actions to achieve specific goals. Within DeanMachines AI, agents serve as the fundamental building blocks for creating intelligent systems.
-
-## Agent Components
-
-- **Perception**: Processing and understanding inputs
-- **Decision Making**: Analyzing information and determining actions
-- **Action**: Executing operations based on decisions
-- **Memory**: Storing and retrieving information
-- **Learning**: Improving performance based on experience
-
-## Agent Types
-
-### Research Agent
-Research agents specialize in information gathering and synthesis.
-
-### Analyst Agent
-Analyst agents focus on data processing and pattern recognition.
-
-### Writer Agent
-Writer agents generate natural language content based on inputs and requirements.
-
-## Building Your First Agent
-
-Creating an effective agent involves defining its:
-
-1. **Capabilities**: What can the agent do?
-2. **Knowledge**: What information can the agent access?
-3. **Goals**: What objectives guide the agent's behavior?
-4. **Constraints**: What limits are placed on the agent's actions?
-
-## Best Practices
-
-- Start with clearly defined scopes
-- Implement proper memory management
-- Incorporate feedback mechanisms
-- Test in controlled environments before deployment`,
-      code: `# AI Agents
-
-## What are AI Agents?
-
-AI agents are autonomous software entities that can perceive their environment, make decisions, and take actions to achieve specific goals. Within DeanMachines AI, agents serve as the fundamental building blocks for creating intelligent systems.
-
-## Agent Components
-
-- **Perception**: Processing and understanding inputs
-- **Decision Making**: Analyzing information and determining actions
-- **Action**: Executing operations based on decisions
-- **Memory**: Storing and retrieving information
-- **Learning**: Improving performance based on experience
-
-## Agent Types
-
-### Research Agent
-Research agents specialize in information gathering and synthesis.
-
-### Analyst Agent
-Analyst agents focus on data processing and pattern recognition.
-
-### Writer Agent
-Writer agents generate natural language content based on inputs and requirements.
-
-## Building Your First Agent
-
-Creating an effective agent involves defining its:
-
-1. **Capabilities**: What can the agent do?
-2. **Knowledge**: What information can the agent access?
-3. **Goals**: What objectives guide the agent's behavior?
-4. **Constraints**: What limits are placed on the agent's actions?
-
-## Best Practices
-
-- Start with clearly defined scopes
-- Implement proper memory management
-- Incorporate feedback mechanisms
-- Test in controlled environments before deployment`
-    },
     title: "AI Agents",
-    description: "Understanding AI agents, their capabilities, and how to build them effectively."
+    description: "Understanding AI agents within the deanmachines AI platform.",
+    contentType: "doc",
+    sections: [
+      {
+        type: SectionType.Heading,
+        level: 1,
+        content: [{ text: "AI Agents" }],
+      },
+      {
+        type: SectionType.Heading,
+        level: 2,
+        content: [{ text: "What are AI Agents?" }],
+      },
+      {
+        type: SectionType.Paragraph,
+        content: [
+          {
+            text: "AI agents are autonomous software entities that can perceive their environment, make decisions, and take actions to achieve specific goals. Within deanmachines AI, agents serve as the fundamental building blocks for creating intelligent systems.",
+          },
+        ],
+      },
+      {
+        type: SectionType.Heading,
+        level: 2,
+        content: [{ text: "Agent Components" }],
+      },
+      {
+        type: SectionType.List,
+        listType: ListType.Unordered,
+        items: [
+          {
+            content: [
+              { text: "Perception", format: { bold: true } },
+              { text: ": Processing and understanding inputs" },
+            ],
+          },
+          {
+            content: [
+              { text: "Decision Making", format: { bold: true } },
+              { text: ": Analyzing information and determining actions" },
+            ],
+          },
+          {
+            content: [
+              { text: "Action", format: { bold: true } },
+              { text: ": Executing operations based on decisions" },
+            ],
+          },
+          {
+            content: [
+              { text: "Memory", format: { bold: true } },
+              { text: ": Storing and retrieving information" },
+            ],
+          },
+          {
+            content: [
+              { text: "Learning", format: { bold: true } },
+              { text: ": Improving performance based on experience" },
+            ],
+          },
+        ],
+      },
+      {
+        type: SectionType.Heading,
+        level: 2,
+        content: [{ text: "Agent Types" }],
+      },
+      {
+        type: SectionType.Heading,
+        level: 3,
+        content: [{ text: "Research Agent" }],
+      },
+      {
+        type: SectionType.Paragraph,
+        content: [
+          {
+            text: "Research agents specialize in information gathering and synthesis.",
+          },
+        ],
+      },
+      {
+        type: SectionType.Heading,
+        level: 3,
+        content: [{ text: "Analyst Agent" }],
+      },
+      {
+        type: SectionType.Paragraph,
+        content: [
+          {
+            text: "Analyst agents focus on data processing and pattern recognition.",
+          },
+        ],
+      },
+      {
+        type: SectionType.Heading,
+        level: 3,
+        content: [{ text: "Writer Agent" }],
+      },
+      {
+        type: SectionType.Paragraph,
+        content: [
+          {
+            text: "Writer agents generate natural language content based on inputs and requirements.",
+          },
+        ],
+      },
+      {
+        type: SectionType.Code,
+        language: "typescript",
+        filename: "writer-agent-example.ts",
+        code: "import { Agent } from '@deanmachines/core';\n\nconst writerAgent = new Agent({\n  name: 'ContentWriter',\n  description: 'Creates high-quality content based on outlines',\n  model: 'gemini-pro',\n  tools: ['web-search', 'document-retrieval']\n});\n\n// Use the writer agent\nconst content = await writerAgent.execute({\n  task: 'Write a blog post about AI agents',\n  tone: 'informative',\n  length: 'medium'\n});",
+      },
+    ],
+    prev: {
+      title: "Core Concepts",
+      slug: "core-concepts/overview",
+    },
+    next: {
+      title: "Memory Management",
+      slug: "core-concepts/memory",
+    },
   },
+
   // Memory Management
   "core-concepts/memory": {
+    id: "core-concepts-memory",
     slug: "core-concepts/memory",
     slugAsParams: "core-concepts/memory",
-    body: {
-      raw: `# Memory Management
-
-## Overview
-
-Memory management is a critical component of the DeanMachines AI platform, allowing agents to maintain context, learn from experiences, and build knowledge over time.
-
-## Memory Types
-
-### Short-Term Memory
-
-Short-term memory provides temporary storage for recent interactions and immediate context. It typically includes:
-
-- Recent conversation history
-- Current task parameters
-- Active constraints and goals
-
-### Long-Term Memory
-
-Long-term memory stores persistent information that agents can access across sessions:
-
-- Historical interactions
-- Learned patterns and facts
-- User preferences and settings
-- Domain knowledge
-
-### Episodic Memory
-
-Episodic memory captures specific interactions or "episodes" that may be relevant for future reference:
-
-- Past problem-solving experiences
-- Notable user interactions
-- Successful strategies
-
-## Memory Storage Options
-
-DeanMachines AI supports multiple storage backends for different use cases:
-
-- **Vector Databases** (Pinecone, Qdrant) - For semantic storage and retrieval
-- **Document Stores** (Firebase, MongoDB) - For structured data
-- **Relational Databases** (PostgreSQL, MySQL) - For complex relationships
-- **In-Memory Stores** (Redis) - For high-performance caching
-- **File System** - For persistent local storage
-
-## Memory Retrieval
-
-The platform provides several methods for accessing stored information:
-
-### Direct Access
-Retrieving specific information using keys or identifiers.
-
-### Semantic Search
-Finding relevant information based on meaning rather than exact matches.
-
-### Associative Recall
-Retrieving information based on related concepts or contexts.
-
-## Best Practices
-
-- Define clear memory retention policies
-- Implement appropriate context windowing
-- Consider privacy and data protection requirements
-- Balance between comprehensive memory and performance
-- Use tiered storage strategies for efficiency`,
-      code: `# Memory Management
-
-## Overview
-
-Memory management is a critical component of the DeanMachines AI platform, allowing agents to maintain context, learn from experiences, and build knowledge over time.
-
-## Memory Types
-
-### Short-Term Memory
-
-Short-term memory provides temporary storage for recent interactions and immediate context. It typically includes:
-
-- Recent conversation history
-- Current task parameters
-- Active constraints and goals
-
-### Long-Term Memory
-
-Long-term memory stores persistent information that agents can access across sessions:
-
-- Historical interactions
-- Learned patterns and facts
-- User preferences and settings
-- Domain knowledge
-
-### Episodic Memory
-
-Episodic memory captures specific interactions or "episodes" that may be relevant for future reference:
-
-- Past problem-solving experiences
-- Notable user interactions
-- Successful strategies
-
-## Memory Storage Options
-
-DeanMachines AI supports multiple storage backends for different use cases:
-
-- **Vector Databases** (Pinecone, Qdrant) - For semantic storage and retrieval
-- **Document Stores** (Firebase, MongoDB) - For structured data
-- **Relational Databases** (PostgreSQL, MySQL) - For complex relationships
-- **In-Memory Stores** (Redis) - For high-performance caching
-- **File System** - For persistent local storage
-
-## Memory Retrieval
-
-The platform provides several methods for accessing stored information:
-
-### Direct Access
-Retrieving specific information using keys or identifiers.
-
-### Semantic Search
-Finding relevant information based on meaning rather than exact matches.
-
-### Associative Recall
-Retrieving information based on related concepts or contexts.
-
-## Best Practices
-
-- Define clear memory retention policies
-- Implement appropriate context windowing
-- Consider privacy and data protection requirements
-- Balance between comprehensive memory and performance
-- Use tiered storage strategies for efficiency`
-    },
     title: "Memory Management",
-    description: "Learn how AI agents maintain context and learn from interactions using the memory system."
+    description:
+      "Understanding memory systems in the deanmachines AI platform.",
+    contentType: "doc",
+    sections: [
+      {
+        type: SectionType.Heading,
+        level: 1,
+        content: [{ text: "Memory Management" }],
+      },
+      {
+        type: SectionType.Heading,
+        level: 2,
+        content: [{ text: "Overview" }],
+      },
+      {
+        type: SectionType.Paragraph,
+        content: [
+          {
+            text: "Memory management is a critical component of the deanmachines AI platform, allowing agents to maintain context, learn from experiences, and build knowledge over time.",
+          },
+        ],
+      },
+      {
+        type: SectionType.Callout,
+        calloutType: CalloutType.Warning,
+        title: "Memory Configuration",
+        content: [
+          {
+            text: "Proper memory configuration is essential for agent performance. Insufficient memory can lead to repetitive or inconsistent agent behavior.",
+          },
+        ],
+      },
+      {
+        type: SectionType.Heading,
+        level: 2,
+        content: [{ text: "Memory Types" }],
+      },
+      {
+        type: SectionType.Heading,
+        level: 3,
+        content: [{ text: "Short-Term Memory" }],
+      },
+      {
+        type: SectionType.Paragraph,
+        content: [
+          {
+            text: "Short-term memory provides temporary storage for recent interactions and immediate context. It typically includes:",
+          },
+        ],
+      },
+      {
+        type: SectionType.List,
+        listType: ListType.Unordered,
+        items: [
+          { content: [{ text: "Recent conversation history" }] },
+          { content: [{ text: "Current task parameters" }] },
+          { content: [{ text: "Active constraints and goals" }] },
+        ],
+      },
+      {
+        type: SectionType.Heading,
+        level: 3,
+        content: [{ text: "Long-Term Memory" }],
+      },
+      {
+        type: SectionType.Paragraph,
+        content: [
+          {
+            text: "Long-term memory stores persistent information that agents can access across sessions.",
+          },
+        ],
+      },
+      {
+        type: SectionType.List,
+        listType: ListType.Unordered,
+        items: [
+          { content: [{ text: "Historical interactions" }] },
+          { content: [{ text: "Learned patterns and facts" }] },
+          { content: [{ text: "User preferences and settings" }] },
+          { content: [{ text: "Domain knowledge" }] },
+        ],
+      },
+      {
+        type: SectionType.Code,
+        language: "typescript",
+        code: "import { Memory } from '@deanmachines/core';\n\n// Initialize memory with persistence\nconst memory = new Memory({\n  storage: 'pinecone',\n  projectId: 'my-project',\n  namespace: 'agent-memory'\n});\n\n// Add information to memory\nawait memory.add({\n  type: 'fact',\n  content: 'The user prefers technical explanations',\n  source: 'user-interaction',\n  timestamp: Date.now()\n});",
+      },
+    ],
+    prev: {
+      title: "AI Agents",
+      slug: "core-concepts/agents",
+    },
+    next: {
+      title: "Agent Networks",
+      slug: "core-concepts/networks",
+    },
   },
 
   // Agent Networks
   "core-concepts/networks": {
+    id: "core-concepts-networks",
     slug: "core-concepts/networks",
     slugAsParams: "core-concepts/networks",
-    body: {
-      raw: `# Agent Networks
-
-## What are Agent Networks?
-
-Agent networks are interconnected systems of AI agents working together to solve complex problems. They enable division of labor, specialization, and collaborative problem-solving among multiple agents.
-
-## Network Topologies
-
-### Hub and Spoke
-
-In a hub and spoke topology, a central coordinator agent delegates tasks to specialized agents and synthesizes their outputs.
-
-\`\`\`
-       ┌───────┐
-       │ Agent │
-       │   B   │
-       └───┬───┘
-           │
-┌───────┐  │  ┌───────┐
-│ Agent │──┼──│ Agent │
-│   A   │  │  │   C   │
-└───────┘  │  └───────┘
-           │
-       ┌───┴───┐
-       │ Hub   │
-       │ Agent │
-       └───┬───┘
-           │
-┌───────┐  │  ┌───────┐
-│ Agent │──┼──│ Agent │
-│   D   │  │  │   E   │
-└───────┘  │  └───────┘
-           │
-       ┌───┴───┐
-       │ Agent │
-       │   F   │
-       └───────┘
-\`\`\`
-
-### Mesh Network
-
-In a mesh network, agents communicate directly with each other as needed, without a central coordinator.
-
-\`\`\`
-┌───────┐     ┌───────┐
-│ Agent │─────│ Agent │
-│   A   │     │   B   │
-└───┬───┘     └───┬───┘
-    │             │
-    │    ┌────────┘
-    │    │
-┌───┴────┴──┐     ┌───────┐
-│  Agent    │─────│ Agent │
-│     C     │     │   D   │
-└───┬────┬──┘     └───┬───┘
-    │    │            │
-    │    └────────────┘
-    │                 │
-┌───┴───┐     ┌───────┴─┐
-│ Agent │─────│  Agent  │
-│   E   │     │    F    │
-└───────┘     └─────────┘
-\`\`\`
-
-### Hierarchical Network
-
-In a hierarchical network, agents are organized in layers with specific responsibilities.
-
-\`\`\`
-       ┌───────────┐
-       │ Executive │
-       │   Agent   │
-       └─────┬─────┘
-             │
-    ┌────────┴────────┐
-    │                 │
-┌───┴───┐       ┌─────┴───┐
-│ Team  │       │  Team   │
-│Lead A │       │ Lead B  │
-└───┬───┘       └─────┬───┘
-    │                 │
-┌───┴───┐       ┌─────┴───┐
-│Worker │       │ Worker  │
-│Agents │       │ Agents  │
-└───────┘       └─────────┘
-\`\`\`
-
-## Communication Patterns
-
-### Request-Response
-Agent A sends a specific request to Agent B and waits for a response.
-
-### Publish-Subscribe
-Agents publish information to channels, and other agents subscribe to receive updates.
-
-### Broadcast
-An agent sends information to all other agents in the network.
-
-### Targeted Messaging
-Agents communicate directly with specific other agents based on need.
-
-## Coordination Mechanisms
-
-### Centralized Control
-A designated coordinator agent manages the workflow.
-
-### Decentralized Consensus
-Agents reach agreement on tasks and priorities collectively.
-
-### Market-Based Allocation
-Agents bid on tasks based on their capabilities and availability.
-
-### Rule-Based Systems
-Predefined rules determine agent interactions and responsibilities.
-
-## Best Practices
-
-- Design for clear communication protocols
-- Implement effective error handling across agents
-- Plan for scalability and network growth
-- Monitor network performance and interactions
-- Test with various scenarios and edge cases`,
-      code: `# Agent Networks
-
-## What are Agent Networks?
-
-Agent networks are interconnected systems of AI agents working together to solve complex problems. They enable division of labor, specialization, and collaborative problem-solving among multiple agents.
-
-## Network Topologies
-
-### Hub and Spoke
-
-In a hub and spoke topology, a central coordinator agent delegates tasks to specialized agents and synthesizes their outputs.
-
-\`\`\`
-       ┌───────┐
-       │ Agent │
-       │   B   │
-       └───┬───┘
-           │
-┌───────┐  │  ┌───────┐
-│ Agent │──┼──│ Agent │
-│   A   │  │  │   C   │
-└───────┘  │  └───────┘
-           │
-       ┌───┴───┐
-       │ Hub   │
-       │ Agent │
-       └───┬───┘
-           │
-┌───────┐  │  ┌───────┐
-│ Agent │──┼──│ Agent │
-│   D   │  │  │   E   │
-└───────┘  │  └───────┘
-           │
-       ┌───┴───┐
-       │ Agent │
-       │   F   │
-       └───────┘
-\`\`\`
-
-### Mesh Network
-
-In a mesh network, agents communicate directly with each other as needed, without a central coordinator.
-
-\`\`\`
-┌───────┐     ┌───────┐
-│ Agent │─────│ Agent │
-│   A   │     │   B   │
-└───┬───┘     └───┬───┘
-    │             │
-    │    ┌────────┘
-    │    │
-┌───┴────┴──┐     ┌───────┐
-│  Agent    │─────│ Agent │
-│     C     │     │   D   │
-└───┬────┬──┘     └───┬───┘
-    │    │            │
-    │    └────────────┘
-    │                 │
-┌───┴───┐     ┌───────┴─┐
-│ Agent │─────│  Agent  │
-│   E   │     │    F    │
-└───────┘     └─────────┘
-\`\`\`
-
-### Hierarchical Network
-
-In a hierarchical network, agents are organized in layers with specific responsibilities.
-
-\`\`\`
-       ┌───────────┐
-       │ Executive │
-       │   Agent   │
-       └─────┬─────┘
-             │
-    ┌────────┴────────┐
-    │                 │
-┌───┴───┐       ┌─────┴───┐
-│ Team  │       │  Team   │
-│Lead A │       │ Lead B  │
-└───┬───┘       └─────┬───┘
-    │                 │
-┌───┴───┐       ┌─────┴───┐
-│Worker │       │ Worker  │
-│Agents │       │ Agents  │
-└───────┘       └─────────┘
-\`\`\`
-
-## Communication Patterns
-
-### Request-Response
-Agent A sends a specific request to Agent B and waits for a response.
-
-### Publish-Subscribe
-Agents publish information to channels, and other agents subscribe to receive updates.
-
-### Broadcast
-An agent sends information to all other agents in the network.
-
-### Targeted Messaging
-Agents communicate directly with specific other agents based on need.
-
-## Coordination Mechanisms
-
-### Centralized Control
-A designated coordinator agent manages the workflow.
-
-### Decentralized Consensus
-Agents reach agreement on tasks and priorities collectively.
-
-### Market-Based Allocation
-Agents bid on tasks based on their capabilities and availability.
-
-### Rule-Based Systems
-Predefined rules determine agent interactions and responsibilities.
-
-## Best Practices
-
-- Design for clear communication protocols
-- Implement effective error handling across agents
-- Plan for scalability and network growth
-- Monitor network performance and interactions
-- Test with various scenarios and edge cases`
-    },
     title: "Agent Networks",
-    description: "Learn how to create and manage networks of cooperating AI agents."
+    description:
+      "Learn how to create and manage networks of cooperating AI agents.",
+    contentType: "doc",
+    sections: [
+      {
+        type: SectionType.Heading,
+        level: 1,
+        content: [{ text: "Agent Networks" }],
+      },
+      {
+        type: SectionType.Heading,
+        level: 2,
+        content: [{ text: "What are Agent Networks?" }],
+      },
+      {
+        type: SectionType.Paragraph,
+        content: [
+          {
+            text: "Agent networks are interconnected systems of AI agents working together to solve complex problems. They enable division of labor, specialization, and collaborative problem-solving among multiple agents.",
+          },
+        ],
+      },
+      {
+        type: SectionType.Image,
+        src: "/images/agent-network-diagram.png",
+        alt: "Diagram of an agent network showing multiple agents communicating",
+        caption: "Example of an agent network with specialized roles",
+      },
+      {
+        type: SectionType.Heading,
+        level: 2,
+        content: [{ text: "Network Topologies" }],
+      },
+      {
+        type: SectionType.Heading,
+        level: 3,
+        content: [{ text: "Hub and Spoke" }],
+      },
+      {
+        type: SectionType.Paragraph,
+        content: [
+          {
+            text: "In a hub and spoke topology, a central coordinator agent delegates tasks to specialized agents and synthesizes their outputs.",
+          },
+        ],
+      },
+      {
+        type: SectionType.Heading,
+        level: 3,
+        content: [{ text: "Mesh Network" }],
+      },
+      {
+        type: SectionType.Paragraph,
+        content: [
+          {
+            text: "In a mesh network, agents communicate directly with each other as needed, without a central coordinator.",
+          },
+        ],
+      },
+      {
+        type: SectionType.Heading,
+        level: 3,
+        content: [{ text: "Hierarchical Network" }],
+      },
+      {
+        type: SectionType.Paragraph,
+        content: [
+          {
+            text: "In a hierarchical network, agents are organized in layers with specific responsibilities and reporting structures.",
+          },
+        ],
+      },
+      {
+        type: SectionType.Code,
+        language: "typescript",
+        filename: "team-network-example.ts",
+        code: "import { AgentNetwork } from '@deanmachines/core';\n\n// Create a team of specialized agents\nconst researchTeam = new AgentNetwork({\n  name: 'ResearchTeam',\n  agents: [\n    researchAgent,  // Finds information\n    analystAgent,   // Processes and analyzes data\n    writerAgent     // Creates final output\n  ],\n  topology: 'hierarchical',\n  coordinator: 'system'  // Platform handles coordination\n});\n\n// Execute a task with the network\nconst report = await researchTeam.execute({\n  task: 'Research emerging AI trends and create a summary report',\n  outputFormat: 'markdown',\n  depth: 'comprehensive'\n});",
+      },
+    ],
+    prev: {
+      title: "Memory Management",
+      slug: "core-concepts/memory",
+    },
   },
 
-  // Add more mock documents for other sections as needed...
-
   // Getting Started
-  "getting-started/quick-start": {
-    slug: "getting-started/quick-start",
-    slugAsParams: "getting-started/quick-start",
-    body: {
-      raw: `# Quick Start Guide
-
-This guide will help you set up and deploy your first AI agent using the deanmachines platform.
-
-## Prerequisites
-
-Before you begin, ensure you have the following:
-
-- Node.js 20.0 or later
-- npm 10.0 or later (or equivalent package manager)
-- deanmachines API key (sign up at dashboard.deanmachines.ai)
-- Basic knowledge of JavaScript/TypeScript
-
-## Installation
-
-Install the deanmachines SDK using your preferred package manager:
-
-\`\`\`bash
-npm install @deanmachines/sdk
-# or
-yarn add @deanmachines/sdk
-# or
-pnpm add @deanmachines/sdk
-\`\`\`
-
-## Basic Setup
-
-Create a new file called \`my-first-agent.js\` and add the following code:
-
-\`\`\`javascript
-import { Agent, Memory } from '@deanmachines/sdk';
-
-// Initialize the agent with your API key
-const agent = new Agent({
-  apiKey: process.env.DEANMACHINES_API_KEY,
-  name: 'MyFirstAgent',
-  description: 'A simple agent that responds to user queries',
-  model: 'gemini-pro',
-});
-
-// Add memory system
-const memory = new Memory.ShortTermMemory();
-agent.useMemory(memory);
-
-// Define a basic handler for user messages
-agent.onMessage(async (message, context) => {
-  // Process the message
-  const response = await agent.generateResponse(message, context);
-
-  // Return the response
-  return response;
-});
-
-// Start the agent
-agent.start({ port: 3000 });
-console.log('Agent is running on http://localhost:3000');
-\`\`\`
-
-## Running Your Agent
-
-1. Create a \`.env\` file with your API key:
-
-\`\`\`
-DEANMACHINES_API_KEY=your_api_key_here
-\`\`\`
-
-2. Run the agent:
-
-\`\`\`bash
-node -r dotenv/config my-first-agent.js
-\`\`\`
-
-3. Open your browser to http://localhost:3000 to interact with your agent.
-
-## Adding Capabilities
-
-Let's enhance our agent with the ability to search the web:
-
-\`\`\`javascript
-import { Agent, Memory, Tools } from '@deanmachines/sdk';
-
-// Initialize the agent
-const agent = new Agent({
-  apiKey: process.env.DEANMACHINES_API_KEY,
-  name: 'ResearchAgent',
-  description: 'An agent that can search the web for information',
-  model: 'gemini-pro',
-});
-
-// Add memory system
-const memory = new Memory.ShortTermMemory();
-agent.useMemory(memory);
-
-// Add web search capability
-const searchTool = new Tools.WebSearch();
-agent.addTool(searchTool);
-
-// Define message handler with search capability
-agent.onMessage(async (message, context) => {
-  // Check if this is a query that needs web search
-  if (message.includes('search') || message.includes('find') || message.includes('look up')) {
-    const searchResults = await agent.useTool(searchTool.id, { query: message });
-
-    // Incorporate search results into the response
-    const response = await agent.generateResponse(
-      message,
-      { ...context, searchResults }
-    );
-
-    return response;
-  }
-
-  // Default response generation
-  return agent.generateResponse(message, context);
-});
-
-agent.start({ port: 3000 });
-console.log('Research Agent is running on http://localhost:3000');
-\`\`\`
-
-## Next Steps
-
-- [Core Concepts](/docs/core-concepts/overview) - Understand how DeanMachines AI works
-- [Examples](/docs/examples/chatbot) - Explore more complex examples
-- [API Reference](/docs/api-reference/agent) - Learn about the full API`,
-      code: `# Quick Start Guide
-
-This guide will help you set up and deploy your first AI agent using the deanmachines platform.
-
-## Prerequisites
-
-Before you begin, ensure you have the following:
-
-- Node.js 20.0 or later
-- npm 10.0 or later (or equivalent package manager)
-- deanmachines API key (sign up at dashboard.deanmachines.ai)
-- Basic knowledge of JavaScript/TypeScript
-
-## Installation
-
-Install the deanmachines SDK using your preferred package manager:
-
-\`\`\`bash
-npm install @deanmachines/sdk
-# or
-yarn add @deanmachines/sdk
-# or
-pnpm add @deanmachines/sdk
-\`\`\`
-
-## Basic Setup
-
-Create a new file called \`my-first-agent.js\` and add the following code:
-
-\`\`\`javascript
-import { Agent, Memory } from '@deanmachines/sdk';
-
-// Initialize the agent with your API key
-const agent = new Agent({
-  apiKey: process.env.DEANMACHINES_API_KEY,
-  name: 'MyFirstAgent',
-  description: 'A simple agent that responds to user queries',
-  model: 'gemini-pro',
-});
-
-// Add memory system
-const memory = new Memory.ShortTermMemory();
-agent.useMemory(memory);
-
-// Define a basic handler for user messages
-agent.onMessage(async (message, context) => {
-  // Process the message
-  const response = await agent.generateResponse(message, context);
-
-  // Return the response
-  return response;
-});
-
-// Start the agent
-agent.start({ port: 3000 });
-console.log('Agent is running on http://localhost:3000');
-\`\`\`
-
-## Running Your Agent
-
-1. Create a \`.env\` file with your API key:
-
-\`\`\`
-DEANMACHINES_API_KEY=your_api_key_here
-\`\`\`
-
-2. Run the agent:
-
-\`\`\`bash
-node -r dotenv/config my-first-agent.js
-\`\`\`
-
-3. Open your browser to http://localhost:3000 to interact with your agent.
-
-## Adding Capabilities
-
-Let's enhance our agent with the ability to search the web:
-
-\`\`\`javascript
-import { Agent, Memory, Tools } from '@deanmachines/sdk';
-
-// Initialize the agent
-const agent = new Agent({
-  apiKey: process.env.DEANMACHINES_API_KEY,
-  name: 'ResearchAgent',
-  description: 'An agent that can search the web for information',
-  model: 'gemini-pro',
-});
-
-// Add memory system
-const memory = new Memory.ShortTermMemory();
-agent.useMemory(memory);
-
-// Add web search capability
-const searchTool = new Tools.WebSearch();
-agent.addTool(searchTool);
-
-// Define message handler with search capability
-agent.onMessage(async (message, context) => {
-  // Check if this is a query that needs web search
-  if (message.includes('search') || message.includes('find') || message.includes('look up')) {
-    const searchResults = await agent.useTool(searchTool.id, { query: message });
-
-    // Incorporate search results into the response
-    const response = await agent.generateResponse(
-      message,
-      { ...context, searchResults }
-    );
-
-    return response;
-  }
-
-  // Default response generation
-  return agent.generateResponse(message, context);
-});
-
-agent.start({ port: 3000 });
-console.log('Research Agent is running on http://localhost:3000');
-\`\`\`
-
-## Next Steps
-
-- [Core Concepts](/docs/core-concepts/overview) - Understand how DeanMachines AI works
-- [Examples](/docs/examples/chatbot) - Explore more complex examples
-- [API Reference](/docs/api-reference/agent) - Learn about the full API`
+  "getting-started": {
+    id: "getting-started",
+    slug: "getting-started",
+    slugAsParams: "getting-started",
+    title: "Getting Started with deanmachines AI",
+    description:
+      "Learn how to create your first AI agent in just a few minutes.",
+    contentType: "doc",
+    sections: [
+      {
+        type: SectionType.Heading,
+        level: 1,
+        content: [{ text: "Getting Started with deanmachines AI" }],
+      },
+      {
+        type: SectionType.Paragraph,
+        content: [
+          {
+            text: "This guide will help you set up and deploy your first AI agent using the deanmachines platform.",
+          },
+        ],
+      },
+      {
+        type: SectionType.Heading,
+        level: 2,
+        content: [{ text: "Prerequisites" }],
+      },
+      {
+        type: SectionType.Paragraph,
+        content: [{ text: "Before you begin, ensure you have the following:" }],
+      },
+      {
+        type: SectionType.List,
+        listType: ListType.Unordered,
+        items: [
+          { content: [{ text: "Node.js 20.0 or later" }] },
+          {
+            content: [
+              { text: "npm 10.0 or later (or equivalent package manager)" },
+            ],
+          },
+          {
+            content: [
+              {
+                text: "deanmachines API key (sign up at dashboard.deanmachines.ai)",
+              },
+            ],
+          },
+          { content: [{ text: "Basic knowledge of JavaScript/TypeScript" }] },
+        ],
+      },
+      {
+        type: SectionType.Heading,
+        level: 2,
+        content: [{ text: "Installation" }],
+      },
+      {
+        type: SectionType.Paragraph,
+        content: [
+          {
+            text: "Install the deanmachines SDK using your preferred package manager:",
+          },
+        ],
+      },
+      {
+        type: SectionType.Code,
+        language: "bash",
+        code: "npm install @deanmachines/sdk\n# or\nyarn add @deanmachines/sdk\n# or\npnpm add @deanmachines/sdk",
+      },
+      {
+        type: SectionType.Callout,
+        calloutType: CalloutType.Info,
+        content: [
+          {
+            text: "Make sure to set up your environment variables with your API key before running the examples below.",
+          },
+        ],
+      },
+    ],
+    prev: {
+      title: "Documentation",
+      slug: "index",
     },
-    title: "Quick Start Guide",
-    description: "Learn how to create your first AI agent in just a few minutes."
+    next: {
+      title: "Core Concepts",
+      slug: "core-concepts/overview",
+    },
   },
 };
