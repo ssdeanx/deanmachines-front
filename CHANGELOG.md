@@ -41,7 +41,7 @@
     - Removed deprecated `legacyBehavior` prop where appropriate in `NavBar` and `Footer`.
     - Fixed hydration errors from nested `<a>` tags in `NavBar` by using `asChild` on `NavigationMenuLink`.
   - Corrected client-side `signIn` import in `SignIn` component to use `next-auth/react`.
-- **Adjusted Layout Alignment:** Refined flexbox properties in `NavBar` and `Footer` for better element alignment.
+- **Adjusted Layout Alignment:** Refined flexbox properties in `NavBar` and `Footer` for better element alignment.  {not fixed, need more info/data}
 
 ## [0.1.1] - 2025-04-11
 

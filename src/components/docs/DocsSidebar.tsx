@@ -45,8 +45,7 @@ export function DocsSidebar({ items }: DocsSidebarProps) {
       {...(item.external && {
         target: "_blank",
         rel: "noopener noreferrer",
-      })}
-      legacyBehavior>
+      })}>
       <span>{item.title}</span>
       {item.label && (
         <span className="ml-2 rounded-md bg-muted px-1.5 py-0.5 text-xs font-medium leading-none text-muted-foreground">

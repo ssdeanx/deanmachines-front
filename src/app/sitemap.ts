@@ -1,11 +1,12 @@
 import { MetadataRoute } from "next";
+import { mockDocs } from "@/lib/mock-docs";
 
 /**
  * Generate sitemap for all public pages
  * @returns Sitemap configuration for the website
  */
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = "https://mastra.ai";
+  const baseUrl = "https://deanmachines.com";
 
   // Main pages
   const routes = [
@@ -35,14 +36,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.6,
   }));
 
-  // Documentation pages
-  const docsSections = [
-    "/docs/introduction",
-    "/docs/getting-started",
-    "/docs/core-concepts",
-    // Add more doc sections as needed
-  ].map((doc) => ({
-    url: `${baseUrl}${doc}`,
+  // Documentation pages - dynamically generated from mockDocs
+  const docsSections = Object.keys(mockDocs).map((slug) => ({
+    url: `${baseUrl}/docs/${slug}`,
     lastModified: new Date().toISOString(),
     changeFrequency: "weekly" as const,
     priority: 0.9,

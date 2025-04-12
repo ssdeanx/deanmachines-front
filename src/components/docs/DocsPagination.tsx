@@ -27,8 +27,7 @@ export function DocsPagination({ prev, next }: DocsPaginationProps) {
             buttonVariants({ variant: "ghost" }),
             "gap-2 hover:bg-transparent hover:text-foreground"
           )}
-          rel="prev"
-          legacyBehavior>
+          rel="prev">
           <ChevronLeft className="h-4 w-4" aria-hidden="true" />
           <span>
             <span className="block text-sm text-muted-foreground">Previous</span>
@@ -43,8 +42,7 @@ export function DocsPagination({ prev, next }: DocsPaginationProps) {
             buttonVariants({ variant: "ghost" }),
             "ml-auto gap-2 text-right hover:bg-transparent hover:text-foreground"
           )}
-          rel="next"
-          legacyBehavior>
+          rel="next">
           <span>
             <span className="block text-sm text-muted-foreground">Next</span>
             <span className="block text-base">{next.title}</span>

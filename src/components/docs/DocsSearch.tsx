@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { useRouter } from "next/navigation"
- import { BookIcon, FileIcon, SearchIcon } from "lucide-react"
+import { BookIcon, FileIcon, SearchIcon } from "lucide-react"
 
 import { docsConfig } from "@/config/docs"
 import { cn } from "@/lib/utils"
@@ -17,7 +17,45 @@ import {
   CommandSeparator,
 } from "@/components/ui/command"
 import { mockDocs } from "@/lib/mock-docs"
+import { type DocContent, type TextSpan, SectionType, type ListItem } from "@/lib/content-data"
 import { type Doc } from "@/types/docs"
+
+// Helper function to extract text from DocContent sections
+function extractTextFromSections(sections: DocContent['sections']): string {
+  let text = "";
+  const extractFromSpans = (spans: TextSpan[]) => spans.map(span => span.text).join(" ");
+  const extractFromListItems = (items: ListItem[]): string => {
+    return items.map(item => {
+      const itemText = extractFromSpans(item.content);
+      const subItemText = item.items ? extractFromListItems(item.items) : "";
+      return `${itemText} ${subItemText}`;
+    }).join(" ");
+  };
+
+  sections.forEach(section => {
+    switch (section.type) {
+      case SectionType.Paragraph:
+      case SectionType.Heading:
+      case SectionType.Callout:
+      case SectionType.Quote:
+      case SectionType.Card: // Assuming Card content is searchable
+        text += extractFromSpans(section.content) + " ";
+        break;
+      case SectionType.List:
+        text += extractFromListItems(section.items) + " ";
+        break;
+      case SectionType.Table: // Simple text extraction from table cells
+        section.header.forEach(row => row.cells.forEach(cell => text += extractFromSpans(cell.content) + " "));
+        section.rows.forEach(row => row.cells.forEach(cell => text += extractFromSpans(cell.content) + " "));
+        break;
+      case SectionType.Code: // Optionally include code in search
+        // text += section.code + " ";
+        break;
+      // Ignore Image, Divider
+    }
+  });
+  return text;
+}
 
 /**
  * Custom hook for fuzzy searching through documentation content
@@ -58,27 +96,26 @@ function useDocsSearch(query: string) {
 
     // Search through mock docs content
     const contentResults = Object.values(mockDocs)
-      .filter((doc: Doc) => {
-        // Search in title and content
+      .filter((doc: DocContent) => {
         const titleMatch = doc.title.toLowerCase().includes(lowercaseQuery);
-        const contentMatch = doc.body.raw.toLowerCase().includes(lowercaseQuery);
+        // Use helper function to get searchable text
+        const searchableContent = extractTextFromSections(doc.sections).toLowerCase();
+        const contentMatch = searchableContent.includes(lowercaseQuery);
         return titleMatch || contentMatch;
       })
-      .map((doc: Doc) => {
-        // Extract a snippet of content around the search term
-        const rawContent = doc.body.raw;
+      .map((doc: DocContent) => {
+        // Use helper function to get raw text for snippet generation
+        const rawContent = extractTextFromSections(doc.sections);
         const queryIndex = rawContent.toLowerCase().indexOf(lowercaseQuery);
 
         let contentSnippet = "";
         if (queryIndex >= 0) {
-          // Extract text around the match
           const start = Math.max(0, queryIndex - 40);
           const end = Math.min(rawContent.length, queryIndex + 100);
           contentSnippet = (start > 0 ? "..." : "") +
             rawContent.slice(start, end).replace(/\n/g, " ") +
             (end < rawContent.length ? "..." : "");
         } else {
-          // If match is in the title but not content, use the first part of content
           contentSnippet = rawContent.slice(0, 80).replace(/\n/g, " ") + "...";
         }
 

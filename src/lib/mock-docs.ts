@@ -189,7 +189,7 @@ export const mockDocs: Record<string, DocContent> = {
       },
       {
         type: SectionType.Callout,
-        calloutType: CalloutType.Info,
+        calloutType: CalloutType.Default,
         title: "Key Components",
         content: [
           {
@@ -694,7 +694,7 @@ export const mockDocs: Record<string, DocContent> = {
       },
       {
         type: SectionType.Callout,
-        calloutType: CalloutType.Info,
+        calloutType: CalloutType.Default,
         content: [
           {
             text: "Make sure to set up your environment variables with your API key before running the examples below.",
@@ -709,6 +709,60 @@ export const mockDocs: Record<string, DocContent> = {
     next: {
       title: "Core Concepts",
       slug: "core-concepts/overview",
+    },
+  },
+
+  // API Reference Overview (Placeholder)
+  "api-reference/overview": {
+    id: "api-reference-overview",
+    slug: "api-reference/overview",
+    slugAsParams: "api-reference/overview",
+    title: "API Reference Overview",
+    description: "Overview of the deanmachines AI Platform API.",
+    contentType: "doc",
+    sections: [
+      {
+        type: SectionType.Heading,
+        level: 1,
+        content: [{ text: "API Reference Overview" }],
+        id: "api-reference-overview"
+      },
+      {
+        type: SectionType.Paragraph,
+        content: [
+          {
+            text: "Welcome to the API reference for the deanmachines AI platform. Here you will find detailed information about available endpoints, parameters, and responses.",
+          },
+        ],
+      },
+      {
+        type: SectionType.Heading,
+        level: 2,
+        content: [{ text: "Authentication" }],
+        id: "authentication"
+      },
+      {
+        type: SectionType.Paragraph,
+        content: [
+          { text: "Details about API authentication methods will go here." }
+        ]
+      },
+       {
+        type: SectionType.Heading,
+        level: 2,
+        content: [{ text: "Endpoints" }],
+        id: "endpoints"
+      },
+      {
+        type: SectionType.Paragraph,
+        content: [
+          { text: "A summary of the main API endpoints will be listed here." }
+        ]
+      }
+    ],
+    prev: {
+      title: "Examples",
+      slug: "examples/some-example",
     },
   },
 };

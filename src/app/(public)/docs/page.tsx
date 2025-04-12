@@ -1,6 +1,5 @@
 import { type Metadata } from "next"
 import { DocsPageLayout } from "@/components/docs/DocsPageLayout"
-import { DocsLayoutWrapper } from "@/components/docs/DocsLayoutWrapper"
 import { DocPage } from "@/components/docs/DocPage"
 import { mockDocs } from "@/lib/mock-docs"
 import { SectionType, type DocContent } from "@/lib/content-data"
@@ -38,18 +37,10 @@ export default async function DocsPage() {
         ],
       }
 
-      return (
-        <DocsLayoutWrapper>
-          <DocPage doc={fallbackDoc} />
-        </DocsLayoutWrapper>
-      )
+      return <DocPage doc={fallbackDoc} />
     }
 
-    return (
-      <DocsLayoutWrapper>
-        <DocPage doc={doc} />
-      </DocsLayoutWrapper>
-    )
+    return <DocPage doc={doc} />
   } catch (error) {
     console.error("Error loading DocsPage:", error)
     notFound()
