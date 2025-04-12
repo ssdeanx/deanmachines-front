@@ -584,3 +584,87 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 Made with ❤️ by the DeanMachines team
+
+```mermaid
+graph TB
+    User((External User))
+    Admin((Admin User))
+
+    subgraph "Frontend Container"
+        direction TB
+        NextApp["Next.js Application<br>(Next.js 15.3)"]
+
+        subgraph "Frontend Components"
+            direction TB
+            AuthModule["Authentication Module<br>(NextAuth)"]
+            ThemeProvider["Theme Provider<br>(next-themes)"]
+            UIComponents["UI Components<br>(Radix UI, Geist)"]
+
+            subgraph "Layout Components"
+                NavBar["Navigation Bar<br>(React)"]
+                Footer["Footer<br>(React)"]
+                MobileNav["Mobile Navigation<br>(React)"]
+            end
+
+            subgraph "Feature Components"
+                DocsSection["Documentation Section<br>(MDX)"]
+                AdminDashboard["Admin Dashboard<br>(React)"]
+                UserDashboard["User Dashboard<br>(React)"]
+            end
+        end
+    end
+
+    subgraph "Backend Container"
+        direction TB
+        APILayer["API Layer<br>(Next.js API Routes)"]
+
+        subgraph "Core Services"
+            AuthService["Auth Service<br>(Firebase Admin)"]
+            MastraService["Mastra AI Service<br>(Custom)"]
+
+            subgraph "Mastra Components"
+                AgentNetwork["Agent Network<br>(TypeScript)"]
+                MemorySystem["Memory System<br>(LibSQL)"]
+                ToolRegistry["Tool Registry<br>(TypeScript)"]
+                LangChainIntegration["LangChain Integration<br>(LangChain)"]
+            end
+        end
+    end
+
+    subgraph "Data Layer"
+        FirestoreDB[("Firestore DB<br>Firebase")]
+        VectorStore[("Vector Store<br>Pinecone")]
+        LibSQLDB[("Memory Store<br>LibSQL")]
+    end
+
+    subgraph "External Services"
+        GoogleAI["Google AI<br>(Gemini)"]
+        FirebaseAuth["Firebase Auth<br>(Firebase)"]
+        DataConnect["Data Connect<br>(PostgreSQL)"]
+    end
+
+    %% Connections
+    User --> NextApp
+    Admin --> NextApp
+
+    NextApp --> AuthModule
+    NextApp --> ThemeProvider
+    NextApp --> UIComponents
+
+    AuthModule --> AuthService
+    AuthService --> FirebaseAuth
+    AuthService --> FirestoreDB
+
+    APILayer --> MastraService
+    MastraService --> AgentNetwork
+    AgentNetwork --> MemorySystem
+    AgentNetwork --> ToolRegistry
+    AgentNetwork --> LangChainIntegration
+
+    MemorySystem --> LibSQLDB
+    MemorySystem --> VectorStore
+
+    LangChainIntegration --> GoogleAI
+
+    MastraService --> DataConnect
+```
