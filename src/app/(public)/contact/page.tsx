@@ -16,11 +16,7 @@ import { Button } from "@/components/ui/button";
 import { IconWrapper } from "@/components/common/IconWrapper";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
-// Note: Metadata must be exported from a Server Component
-export const metadata: Metadata = {
-  title: `Contact Us - ${siteConfig.name}`,
-  description: "Get in touch with our team for any questions or inquiries.",
-};
+
 
 const contactMethods = [
   {

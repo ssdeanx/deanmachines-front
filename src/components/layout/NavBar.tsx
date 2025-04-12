@@ -3,7 +3,6 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useSession } from "next-auth/react";
 import {
   Menu,
   Home,
@@ -319,15 +318,33 @@ function MobileNavItem({
  */
 export function NavBar() {
   const pathname = usePathname();
-  // Use the useSession hook at the top level of the component
-  const { data: session, status } = useSession();
 
   // Use useState with undefined as initial state to avoid hydration mismatch
   const [isScrolled, setIsScrolled] = React.useState<boolean | undefined>(undefined);
+  // Add state for manual authentication handling
+  const [isAuthenticated, setIsAuthenticated] = React.useState(false);
+  const [isAdmin, setIsAdmin] = React.useState(false);
 
-  // Calculate auth status after hydration
-  const isAuthenticated = status === "authenticated" && !!session?.user;
-  const isAdmin = isAuthenticated && session?.user?.role === "admin";
+  // Check for authentication from localStorage on client-side only
+  React.useEffect(() => {
+    const checkAuth = () => {
+      try {
+        const authData = localStorage.getItem('auth');
+        if (authData) {
+          const parsedAuth = JSON.parse(authData);
+          setIsAuthenticated(!!parsedAuth.authenticated);
+          setIsAdmin(!!parsedAuth.isAdmin);
+        }
+      } catch (e) {
+        console.error('Error checking authentication:', e);
+      }
+    };
+
+    checkAuth();
+    // Listen for auth changes
+    window.addEventListener('storage', checkAuth);
+    return () => window.removeEventListener('storage', checkAuth);
+  }, []);
 
   // Handle scroll event to update navbar styling
   React.useEffect(() => {
@@ -476,16 +493,14 @@ export function NavBar() {
                   )}
                 </div>
               </SheetContent>
-            </Sheet>
-
-            {/* Authentication UI */}
+            </Sheet>            {/* Authentication UI */}
             <div className="hidden @md:flex items-center space-x-2">
-              {status === "loading" ? (
+              {false ? ( // Simplified from status === "loading"
                 <div className="h-8 w-20 bg-muted/50 animate-pulse rounded-md" aria-hidden="true">
                   <span className="sr-only">Loading authentication status</span>
                 </div>
               ) : isAuthenticated ? (
-                <UserNav user={session.user} />
+                <UserNav user={{}} /> // Provide empty user object as fallback
               ) : (
                 <>
                   <Button
