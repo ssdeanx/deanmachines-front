@@ -62,6 +62,7 @@ const nextConfig: NextConfig = {
     "@mastra/clickhouse",
     "@mastra/github",
   ],
+  output: 'export',
   pageExtensions: ["ts", "tsx", "mdx"],
   reactStrictMode: true,
   experimental: {

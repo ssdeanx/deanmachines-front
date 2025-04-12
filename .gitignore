@@ -45,3 +45,18 @@ openapi.json
 
 memory.db*
 
+# Firebase
+
+functions/node_modules
+functions/.runtimeconfig.json
+**/node_modules/**
+firebase-debug.log
+firebase-debug.*.log
+.firebaserc
+apphosting.emulator.yaml
+/dataconnect
+/dataconnect-generated*
+dataconnect/
+/dataconnect/*
+/dataconnect-generated/*
+/dataconnect-generated

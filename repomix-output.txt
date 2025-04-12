@@ -125,6 +125,10 @@ src/app/(public)/pricing/page.tsx
 src/app/(public)/privacy/page.tsx
 src/app/(public)/services/page.tsx
 src/app/(public)/signup/page.tsx
+src/app/(public)/solutions/[slug]/page.tsx
+src/app/(public)/solutions/customer-service/page.tsx
+src/app/(public)/solutions/data-processing/page.tsx
+src/app/(public)/solutions/enterprise/page.tsx
 src/app/(public)/solutions/page.tsx
 src/app/(public)/terms/page.tsx
 src/app/(user)/chat/page.tsx
@@ -228,6 +232,7 @@ src/components/visualization/MLMetricsPlot.tsx
 src/components/visualization/ResourceUtilization.tsx
 src/config/docs.ts
 src/config/site.ts
+src/config/solutions.ts
 src/config/theme.ts
 src/hooks/use-mobile.ts
 src/hooks/use-toc-highlighting.ts
@@ -237,7 +242,6 @@ src/lib/firebase/admin.ts
 src/lib/firebase/client.ts
 src/lib/lib/utils.ts
 src/lib/mastra.ts
-src/lib/mdx.ts
 src/lib/mock-data.ts
 src/lib/mock-docs.ts
 src/lib/toc.ts
@@ -870,29 +874,6 @@ const compat = new FlatCompat({
 {
   "indexes": [],
   "fieldOverrides": []
-}
-````
-
-## File: firestore.rules
-````
-rules_version = '2';
-
-service cloud.firestore {
-  match /databases/{database}/documents {
-
-    // This rule allows anyone with your Firestore database reference to view, edit,
-    // and delete all data in your Firestore database. It is useful for getting
-    // started, but it is configured to expire after 30 days because it
-    // leaves your app open to attackers. At that time, all client
-    // requests to your Firestore database will be denied.
-    //
-    // Make sure to write security rules for your app before that time, or else
-    // all client requests to your Firestore database will be denied until you Update
-    // your rules
-    match /{document=**} {
-      allow read, write: if request.time < timestamp.date(2025, 5, 12);
-    }
-  }
 }
 ````
 
@@ -1536,6 +1517,37 @@ export default function SignupPage()
 {/* Render the SignUp component */}
 ````
 
+## File: src/app/(public)/solutions/[slug]/page.tsx
+````typescript
+import { Metadata } from 'next';
+import { notFound } from 'next/navigation';
+import { solutions } from "@/config/solutions";
+import { Button } from "@/components/ui/button";
+import { CallToAction } from "@/components/common/CallToAction";
+import { Check } from "lucide-react";
+import { IconWrapper } from "@/components/common/IconWrapper";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { siteConfig } from '@/config/site';
+⋮----
+// Generate static paths for each solution
+export async function generateStaticParams()
+⋮----
+// Dynamically generate metadata for each solution page
+export function generateMetadata(
+⋮----
+description: solution.page.subheading || solution.description, // Fallback to short description
+// You can add more metadata here like open graph, twitter, etc.
+⋮----
+interface SolutionPageProps {
+  params: { slug: string };
+}
+⋮----
+notFound(); // Next.js function to render a 404 page
+⋮----
+{/* Render detailed description safely */}
+````
+
 ## File: src/app/(public)/terms/page.tsx
 ````typescript
 import { type Metadata } from "next"
@@ -1636,44 +1648,6 @@ export async function getWeatherInfo(city: string)
 ## File: src/app/api/auth/[...nextauth]/route.ts
 ````typescript
 import { handlers } from "../../../../../auth"
-````
-
-## File: src/app/api/auth/signup/route.ts
-````typescript
-import { NextResponse } from 'next/server';
-import { adminAuth, adminDb } from '@/lib/firebase/admin'; // Import admin instances
-import { FirebaseError } from 'firebase-admin'; // Import FirebaseError for typing
-⋮----
-// Read admin emails from environment variable - ensure consistency with auth.ts
-⋮----
-export async function POST(request: Request)
-⋮----
-// --- Basic Input Validation ---
-⋮----
-// Optional: Validate name presence/format if required
-⋮----
-// --- Create User in Firebase Auth ---
-⋮----
-displayName: name || undefined, // Pass name if provided
-⋮----
-status = 409; // Conflict
-⋮----
-// --- Create User Document in Firestore ---
-// This ensures the user data (like role) is available for the adapter
-⋮----
-name: userRecord.displayName || '', // Use displayName from auth record
-image: userRecord.photoURL || null, // Usually null for email/pass
-⋮----
-emailVerified: null, // Align with adapter/event structure
-⋮----
-// Optional: Consider deleting the Auth user if Firestore fails (rollback logic)
-// For simplicity now, we return an error indicating partial success.
-⋮----
-// --- Success ---
-// Return minimal success info, client handles sign-in
-return NextResponse.json({ message: 'Account created successfully!' }, { status: 201 }); // 201 Created
-⋮----
-// Handle JSON parsing errors or other unexpected issues
 ````
 
 ## File: src/app/api/chat/route.ts
@@ -1800,65 +1774,6 @@ interface TeamMember {
     github?: string
   }
 }
-````
-
-## File: src/components/sign-up.tsx
-````typescript
-import { signIn } from "next-auth/react"; // Correct import for client-side use
-⋮----
-import { useState } from "react";
-import { useRouter } from 'next/navigation';
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
-import { Label } from "./ui/label";
-import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
-import { AlertCircle, Loader2 } from "lucide-react";
-import { cn } from "@/lib/utils";
-⋮----
-/**
- * SignUp component for registering users via credentials, Google, or GitHub.
- */
-⋮----
-const handleCredentialsSignUp = async (e: React.FormEvent): Promise<void> =>
-⋮----
-// Call the custom backend API route
-⋮----
-// Automatically sign in after successful signup
-⋮----
-redirect: false, // Don't redirect yet
-⋮----
-router.push('/'); // Redirect after successful sign-in
-⋮----
-// Handle potential sign-in error after signup (unlikely but possible)
-⋮----
-setTimeout(() => router.push('/login'), 3000); // Redirect to login after delay
-⋮----
-const handleProviderSignIn = async (provider: "google" | "github"): Promise<void> =>
-⋮----
-await signIn(provider, { callbackUrl: "/" }); // Use NextAuth's signIn for OAuth
-⋮----
-// --- JSX Structure ---
-// (Includes form with name (optional), email, password, confirm password fields)
-// (Includes error and success Alerts)
-// (Includes submit button with loading state)
-// (Includes divider "Or sign up with")
-// (Includes Google and GitHub provider buttons with loading states)
-⋮----
-{/* Error Alert */}
-⋮----
-{/* Success Alert */}
-⋮----
-{/* Credentials Form */}
-⋮----
-{/* Optional Name Field */}
-{/* <div className="space-y-2">
-          <Label htmlFor="name-signup">Name</Label>
-          <Input id="name-signup" type="text" placeholder="Your Name" value={name} onChange={(e) => setName(e.target.value)} disabled={isLoading} />
-        </div> */}
-⋮----
-{/* Divider */}
-⋮----
-{/* Provider Buttons */}
 ````
 
 ## File: src/components/ui/accordion.tsx
@@ -2969,6 +2884,122 @@ type DotProps = NonNullable<LineProps['dot']> & {
 {/* Anomaly Score Indicator */}
 ````
 
+## File: src/config/solutions.ts
+````typescript
+import { Building, Headset, BarChart, Globe, FileText, Brain, LucideIcon, Code2, Shield, Cloud, Zap, Database, LineChart, Star, Quote } from "lucide-react";
+⋮----
+export interface Solution {
+  title: string;
+  description: string; // Short description for the main solutions page card
+  icon: LucideIcon;
+  slug: string; // For the URL: /solutions/[slug]
+  href: string; // Updated href for the card link
+  benefits: string[];
+  page: { // Content for the dedicated page
+    heading: string; // More impactful heading for the solution page
+    subheading: string; // Engaging subheading
+    detailedDescription: string | JSX.Element; // Rich content, can be JSX or Markdown
+    useCases?: { // Optional: Specific use cases section
+      title: string;
+      cases: { title: string; description: string }[];
+    };
+    keyFeatures?: string[]; // Optional: Highlight key features (high-level)
+    detailedFeatures?: { title: string; description: string; icon?: LucideIcon }[]; // More detailed features
+    technicalSpecifications?: { heading: string; details: string | JSX.Element }[]; // Technical details
+    integrations?: { name: string; logoUrl: string; description?: string }[]; // Integrations with other services
+    faqs?: { question: string; answer: string }[]; // FAQ section
+    callToAction?: { // Optional: Primary CTA for the page
+      text: string;
+      href: string;
+    };
+    secondaryCallToAction?: { text: string; href: string; variant?: "default" | "outline" }; // Secondary CTA
+    testimonials?: { quote: string; author: string; authorTitle?: string; authorImage?: string }[]; // Testimonials
+    caseStudies?: { title: string; summary: string; link: string }[]; // Case studies links
+    customerLogos?: string[]; // Customer logos URLs
+    awards?: { name: string; issuer: string; year: number }[]; // Awards info
+    pricingTier?: "free" | "basic" | "pro" | "enterprise" | "custom"; // Pricing tier indicator
+    targetAudience?: string[]; // Target audience descriptions
+    industries?: string[]; // Industries the solution is for
+    featureIcons?: { [featureName: string]: LucideIcon }; // Icons for specific features
+  };
+}
+⋮----
+description: string; // Short description for the main solutions page card
+⋮----
+slug: string; // For the URL: /solutions/[slug]
+href: string; // Updated href for the card link
+⋮----
+page: { // Content for the dedicated page
+heading: string; // More impactful heading for the solution page
+subheading: string; // Engaging subheading
+detailedDescription: string | JSX.Element; // Rich content, can be JSX or Markdown
+useCases?: { // Optional: Specific use cases section
+⋮----
+keyFeatures?: string[]; // Optional: Highlight key features (high-level)
+detailedFeatures?: { title: string; description: string; icon?: LucideIcon }[]; // More detailed features
+technicalSpecifications?: { heading: string; details: string | JSX.Element }[]; // Technical details
+integrations?: { name: string; logoUrl: string; description?: string }[]; // Integrations with other services
+faqs?: { question: string; answer: string }[]; // FAQ section
+callToAction?: { // Optional: Primary CTA for the page
+⋮----
+secondaryCallToAction?: { text: string; href: string; variant?: "default" | "outline" }; // Secondary CTA
+testimonials?: { quote: string; author: string; authorTitle?: string; authorImage?: string }[]; // Testimonials
+caseStudies?: { title: string; summary: string; link: string }[]; // Case studies links
+customerLogos?: string[]; // Customer logos URLs
+awards?: { name: string; issuer: string; year: number }[]; // Awards info
+pricingTier?: "free" | "basic" | "pro" | "enterprise" | "custom"; // Pricing tier indicator
+targetAudience?: string[]; // Target audience descriptions
+industries?: string[]; // Industries the solution is for
+featureIcons?: { [featureName: string]: LucideIcon }; // Icons for specific features
+⋮----
+title: "Agentic AI for Financial Services", // SEO Optimized Title
+description: "Transform financial operations with agentic AI for fraud prevention, personalized banking, and risk management. Future-proof your institution in 2025.", // SEO Optimized Description
+⋮----
+"Reduce fraud losses by up to 40% with proactive AI.", // Quantifiable Benefit
+"Increase customer engagement by 25% through hyper-personalized advice.", // Quantifiable Benefit
+"Automate compliance reporting and save up to 50% in costs.", // Quantifiable Benefit
+"Improve risk assessment accuracy by 30% with continuously learning models.", // Quantifiable Benefit
+⋮----
+heading: "Revolutionize Financial Services with Adaptive Agentic AI - Solutions for 2025", // Future-Forward Heading
+subheading: "Deploy cutting-edge Mixture of Experts and Reinforcement Learning AI to future-proof your financial institution and gain a competitive edge.", // Strong Value Proposition
+⋮----
+title: "2025 Use Cases: Agentic AI in Financial Services", // Future-Forward Use Case Title
+⋮----
+{ title: "Memory-Enhanced Personalized Banking for Customer Loyalty", description: "Provide hyper-personalized banking experiences by remembering customer history and preferences, fostering stronger customer relationships and increasing loyalty by up to 20%." }, // Quantifiable Benefit
+{ title: "RL-Optimized Risk Assessment for Dynamic Markets", description: "Continuously refine risk assessment models using reinforcement learning to adapt to volatile market dynamics and improve prediction accuracy by 35%." }, // Quantifiable Benefit
+{ title: "MoE-Powered Fraud Detection for Reduced Losses", description: "Utilize a mixture of expert AI agents to enhance fraud detection accuracy, minimize false positives, and reduce fraud-related financial losses by up to 40%." }, // Quantifiable Benefit
+⋮----
+"Built on Mastra AI Framework", // Framework Highlight
+"Powered by Agentic.so",      // Framework Highlight
+⋮----
+{ title: "Mixture of Experts for Precision & Accuracy", description: "Specialized AI agents working in concert to deliver focused expertise in fraud detection, risk assessment, and personalized banking, improving accuracy by up to 45%.", icon: Brain }, // Quantifiable Benefit
+{ title: "Reinforcement Learning for Dynamic & Adaptive Improvement", description: "AI models that continuously learn and adapt from new data, ensuring optimal performance and accuracy over time, with a 99.9% uptime guarantee.", icon: LineChart }, // Performance Metric
+{ title: "Memory-Enhanced Customer Profiles for Deep Personalization", description: "Detailed customer profiles that remember past interactions and preferences, enabling truly personalized experiences and increasing customer satisfaction scores by 30%.", icon: Database }, // Quantifiable Benefit
+{ title: "Real-time Projection Engine for Strategic Insights", description: "Generate up-to-the-minute financial forecasts and projections to guide strategic decision-making and improve investment portfolio performance by 15%.", icon: BarChart }, // Quantifiable Benefit
+{ title: "Adaptive Risk Scoring with RL for Proactive Mitigation", description: "Dynamically adjust risk scores based on real-time data and continuous learning, enhancing risk management effectiveness and reducing potential losses by 20%.", icon: Shield }, // Quantifiable Benefit
+{ title: "Proactive Fraud Alerts & Projections for Loss Prevention", description: "Receive instant alerts for suspicious activities and utilize predictive projections to prevent potential fraud before it occurs, minimizing financial risks by up to 35%.", icon: Zap }, // Quantifiable Benefit
+⋮----
+{ heading: "Advanced Agentic AI Frameworks", details: "Built on cutting-edge Mixture of Experts and Reinforcement Learning frameworks, leveraging Mastra AI and Agentic.so for superior performance and scalability." }, // Framework Mention
+{ heading: "Real-time Data Processing & Analytics", details: "High-throughput data processing pipelines for real-time analytics and projections, ensuring <100ms latency for critical operations." }, // Performance Metric
+{ heading: "Secure Memory Storage & Compliance", details: "Encrypted and secure storage of customer interaction history and financial data, fully compliant with GDPR, CCPA, and other financial regulations." }, // Compliance Mention
+{ heading: "Flexible API Integration & Customization", details: "RESTful APIs for seamless integration with existing financial systems and data sources, with customizable modules to fit specific institutional needs." }, // Customization Benefit
+⋮----
+testimonials: [], // No testimonial assets for now
+caseStudies: [], // No case study assets for now
+customerLogos: [], // No customer logo assets for now
+awards: [], // No award assets for now
+⋮----
+"Reduce customer wait times by up to 60% with AI automation.", // Quantifiable
+"Increase agent efficiency by 35% with AI augmentation tools.", // Quantifiable
+"Boost Customer Satisfaction (CSAT) scores by 20% through personalized, memory-enhanced interactions.", // Quantifiable & Tech Mention
+"Achieve 24/7/365 support availability with intelligent, self-learning chatbots.", // Tech Mention
+⋮----
+testimonials: [], // No testimonial assets for now
+caseStudies: [], // No case study assets for now
+customerLogos: [], // No customer logo assets for now
+awards: [], // No award assets for now
+````
+
 ## File: src/config/theme.ts
 ````typescript
 import { type ThemeConfig } from "@/types/theme";
@@ -3054,110 +3085,6 @@ export function slugify(text: string): string
 import { MastraClient } from "@mastra/client-js";
 ⋮----
 // Initialize the client
-````
-
-## File: src/lib/mdx.ts
-````typescript
-import { compile, type CompileOptions } from "@mdx-js/mdx";
-import matter from "gray-matter";
-import type { VFile } from "vfile";
-import remarkGfm from "remark-gfm"; // Example remark plugin
-import rehypePrettyCode from "rehype-pretty-code"; // Example rehype plugin
-⋮----
-// Add other remark/rehype plugins as needed
-⋮----
-/**
- * Represents the result of processing an MDX file.
- */
-export interface MdxResult<TFrontmatter extends Record<string, unknown>> {
-  /** The compiled JavaScript code as a string. */
-  code: string;
-  /** The parsed frontmatter object. */
-  frontmatter: TFrontmatter;
-  /** The VFile object representing the processed file. */
-  file: VFile;
-}
-⋮----
-/** The compiled JavaScript code as a string. */
-⋮----
-/** The parsed frontmatter object. */
-⋮----
-/** The VFile object representing the processed file. */
-⋮----
-/**
- * Options for the rehype-pretty-code plugin.
- * Adjust according to the plugin's documentation.
- */
-⋮----
-theme: "github-dark", // Example theme
-// Add other options like keepBackground: false if needed
-⋮----
-/**
- * Processes an MDX string, separating frontmatter and compiling the content.
- *
- * @template TFrontmatter - The expected type of the frontmatter object.
- * @param source - The raw MDX string content.
- * @param options - Optional MDX compile options.
- * @returns A promise resolving to an MdxResult object containing the compiled code and frontmatter.
- * @throws Will throw an error if frontmatter parsing or MDX compilation fails.
- */
-export async function processMdx<
-  TFrontmatter extends Record<string, unknown>,
->(
-  source: string,
-  options?: CompileOptions,
-): Promise<MdxResult<TFrontmatter>>
-⋮----
-// 1. Parse frontmatter
-⋮----
-// 2. Compile MDX content
-⋮----
-outputFormat: "function-body", // Common format for frameworks
-remarkPlugins: [remarkGfm], // Add remark plugins here
-rehypePlugins: [[rehypePrettyCode as never, rehypePrettyCodeOptions]], // Add rehype plugins here
-...options, // Allow overriding default options
-⋮----
-const code = String(file); // Get the compiled code as a string
-⋮----
-frontmatter: frontmatter as TFrontmatter, // Assume frontmatter matches the generic type
-⋮----
-// Example Usage (can be removed or adapted):
-/*
-async function example() {
-  const mdxSource = `---
-title: "Hello MDX"
-date: "2024-01-01"
----
-
-# Welcome
-
-This is **MDX** content with *frontmatter*!
-
-\`\`\`typescript
-function greet(name: string): string {
-  return \`Hello, \${name}!\`;
-}
-\`\`\`
-`;
-
-  interface PostFrontmatter {
-    title: string;
-    date: string;
-  }
-
-  try {
-    const { code, frontmatter } = await processMdx<PostFrontmatter>(mdxSource);
-    console.log("Frontmatter:", frontmatter);
-    console.log("Compiled Code Snippet:", code.substring(0, 200) + "...");
-    // You would typically use this 'code' with a library like 'next-mdx-remote'
-    // or evaluate it in a specific environment.
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-example();
-*/
 ````
 
 ## File: src/lib/mock-data.ts
@@ -10058,6 +9985,116 @@ async session(
 async jwt(
 ````
 
+## File: firestore.rules
+````
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions for role-based access
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    function isUser() {
+      return isAuthenticated() &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Default deny all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Users collection - auth rules
+    match /users/{userId} {
+      // Users can read their own profile
+      // Admins can read any profile
+      allow read: if isOwner(userId) || isAdmin();
+
+      // Users can only update their own profile, but cannot change their role
+      allow update: if isOwner(userId) &&
+                     !("role" in request.resource.data) ||
+                     (request.resource.data.role == resource.data.role);
+
+      // Only admins can create user documents or update roles
+      // This protects role escalation attacks
+      allow create, delete: if isAdmin();
+      allow update: if isAdmin();
+    }
+
+    // Threads collection - for chat messages and agent interactions
+    match /threads/{threadId} {
+      // Users can read/write their own threads
+      // Admin can read all threads
+      allow read: if resource.data.userId == request.auth.uid || isAdmin();
+      allow create: if isAuthenticated() &&
+                     request.resource.data.userId == request.auth.uid;
+      allow update, delete: if resource.data.userId == request.auth.uid;
+    }
+
+    // Messages subcollection
+    match /threads/{threadId}/messages/{messageId} {
+      // Users can read/write messages in their own threads
+      // Admins can read messages in any thread
+      allow read: if get(/databases/$(database)/documents/threads/$(threadId)).data.userId == request.auth.uid || isAdmin();
+      allow create: if isAuthenticated() &&
+                     get(/databases/$(database)/documents/threads/$(threadId)).data.userId == request.auth.uid;
+      allow update, delete: if get(/databases/$(database)/documents/threads/$(threadId)).data.userId == request.auth.uid;
+    }
+
+    // Documents collection - for user created documents
+    match /documents/{docId} {
+      // Users can read/write their own documents
+      // Admin can read all documents
+      allow read: if resource.data.userId == request.auth.uid || isAdmin();
+      allow create: if isAuthenticated() &&
+                     request.resource.data.userId == request.auth.uid;
+      allow update, delete: if resource.data.userId == request.auth.uid || isAdmin();
+    }
+
+    // Projects collection
+    match /projects/{projectId} {
+      // Project members can read, project owner can write
+      // Admin can read/write all projects
+      allow read: if resource.data.members[request.auth.uid] != null || isAdmin();
+      allow create: if isAuthenticated() &&
+                     request.resource.data.owner == request.auth.uid;
+      allow update: if resource.data.owner == request.auth.uid || isAdmin();
+      allow delete: if resource.data.owner == request.auth.uid || isAdmin();
+    }
+
+    // Analytics data - admin only
+    match /analytics/{docId} {
+      allow read, write: if isAdmin();
+    }
+
+    // Public content collections
+    match /public/{docId} {
+      // Anyone can read public content
+      // Only admins can write
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // System settings - admin only
+    match /settings/{settingId} {
+      allow read, write: if isAdmin();
+    }
+  }
+}
+````
+
 ## File: middleware.ts
 ````typescript
 import { auth } from "./auth";
@@ -10240,394 +10277,6 @@ const getInitials = (name: string) =>
 // Show delete confirmation dialog
 ````
 
-## File: src/app/(public)/docs/api-reference/agent/page.tsx
-````typescript
-import { type Metadata } from "next"
-import { notFound } from "next/navigation"
-⋮----
-// Import structured content types and components instead of MDX ones
-import { type DocContent, SectionType } from "@/lib/content-data"
-import { DocPage } from "@/components/docs/DocPage"
-import { DocsLayoutWrapper } from "@/components/docs/DocsLayoutWrapper"
-// Temporarily use mockDocs. Replace this with your actual data source/fetching logic.
-import { mockDocs } from "@/lib/mock-docs"
-⋮----
-export default async function AgentApiPage()
-⋮----
-// --- Replace this section with your actual data fetching logic ---
-// Fetch the structured document content for 'api-reference/agent'
-// This example uses the mock data source.
-⋮----
-// --- End of data fetching section ---
-⋮----
-// If the specific document wasn't found in the data source, show a fallback or 404 page
-⋮----
-// You can customize this fallback or simply call notFound()
-⋮----
-slugAsParams: "api-reference/agent", // Ensure this matches the expected slug format
-⋮----
-// Define prev/next if applicable for the fallback state
-prev: { title: "API Reference", slug: "api-reference/overview" }, // Adjusted slug for overview page
-next: { title: "Memory API", slug: "api-reference/memory" }, // Example based on original code
-⋮----
-// Render the fallback page
-⋮----
-// Alternatively, uncomment the line below to show a standard 404 page
-// notFound();
-⋮----
-// Render the DocPage component, passing the fetched structured content.
-// DocPage handles the layout, table of contents, and content rendering internally.
-⋮----
-// Optionally, render a specific error page or component
-notFound() // Or throw error;
-````
-
-## File: src/app/(public)/docs/api-reference/cli/page.tsx
-````typescript
-import { type Metadata } from "next"
-import { notFound } from "next/navigation"
-⋮----
-import { type DocContent, SectionType } from "@/lib/content-data"
-import { DocPage } from "@/components/docs/DocPage"
-import { DocsLayoutWrapper } from "@/components/docs/DocsLayoutWrapper"
-import { mockDocs } from "@/lib/mock-docs"
-⋮----
-export default async function CliReferencePage()
-````
-
-## File: src/app/(public)/docs/api-reference/deployment/page.tsx
-````typescript
-import { type Metadata } from "next"
-import { notFound } from "next/navigation"
-⋮----
-import { type DocContent, SectionType } from "@/lib/content-data"
-import { DocPage } from "@/components/docs/DocPage"
-import { DocsLayoutWrapper } from "@/components/docs/DocsLayoutWrapper"
-import { mockDocs } from "@/lib/mock-docs"
-⋮----
-export default async function DeploymentApiPage()
-````
-
-## File: src/app/(public)/docs/api-reference/memory/page.tsx
-````typescript
-import { type Metadata } from "next"
-import { notFound } from "next/navigation"
-⋮----
-// Import structured content types and components instead of MDX ones
-import { type DocContent, SectionType } from "@/lib/content-data"
-import { DocPage } from "@/components/docs/DocPage"
-import { DocsLayoutWrapper } from "@/components/docs/DocsLayoutWrapper"
-// Temporarily use mockDocs. Replace this with your actual data source/fetching logic.
-import { mockDocs } from "@/lib/mock-docs"
-⋮----
-export default async function MemoryApiPage()
-⋮----
-// --- Replace this section with your actual data fetching logic ---
-// Fetch the structured document content for 'api-reference/memory'
-// This example uses the mock data source.
-⋮----
-// --- End of data fetching section ---
-⋮----
-// If the specific document wasn't found in the data source, show a fallback or 404 page
-⋮----
-// You can customize this fallback or simply call notFound()
-⋮----
-slugAsParams: "api-reference/memory", // Ensure this matches the expected slug format
-⋮----
-// Define prev/next if applicable for the fallback state
-prev: { title: "Agent API", slug: "api-reference/agent" }, // Example based on original code
-next: { title: "Network API", slug: "api-reference/network" }, // Example based on original code
-⋮----
-// Render the fallback page
-⋮----
-// Alternatively, uncomment the line below to show a standard 404 page
-// notFound();
-⋮----
-// Render the DocPage component, passing the fetched structured content.
-// DocPage handles the layout, table of contents, and content rendering internally.
-⋮----
-// Optionally, render a specific error page or component
-notFound() // Or throw error;
-````
-
-## File: src/app/(public)/docs/api-reference/network/page.tsx
-````typescript
-import { type Metadata } from "next"
-import { notFound } from "next/navigation"
-⋮----
-import { type DocContent, SectionType } from "@/lib/content-data"
-import { DocPage } from "@/components/docs/DocPage"
-import { DocsLayoutWrapper } from "@/components/docs/DocsLayoutWrapper"
-import { mockDocs } from "@/lib/mock-docs"
-⋮----
-export default async function NetworkApiPage()
-````
-
-## File: src/app/(public)/docs/core-concepts/deployment/page.tsx
-````typescript
-import { type Metadata } from "next"
-import { notFound } from "next/navigation"
-⋮----
-// Import structured content types and components instead of MDX ones
-import { type DocContent, SectionType } from "@/lib/content-data"
-import { DocPage } from "@/components/docs/DocPage"
-import { DocsLayoutWrapper } from "@/components/docs/DocsLayoutWrapper"
-// Temporarily use mockDocs. Replace this with your actual data source/fetching logic.
-import { mockDocs } from "@/lib/mock-docs"
-⋮----
-export default async function DeploymentPage()
-⋮----
-// --- Replace this section with your actual data fetching logic ---
-// Fetch the structured document content for 'core-concepts/deployment'
-// This example uses the mock data source.
-⋮----
-// --- End of data fetching section ---
-⋮----
-// If the specific document wasn't found in the data source, show a fallback or 404 page
-⋮----
-// You can customize this fallback or simply call notFound()
-⋮----
-slugAsParams: "core-concepts/deployment", // Ensure this matches the expected slug format
-⋮----
-// Define prev/next if applicable for the fallback state
-prev: { title: "Agent Networks", slug: "core-concepts/networks" }, // Example based on original code
-next: { title: "Guides", slug: "guides/overview" }, // Adjusted slug based on original href
-⋮----
-// Render the fallback page
-⋮----
-// Alternatively, uncomment the line below to show a standard 404 page
-// notFound();
-⋮----
-// Render the DocPage component, passing the fetched structured content.
-// DocPage handles the layout, table of contents, and content rendering internally.
-⋮----
-// Optionally, render a specific error page or component
-notFound() // Or throw error;
-````
-
-## File: src/app/(public)/docs/core-concepts/memory/page.tsx
-````typescript
-import { type Metadata } from "next"
-import { notFound } from "next/navigation"
-⋮----
-// Import structured content types and components instead of MDX ones
-import { type DocContent, SectionType } from "@/lib/content-data"
-import { DocPage } from "@/components/docs/DocPage"
-import { DocsLayoutWrapper } from "@/components/docs/DocsLayoutWrapper"
-// Temporarily use mockDocs. Replace this with your actual data source/fetching logic
-import { mockDocs } from "@/lib/mock-docs"
-⋮----
-export default async function MemoryPage()
-⋮----
-// --- Replace this section with your actual data fetching logic ---
-// Fetch the structured document content for 'core-concepts/memory'
-// This example uses the mock data source.
-⋮----
-// --- End of data fetching section ---
-⋮----
-// If the specific document wasn't found in the data source, show a fallback or 404 page
-⋮----
-// You can customize this fallback or simply call notFound()
-⋮----
-slugAsParams: "core-concepts/memory", // Ensure this matches the expected slug format
-⋮----
-// Define prev/next if applicable for the fallback state
-prev: { title: "AI Agents", slug: "core-concepts/agents" }, // Example based on original code
-next: { title: "Agent Networks", slug: "core-concepts/networks" }, // Example based on original code
-⋮----
-// Render the fallback page
-⋮----
-// Alternatively, uncomment the line below to show a standard 404 page
-// notFound();
-⋮----
-// Render the DocPage component, passing the fetched structured content.
-// DocPage handles the layout, table of contents, and content rendering internally.
-⋮----
-// Optionally, render a specific error page or component
-notFound() // Or throw error;
-````
-
-## File: src/app/(public)/docs/core-concepts/networks/page.tsx
-````typescript
-import { type Metadata } from "next"
-import { notFound } from "next/navigation"
-⋮----
-import { type DocContent, SectionType } from "@/lib/content-data"
-import { DocPage } from "@/components/docs/DocPage"
-import { DocsLayoutWrapper } from "@/components/docs/DocsLayoutWrapper"
-import { mockDocs } from "@/lib/mock-docs"
-⋮----
-export default async function NetworksPage()
-````
-
-## File: src/app/(public)/docs/guides/monitoring/page.tsx
-````typescript
-import { type Metadata } from "next"
-import { notFound } from "next/navigation"
-⋮----
-// Import structured content types and components instead of MDX ones
-import { type DocContent, SectionType } from "@/lib/content-data"
-import { DocPage } from "@/components/docs/DocPage"
-import { DocsLayoutWrapper } from "@/components/docs/DocsLayoutWrapper"
-// Temporarily use mockDocs. Replace this with your actual data source/fetching logic.
-import { mockDocs } from "@/lib/mock-docs"
-⋮----
-export default async function MonitoringGuidePage()
-⋮----
-// --- Replace this section with your actual data fetching logic ---
-// Fetch the structured document content for 'guides/monitoring'
-// This example uses the mock data source.
-⋮----
-// --- End of data fetching section ---
-⋮----
-// If the specific document wasn't found in the data source, show a fallback or 404 page
-⋮----
-// You can customize this fallback or simply call notFound()
-⋮----
-slugAsParams: "guides/monitoring", // Ensure this matches the expected slug format
-⋮----
-// Define prev/next if applicable for the fallback state
-prev: { title: "Security Best Practices", slug: "guides/security" }, // Example based on original code
-next: { title: "Scaling Strategies", slug: "guides/scaling" }, // Example based on original code
-⋮----
-// Render the fallback page
-⋮----
-// Alternatively, uncomment the line below to show a standard 404 page
-// notFound();
-⋮----
-// Render the DocPage component, passing the fetched structured content.
-// DocPage handles the layout, table of contents, and content rendering internally.
-⋮----
-// Optionally, render a specific error page or component
-notFound() // Or throw error;
-````
-
-## File: src/app/(public)/docs/guides/scaling/page.tsx
-````typescript
-import { type Metadata } from "next"
-import { notFound } from "next/navigation"
-⋮----
-// Import structured content types and components instead of MDX ones
-import { type DocContent, SectionType } from "@/lib/content-data"
-import { DocPage } from "@/components/docs/DocPage"
-import { DocsLayoutWrapper } from "@/components/docs/DocsLayoutWrapper"
-// Temporarily use mockDocs. Replace this with your actual data source/fetching logic.
-import { mockDocs } from "@/lib/mock-docs"
-⋮----
-export default async function ScalingGuidePage()
-⋮----
-// --- Replace this section with your actual data fetching logic ---
-// Fetch the structured document content for 'guides/scaling'
-// This example uses the mock data source.
-⋮----
-// --- End of data fetching section ---
-⋮----
-// If the specific document wasn't found in the data source, show a fallback or 404 page
-⋮----
-// You can customize this fallback or simply call notFound()
-⋮----
-slugAsParams: "guides/scaling", // Ensure this matches the expected slug format
-⋮----
-// Define prev/next if applicable for the fallback state
-prev: { title: "Monitoring & Observability", slug: "guides/monitoring" }, // Example based on original code
-next: { title: "Testing & Validation", slug: "guides/testing" }, // Example based on original code
-⋮----
-// Render the fallback page
-⋮----
-// Alternatively, uncomment the line below to show a standard 404 page
-// notFound();
-⋮----
-// Render the DocPage component, passing the fetched structured content.
-// DocPage handles the layout, table of contents, and content rendering internally.
-⋮----
-// Optionally, render a specific error page or component
-notFound() // Or throw error;
-````
-
-## File: src/app/(public)/docs/guides/security/page.tsx
-````typescript
-import { type Metadata } from "next"
-import { notFound } from "next/navigation"
-⋮----
-// Import structured content types and components instead of MDX ones
-import { type DocContent, SectionType } from "@/lib/content-data"
-import { DocPage } from "@/components/docs/DocPage"
-import { DocsLayoutWrapper } from "@/components/docs/DocsLayoutWrapper"
-// Temporarily use mockDocs. Replace this with your actual data source/fetching logic.
-import { mockDocs } from "@/lib/mock-docs"
-⋮----
-export default async function SecurityGuidePage()
-⋮----
-// --- Replace this section with your actual data fetching logic ---
-// Fetch the structured document content for 'guides/security'
-// This example uses the mock data source.
-⋮----
-// --- End of data fetching section ---
-⋮----
-// If the specific document wasn't found in the data source, show a fallback or 404 page
-⋮----
-// You can customize this fallback or simply call notFound()
-⋮----
-slugAsParams: "guides/security", // Ensure this matches the expected slug format
-⋮----
-// Define prev/next if applicable for the fallback state
-prev: { title: "Guides", slug: "guides/overview" }, // Adjusted slug based on original href
-next: { title: "Monitoring & Observability", slug: "guides/monitoring" }, // Example based on original code
-⋮----
-// Render the fallback page
-⋮----
-// Alternatively, uncomment the line below to show a standard 404 page
-// notFound();
-⋮----
-// Render the DocPage component, passing the fetched structured content.
-// DocPage handles the layout, table of contents, and content rendering internally.
-⋮----
-// Optionally, render a specific error page or component
-notFound() // Or throw error;
-````
-
-## File: src/app/(public)/docs/guides/testing/page.tsx
-````typescript
-import { type Metadata } from "next"
-import { notFound } from "next/navigation"
-⋮----
-// Import structured content types and components instead of MDX ones
-import { type DocContent, SectionType } from "@/lib/content-data"
-import { DocPage } from "@/components/docs/DocPage"
-import { DocsLayoutWrapper } from "@/components/docs/DocsLayoutWrapper"
-// Temporarily use mockDocs. Replace this with your actual data source/fetching logic.
-import { mockDocs } from "@/lib/mock-docs"
-⋮----
-export default async function TestingGuidePage()
-⋮----
-// --- Replace this section with your actual data fetching logic ---
-// Fetch the structured document content for 'guides/testing'
-// This example uses the mock data source.
-⋮----
-// --- End of data fetching section ---
-⋮----
-// If the specific document wasn't found in the data source, show a fallback or 404 page
-⋮----
-// You can customize this fallback or simply call notFound()
-⋮----
-slugAsParams: "guides/testing", // Ensure this matches the expected slug format
-⋮----
-// Define prev/next if applicable for the fallback state
-prev: { title: "Scaling Strategies", slug: "guides/scaling" }, // Example based on original code
-next: { title: "API Reference", slug: "api-reference/overview" }, // Adjusted slug based on original href
-⋮----
-// Render the fallback page
-⋮----
-// Alternatively, uncomment the line below to show a standard 404 page
-// notFound();
-⋮----
-// Render the DocPage component, passing the fetched structured content.
-// DocPage handles the layout, table of contents, and content rendering internally.
-⋮----
-// Optionally, render a specific error page or component
-notFound() // Or throw error;
-````
-
 ## File: src/app/(public)/docs/layout.tsx
 ````typescript
 import { DocsLayoutWrapper } from "@/components/docs/DocsLayoutWrapper"
@@ -10679,18 +10328,42 @@ export default function PricingPage()
 {/* CTA Section */}
 ````
 
-## File: src/app/globals.css
-````css
-@theme inline {
+## File: src/app/api/auth/signup/route.ts
+````typescript
+import { NextResponse } from "next/server";
+import { adminAuth, adminDb } from "@/lib/firebase/admin"; // Import admin instances
+import { FirebaseError } from "firebase-admin"; // Import FirebaseError for typing
 ⋮----
-:root {
+// Read admin emails from environment variable - ensure consistency with auth.ts
 ⋮----
-.dark {
+// Debug environment variables and initialization
 ⋮----
-@layer base {
+export async function POST(request: Request)
 ⋮----
-* {
-body {
+// --- Basic Input Validation ---
+⋮----
+// --- Create User in Firebase Auth ---
+⋮----
+displayName: name || undefined, // Pass name if provided
+⋮----
+status = 409; // Conflict
+⋮----
+// --- Create User Document in Firestore ---
+⋮----
+name: userRecord.displayName || "", // Use displayName from auth record
+image: userRecord.photoURL || null, // Usually null for email/pass
+⋮----
+emailVerified: null, // Align with adapter/event structure
+⋮----
+// Consider deleting the Auth user if Firestore fails for consistent state
+⋮----
+// --- Success ---
+⋮----
+userId: userRecord.uid, // Include user ID for debugging
+⋮----
+); // 201 Created
+⋮----
+// Handle JSON parsing errors or other unexpected issues
 ````
 
 ## File: src/app/sitemap.ts
@@ -10846,27 +10519,6 @@ interface DocsLayoutWrapperProps {
 export function DocsLayoutWrapper(
 ````
 
-## File: src/components/docs/Toc.tsx
-````typescript
-import { TableOfContents } from "@/types/toc"
-import { cn } from "@/lib/utils"
-import { useTocHighlighting } from "@/hooks/use-toc-highlighting"
-⋮----
-interface TocProps {
-  toc: TableOfContents
-}
-⋮----
-export function Toc(
-⋮----
-interface TreeProps {
-  tree: TableOfContents
-  level?: number
-  activeItem?: string | null
-}
-⋮----
-<li key=
-````
-
 ## File: src/components/layout/MobileNav.tsx
 ````typescript
 import Link from "next/link"
@@ -10893,35 +10545,6 @@ interface MobileNavProps {
 }
 ⋮----
 className=
-````
-
-## File: src/components/sections/FaqAccordion.tsx
-````typescript
-import { useState } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion"
-import { Badge } from "@/components/ui/badge"
-import { cn } from "@/lib/utils"
-import { PlusIcon, MinusIcon } from "lucide-react"
-⋮----
-interface FaqCategory {
-  name: string
-  color?: string
-}
-⋮----
-interface Faq {
-  question: string
-  answer: string
-  category?: string
-  isPopular?: boolean
-}
-⋮----
-export function FaqAccordion()
 ````
 
 ## File: src/components/sections/FeatureGrid.tsx
@@ -10974,57 +10597,77 @@ xmlns="http://www.w3.org/2000/svg"
 {/* Background decoration */}
 ````
 
-## File: src/components/sections/TestimonialSlider.tsx
+## File: src/components/sign-up.tsx
 ````typescript
-import { useState, useEffect, useRef } from "react";
-import { Quote, Star } from "lucide-react";
-import { type CarouselApi } from "@/components/ui/carousel";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
-import { Card, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { motion, AnimatePresence, useInView } from "framer-motion";
+import { signIn } from "next-auth/react"; // Correct import for client-side use
+⋮----
+import { useState } from "react";
+import { useRouter } from 'next/navigation';
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
+import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
+import { AlertCircle, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 ⋮----
-interface Testimonial {
-  quote: string;
-  author: string;
-  title: string;
-  avatar: string;
-  company?: string;
-  rating?: number;
-}
-⋮----
 /**
- * Enhanced TestimonialCard component with 3D effects and microinteractions
+ * SignUp component for registering users via credentials, Google, or GitHub.
+ * Handles form submission, validation, API calls, and redirects.
  */
 ⋮----
-// Handle mouse movement for 3D effect
-const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) =>
+/**
+   * Handles credentials signup process
+   *
+   * @param {React.FormEvent} e - The form submit event
+   */
+const handleCredentialsSignUp = async (e: React.FormEvent): Promise<void> =>
 ⋮----
-const handleMouseLeave = () =>
+// Validate passwords match
 ⋮----
-{/* Quote icon with gradient */}
+// Validate password length
 ⋮----
-{/* Rating stars */}
+// Log the signup attempt (without sensitive data)
 ⋮----
-{/* Quote text with animated gradient underline */}
+// Set up request timeout
 ⋮----
-{/* Author info with hover effects */}
+const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+⋮----
+// Call the custom backend API route with timeout
+⋮----
+// Clear timeout since request completed
+⋮----
+// Short delay to ensure Firestore document is available for NextAuth
+⋮----
+// Automatically sign in after successful signup
+⋮----
+redirect: false, // Don't redirect yet
+⋮----
+router.push('/'); // Redirect after successful sign-in
+⋮----
+// Allow user to read the message before redirecting
+⋮----
+// Handle request timeout
 ⋮----
 /**
- * Enhanced TestimonialSlider with cutting-edge 2025 design trends
- * Features scroll-triggered animations, 3D effects, and custom navigation
- */
+   * Handles sign up/in with third-party providers
+   *
+   * @param {"google" | "github"} provider - The authentication provider
+   */
+const handleProviderSignIn = async (provider: "google" | "github"): Promise<void> =>
 ⋮----
-// Title animations
+await signIn(provider, { callbackUrl: "/" }); // Use NextAuth's signIn for OAuth
 ⋮----
-{/* Background decorations */}
+{/* Error Alert */}
+⋮----
+{/* Success Alert */}
+⋮----
+{/* Credentials Form */}
+⋮----
+{/* Name Field - Now enabled */}
+⋮----
+{/* Divider */}
+⋮----
+{/* Provider Buttons */}
 ````
 
 ## File: src/components/user/UserSidebar.tsx
@@ -13586,39 +13229,6 @@ export interface TableOfContents {
 /** Root level items */
 ````
 
-## File: src/types/nav.ts
-````typescript
-/**
- * Navigation item type definitions
- * @description Defines the structure for navigation items throughout the application
- */
-⋮----
-export interface NavItem {
-  title: string;
-  href: string;
-  disabled?: boolean;
-  external?: boolean;
-  label?: string;
-  description?: string;
-  icon?: string;
-  children?: NavItemChild[];
-}
-⋮----
-export interface NavItemChild {
-  title: string;
-  href: string;
-  description?: string;
-  icon?: string;
-  disabled?: boolean;
-  external?: boolean;
-}
-⋮----
-export interface NavSection {
-  title: string;
-  items: NavItem[];
-}
-````
-
 ## File: src/app/(public)/blog/page.tsx
 ````typescript
 import { type Metadata } from "next"
@@ -13705,22 +13315,18 @@ reset(); // Clear the form
 <form onSubmit=
 ````
 
-## File: src/app/(public)/docs/api-reference/page.tsx
+## File: src/app/(public)/docs/api-reference/agent/page.tsx
 ````typescript
 import { type Metadata } from "next"
 import { notFound } from "next/navigation"
-⋮----
-// Import structured content types and components instead of MDX ones
 import { type DocContent, SectionType } from "@/lib/content-data"
 import { DocPage } from "@/components/docs/DocPage"
-import { DocsLayoutWrapper } from "@/components/docs/DocsLayoutWrapper"
-// Temporarily use mockDocs. Replace this with your actual data source/fetching logic.
 import { mockDocs } from "@/lib/mock-docs"
 ⋮----
-export default async function ApiReferencePage()
+export default async function AgentApiPage()
 ⋮----
 // --- Replace this section with your actual data fetching logic ---
-// Fetch the structured document content for 'api-reference/overview'
+// Fetch the structured document content for 'api-reference/agent'
 // This example uses the mock data source.
 ⋮----
 // --- End of data fetching section ---
@@ -13729,11 +13335,11 @@ export default async function ApiReferencePage()
 ⋮----
 // You can customize this fallback or simply call notFound()
 ⋮----
-slugAsParams: "api-reference/overview", // Ensure this matches the expected slug format
+slugAsParams: "api-reference/agent", // Ensure this matches the expected slug format
 ⋮----
 // Define prev/next if applicable for the fallback state
-prev: { title: "Guides", slug: "guides/overview" }, // Example prev link
-// next: { title: "Next Section", slug: "..." },
+prev: { title: "API Reference", slug: "api-reference/overview" }, // Adjusted slug for overview page
+next: { title: "Memory API", slug: "api-reference/memory" }, // Example based on original code
 ⋮----
 // Render the fallback page
 ⋮----
@@ -13747,82 +13353,29 @@ prev: { title: "Guides", slug: "guides/overview" }, // Example prev link
 notFound() // Or throw error;
 ````
 
-## File: src/app/(public)/docs/core-concepts/agents/page.tsx
+## File: src/app/(public)/docs/api-reference/cli/page.tsx
 ````typescript
 import { type Metadata } from "next"
 import { notFound } from "next/navigation"
-⋮----
-// Import structured content types and components instead of MDX ones
 import { type DocContent, SectionType } from "@/lib/content-data"
 import { DocPage } from "@/components/docs/DocPage"
-import { DocsLayoutWrapper } from "@/components/docs/DocsLayoutWrapper"
-// Keep using mockDocs (replace with your actual data source later)
 import { mockDocs } from "@/lib/mock-docs"
 ⋮----
-export default async function AgentsPage()
-⋮----
-// Fetch the structured document content for 'core-concepts/agents'
-// This example uses the mock data source.
-⋮----
-// If the specific document wasn't found in the data source, show a fallback or 404 page
-⋮----
-// You can customize this fallback or simply call notFound()
-⋮----
-slugAsParams: "core-concepts/agents", // Ensure this matches the expected slug format
-⋮----
-// Define prev/next if applicable for the fallback state
-prev: { title: "Core Concepts", slug: "core-concepts/overview" }, // Adjusted slug based on original href
-next: { title: "Memory Management", slug: "core-concepts/memory" }, // Example based on original code
-⋮----
-// Render the fallback page
-⋮----
-// Alternatively, uncomment the line below to show a standard 404 page
-// notFound()
-⋮----
-// Render the DocPage component, passing the fetched structured content.
-// DocPage handles the layout, table of contents, and content rendering internally.
-⋮----
-// Optionally, render a specific error page or component
-notFound() // Or throw error
+export default async function CliReferencePage()
 ````
 
-## File: src/app/(public)/docs/core-concepts/page.tsx
+## File: src/app/(public)/docs/api-reference/deployment/page.tsx
 ````typescript
 import { type Metadata } from "next"
 import { notFound } from "next/navigation"
-⋮----
-// Import structured content types and components instead of MDX ones
 import { type DocContent, SectionType } from "@/lib/content-data"
 import { DocPage } from "@/components/docs/DocPage"
-import { DocsLayoutWrapper } from "@/components/docs/DocsLayoutWrapper"
-// Temporarily use mockDocs. Replace this with your actual data source/fetching logic.
 import { mockDocs } from "@/lib/mock-docs"
 ⋮----
-export default async function CoreConceptsPage()
-⋮----
-// Fetch the structured document content for 'core-concepts/overview'
-// This example uses the mock data source.
-⋮----
-// If the specific document wasn't found in the data source, show a fallback or 404 page
-⋮----
-// You can customize this fallback or simply call notFound()
-⋮----
-slugAsParams: "core-concepts/overview", // Ensure this matches the expected slug format
-⋮----
-// Define prev/next if applicable for the fallback state
-prev: { title: "Configuration", slug: "getting-started/configuration" }, // Example based on original code
-next: { title: "AI Agents", slug: "core-concepts/agents" }, // Example based on original code
-⋮----
-// Render the fallback page
-⋮----
-// Render the DocPage component, passing the fetched structured content.
-// DocPage handles the layout, table of contents, and content rendering internally.
-⋮----
-// Optionally, render a specific error page or component
-notFound() // Or throw error;
+export default async function DeploymentApiPage()
 ````
 
-## File: src/app/(public)/docs/getting-started/configuration/page.tsx
+## File: src/app/(public)/docs/api-reference/memory/page.tsx
 ````typescript
 import { type Metadata } from "next"
 import { notFound } from "next/navigation"
@@ -13830,14 +13383,13 @@ import { notFound } from "next/navigation"
 // Import structured content types and components instead of MDX ones
 import { type DocContent, SectionType } from "@/lib/content-data"
 import { DocPage } from "@/components/docs/DocPage"
-import { DocsLayoutWrapper } from "@/components/docs/DocsLayoutWrapper"
-// Temporarily use mockDocs. Replace this with your actual data source/fetching logic.
+⋮----
 import { mockDocs } from "@/lib/mock-docs"
 ⋮----
-export default async function ConfigurationPage()
+export default async function MemoryApiPage()
 ⋮----
 // --- Replace this section with your actual data fetching logic ---
-// Fetch the structured document content for 'getting-started/configuration'
+// Fetch the structured document content for 'api-reference/memory'
 // This example uses the mock data source.
 ⋮----
 // --- End of data fetching section ---
@@ -13846,11 +13398,64 @@ export default async function ConfigurationPage()
 ⋮----
 // You can customize this fallback or simply call notFound()
 ⋮----
-slugAsParams: "getting-started/configuration", // Ensure this matches the expected slug format
+slugAsParams: "api-reference/memory", // Ensure this matches the expected slug format
 ⋮----
 // Define prev/next if applicable for the fallback state
-prev: { title: "Installation", slug: "getting-started/installation" }, // Example based on original code
-next: { title: "Core Concepts", slug: "core-concepts/overview" }, // Adjusted slug based on original href
+prev: { title: "Agent API", slug: "api-reference/agent" }, // Example based on original code
+next: { title: "Network API", slug: "api-reference/network" }, // Example based on original code
+⋮----
+// Render the fallback page      return <DocPage doc={fallbackDoc} />
+// Alternatively, uncomment the line below to show a standard 404 page
+// notFound();
+⋮----
+// Alternatively, uncomment the line below to show a standard 404 page
+// notFound();
+⋮----
+// Render the DocPage component, passing the fetched structured content.
+// DocPage handles the layout, table of contents, and content rendering internally.
+// Render the DocPage component, passing the fetched structured content.
+// DocPage handles the layout, table of contents, and content rendering internally.    return <DocPage doc={doc} />
+⋮----
+// Optionally, render a specific error page or component
+notFound() // Or throw error;
+````
+
+## File: src/app/(public)/docs/api-reference/network/page.tsx
+````typescript
+import { type Metadata } from "next"
+import { notFound } from "next/navigation"
+import { type DocContent, SectionType } from "@/lib/content-data"
+import { DocPage } from "@/components/docs/DocPage"
+import { mockDocs } from "@/lib/mock-docs"
+⋮----
+export default async function NetworkApiPage()
+````
+
+## File: src/app/(public)/docs/core-concepts/deployment/page.tsx
+````typescript
+import { type Metadata } from "next"
+import { notFound } from "next/navigation"
+import { type DocContent, SectionType } from "@/lib/content-data"
+import { DocPage } from "@/components/docs/DocPage"
+import { mockDocs } from "@/lib/mock-docs"
+⋮----
+export default async function DeploymentPage()
+⋮----
+// --- Replace this section with your actual data fetching logic ---
+// Fetch the structured document content for 'core-concepts/deployment'
+// This example uses the mock data source.
+⋮----
+// --- End of data fetching section ---
+⋮----
+// If the specific document wasn't found in the data source, show a fallback or 404 page
+⋮----
+// You can customize this fallback or simply call notFound()
+⋮----
+slugAsParams: "core-concepts/deployment", // Ensure this matches the expected slug format
+⋮----
+// Define prev/next if applicable for the fallback state
+prev: { title: "Agent Networks", slug: "core-concepts/networks" }, // Example based on original code
+next: { title: "Guides", slug: "guides/overview" }, // Adjusted slug based on original href
 ⋮----
 // Render the fallback page
 ⋮----
@@ -13864,7 +13469,7 @@ next: { title: "Core Concepts", slug: "core-concepts/overview" }, // Adjusted sl
 notFound() // Or throw error;
 ````
 
-## File: src/app/(public)/docs/getting-started/installation/page.tsx
+## File: src/app/(public)/docs/core-concepts/memory/page.tsx
 ````typescript
 import { type Metadata } from "next"
 import { notFound } from "next/navigation"
@@ -13872,14 +13477,13 @@ import { notFound } from "next/navigation"
 // Import structured content types and components instead of MDX ones
 import { type DocContent, SectionType } from "@/lib/content-data"
 import { DocPage } from "@/components/docs/DocPage"
-import { DocsLayoutWrapper } from "@/components/docs/DocsLayoutWrapper"
-// Temporarily use mockDocs. Replace this with your actual data source/fetching logic.
+// Temporarily use mockDocs. Replace this with your actual data source/fetching logic
 import { mockDocs } from "@/lib/mock-docs"
 ⋮----
-export default async function InstallationPage()
+export default async function MemoryPage()
 ⋮----
 // --- Replace this section with your actual data fetching logic ---
-// Fetch the structured document content for 'getting-started/installation'
+// Fetch the structured document content for 'core-concepts/memory'
 // This example uses the mock data source.
 ⋮----
 // --- End of data fetching section ---
@@ -13888,11 +13492,58 @@ export default async function InstallationPage()
 ⋮----
 // You can customize this fallback or simply call notFound()
 ⋮----
-slugAsParams: "getting-started/installation", // Ensure this matches the expected slug format
+slugAsParams: "core-concepts/memory", // Ensure this matches the expected slug format
 ⋮----
 // Define prev/next if applicable for the fallback state
-prev: { title: "Getting Started", slug: "getting-started/overview" }, // Adjusted slug based on original href
-next: { title: "Configuration", slug: "getting-started/configuration" }, // Example based on original code
+prev: { title: "AI Agents", slug: "core-concepts/agents" }, // Example based on original code
+next: { title: "Agent Networks", slug: "core-concepts/networks" }, // Example based on original code
+⋮----
+// Render the fallback page without DocsLayoutWrapper since it's already in layout.tsx
+⋮----
+// Render the DocPage component, passing the fetched structured content.
+// DocPage handles the layout, table of contents, and content rendering internally.
+// DocsLayoutWrapper is already provided by the parent layout.tsx
+⋮----
+// Optionally, render a specific error page or component
+notFound() // Or throw error;
+````
+
+## File: src/app/(public)/docs/core-concepts/networks/page.tsx
+````typescript
+import { type Metadata } from "next"
+import { notFound } from "next/navigation"
+import { type DocContent, SectionType } from "@/lib/content-data"
+import { DocPage } from "@/components/docs/DocPage"
+import { mockDocs } from "@/lib/mock-docs"
+⋮----
+export default async function NetworksPage()
+````
+
+## File: src/app/(public)/docs/guides/monitoring/page.tsx
+````typescript
+import { type Metadata } from "next"
+import { notFound } from "next/navigation"
+import { type DocContent, SectionType } from "@/lib/content-data"
+import { DocPage } from "@/components/docs/DocPage"
+import { mockDocs } from "@/lib/mock-docs"
+⋮----
+export default async function MonitoringGuidePage()
+⋮----
+// --- Replace this section with your actual data fetching logic ---
+// Fetch the structured document content for 'guides/monitoring'
+// This example uses the mock data source.
+⋮----
+// --- End of data fetching section ---
+⋮----
+// If the specific document wasn't found in the data source, show a fallback or 404 page
+⋮----
+// You can customize this fallback or simply call notFound()
+⋮----
+slugAsParams: "guides/monitoring", // Ensure this matches the expected slug format
+⋮----
+// Define prev/next if applicable for the fallback state
+prev: { title: "Security Best Practices", slug: "guides/security" }, // Example based on original code
+next: { title: "Scaling Strategies", slug: "guides/scaling" }, // Example based on original code
 ⋮----
 // Render the fallback page
 ⋮----
@@ -13906,22 +13557,18 @@ next: { title: "Configuration", slug: "getting-started/configuration" }, // Exam
 notFound() // Or throw error;
 ````
 
-## File: src/app/(public)/docs/getting-started/page.tsx
+## File: src/app/(public)/docs/guides/scaling/page.tsx
 ````typescript
 import { type Metadata } from "next"
 import { notFound } from "next/navigation"
-⋮----
-// Import structured content types and components instead of MDX ones
 import { type DocContent, SectionType } from "@/lib/content-data"
 import { DocPage } from "@/components/docs/DocPage"
-import { DocsLayoutWrapper } from "@/components/docs/DocsLayoutWrapper"
-// Temporarily use mockDocs. Replace this with your actual data source/fetching logic.
 import { mockDocs } from "@/lib/mock-docs"
 ⋮----
-export default async function GettingStartedPage()
+export default async function ScalingGuidePage()
 ⋮----
 // --- Replace this section with your actual data fetching logic ---
-// Fetch the structured document content for 'getting-started/overview'
+// Fetch the structured document content for 'guides/scaling'
 // This example uses the mock data source.
 ⋮----
 // --- End of data fetching section ---
@@ -13930,11 +13577,11 @@ export default async function GettingStartedPage()
 ⋮----
 // You can customize this fallback or simply call notFound()
 ⋮----
-slugAsParams: "getting-started/overview", // Ensure this matches the expected slug format
+slugAsParams: "guides/scaling", // Ensure this matches the expected slug format
 ⋮----
 // Define prev/next if applicable for the fallback state
-prev: { title: "Introduction", slug: "index" }, // Adjusted slug based on original href "/docs"
-next: { title: "Installation", slug: "getting-started/installation" }, // Example based on original code
+prev: { title: "Monitoring & Observability", slug: "guides/monitoring" }, // Example based on original code
+next: { title: "Testing & Validation", slug: "guides/testing" }, // Example based on original code
 ⋮----
 // Render the fallback page
 ⋮----
@@ -13948,22 +13595,18 @@ next: { title: "Installation", slug: "getting-started/installation" }, // Exampl
 notFound() // Or throw error;
 ````
 
-## File: src/app/(public)/docs/guides/page.tsx
+## File: src/app/(public)/docs/guides/security/page.tsx
 ````typescript
 import { type Metadata } from "next"
 import { notFound } from "next/navigation"
-⋮----
-// Import structured content types and components instead of MDX ones
 import { type DocContent, SectionType } from "@/lib/content-data"
 import { DocPage } from "@/components/docs/DocPage"
-import { DocsLayoutWrapper } from "@/components/docs/DocsLayoutWrapper"
-// Temporarily use mockDocs. Replace this with your actual data source/fetching logic.
 import { mockDocs } from "@/lib/mock-docs"
 ⋮----
-export default async function GuidesPage()
+export default async function SecurityGuidePage()
 ⋮----
 // --- Replace this section with your actual data fetching logic ---
-// Fetch the structured document content for 'guides/overview'
+// Fetch the structured document content for 'guides/security'
 // This example uses the mock data source.
 ⋮----
 // --- End of data fetching section ---
@@ -13972,11 +13615,11 @@ export default async function GuidesPage()
 ⋮----
 // You can customize this fallback or simply call notFound()
 ⋮----
-slugAsParams: "guides/overview", // Ensure this matches the expected slug format if needed
+slugAsParams: "guides/security", // Ensure this matches the expected slug format
 ⋮----
 // Define prev/next if applicable for the fallback state
-// prev: { title: "Previous Section", slug: "..." },
-// next: { title: "Next Section", slug: "..." },
+prev: { title: "Guides", slug: "guides/overview" }, // Adjusted slug based on original href
+next: { title: "Monitoring & Observability", slug: "guides/monitoring" }, // Example based on original code
 ⋮----
 // Render the fallback page
 ⋮----
@@ -13987,7 +13630,44 @@ slugAsParams: "guides/overview", // Ensure this matches the expected slug format
 // DocPage handles the layout, table of contents, and content rendering internally.
 ⋮----
 // Optionally, render a specific error page or component
-// For now, just re-throwing or using notFound
+notFound() // Or throw error;
+````
+
+## File: src/app/(public)/docs/guides/testing/page.tsx
+````typescript
+import { type Metadata } from "next"
+import { notFound } from "next/navigation"
+import { type DocContent, SectionType } from "@/lib/content-data"
+import { DocPage } from "@/components/docs/DocPage"
+import { mockDocs } from "@/lib/mock-docs"
+⋮----
+export default async function TestingGuidePage()
+⋮----
+// --- Replace this section with your actual data fetching logic ---
+// Fetch the structured document content for 'guides/testing'
+// This example uses the mock data source.
+⋮----
+// --- End of data fetching section ---
+⋮----
+// If the specific document wasn't found in the data source, show a fallback or 404 page
+⋮----
+// You can customize this fallback or simply call notFound()
+⋮----
+slugAsParams: "guides/testing", // Ensure this matches the expected slug format
+⋮----
+// Define prev/next if applicable for the fallback state
+prev: { title: "Scaling Strategies", slug: "guides/scaling" }, // Example based on original code
+next: { title: "API Reference", slug: "api-reference/overview" }, // Adjusted slug based on original href
+⋮----
+// Render the fallback page
+⋮----
+// Alternatively, uncomment the line below to show a standard 404 page
+// notFound();
+⋮----
+// Render the DocPage component, passing the fetched structured content.
+// DocPage handles the layout, table of contents, and content rendering internally.
+⋮----
+// Optionally, render a specific error page or component
 notFound() // Or throw error;
 ````
 
@@ -14048,96 +13728,142 @@ type Service = {
 {/* CTA Section */}
 ````
 
-## File: src/app/(public)/solutions/page.tsx
+## File: src/app/(public)/solutions/customer-service/page.tsx
 ````typescript
-import { Metadata } from "next";
-import Link from "next/link";
-import {
-  Building,
-  Headset,
-  BarChart,
-  ArrowRight,
-  Globe,
-  FileText,
-  Brain,
-  LucideIcon,
-} from "lucide-react";
+import { Metadata } from 'next';
+import { notFound } from 'next/navigation';
+import { solutions } from "@/config/solutions";
+import { CallToAction } from "@/components/common/CallToAction";
+import { Check } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { siteConfig } from '@/config/site';
 ⋮----
-import { siteConfig } from "@/config/site";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { IconWrapper } from "@/components/common/IconWrapper";
+// Generate static paths for each solution
+export async function generateStaticParams()
 ⋮----
-interface SolutionCardProps {
-  title: string;
-  description: string;
-  icon: LucideIcon;
-  href: string;
-  benefits: string[];
+// Dynamically generate metadata for each solution page
+export function generateMetadata(
+⋮----
+interface SolutionPageProps {
+  params: { slug: string };
 }
-⋮----
-{/* Hero Section */}
-⋮----
-{/* Primary Solutions Section */}
-⋮----
-{/* Industry Solutions Section */}
-⋮----
-{/* Case Studies Section */}
-⋮----
-{/* Image placeholder */}
-⋮----
-{/* Image placeholder */}
-⋮----
-{/* CTA Section */}
 ````
 
-## File: src/components/common/breadcrumb.tsx
+## File: src/app/(public)/solutions/data-processing/page.tsx
 ````typescript
-import Link from "next/link"
-import { ChevronRight, Home, type LucideIcon } from "lucide-react"
+import { Metadata } from 'next';
+import { notFound } from 'next/navigation';
+import { solutions } from "@/config/solutions";
+import { CallToAction } from "@/components/common/CallToAction";
+import { Check } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { siteConfig } from '@/config/site';
 ⋮----
-import { cn } from "@/lib/utils"
-import { IconWrapper } from "./IconWrapper"
+// Generate static paths for each solution
+export async function generateStaticParams()
 ⋮----
-/**
- * Represents an item in the breadcrumb navigation
- * @interface BreadcrumbItem
- * @property {string} title - The display text for the breadcrumb item
- * @property {string} [href] - The optional URL this breadcrumb links to
- * @property {LucideIcon} [icon] - Optional custom icon for the breadcrumb item
- */
-interface BreadcrumbItem {
-  title: string
-  href?: string
-  icon?: LucideIcon
+// Dynamically generate metadata for each solution page
+export function generateMetadata(
+⋮----
+interface SolutionPageProps {
+  params: { slug: string };
 }
+````
+
+## File: src/app/(public)/solutions/enterprise/page.tsx
+````typescript
+import { Metadata } from 'next';
+import { notFound } from 'next/navigation';
+import { solutions } from "@/config/solutions";
+import { CallToAction } from "@/components/common/CallToAction";
+import { Check } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { siteConfig } from '@/config/site';
 ⋮----
-/**
- * Props for the Breadcrumb component
- * @interface BreadcrumbProps
- * @property {BreadcrumbItem[]} items - Array of breadcrumb items to display
- * @property {string} [className] - Optional additional CSS classes
- * @property {boolean} [showHomeIcon=true] - Whether to show the home icon in the first position
- * @property {string} [homeHref="/"] - URL for the home breadcrumb
- * @property {string} [separator="chevron"] - Type of separator to use between items
- */
-interface BreadcrumbProps {
-  items: BreadcrumbItem[]
-  className?: string
-  showHomeIcon?: boolean
-  homeHref?: string
-  separator?: "chevron" | "slash" | "dot"
+// Generate static paths for each solution
+export async function generateStaticParams()
+⋮----
+// Dynamically generate metadata for each solution page
+export function generateMetadata(
+⋮----
+interface SolutionPageProps {
+  params: { slug: string };
 }
+````
+
+## File: src/app/globals.css
+````css
+@theme inline {
 ⋮----
-/**
- * Renders a breadcrumb navigation component following WAI-ARIA guidelines
- *
- * @param props - Component props
- * @returns A breadcrumb navigation component
- */
+/* Map CSS variables to theme */
 ⋮----
-// Choose separator based on prop
+/* Colors */
+⋮----
+/* Chart Colors */
+⋮----
+/* Sidebar Colors */
+⋮----
+/* Border Radius */
+⋮----
+/* Spacing Values - Explicitly defining for critical components */
+⋮----
+/* Sidebar Width Values */
+⋮----
+/* Animations */
+⋮----
+:root {
+⋮----
+/* Base configuration for light mode */
+⋮----
+/* Light Mode Colors */
+⋮----
+/* Chart Colors - Light Mode */
+⋮----
+/* Sidebar Colors - Light Mode */
+⋮----
+.dark {
+⋮----
+/* Dark Mode Colors */
+⋮----
+/* Chart Colors - Dark Mode */
+⋮----
+/* Sidebar Colors - Dark Mode */
+⋮----
+@layer base {
+⋮----
+* {
+⋮----
+body {
+⋮----
+/* Fix spacing issues in form elements */
+input,
+⋮----
+@apply text-foreground;
+⋮----
+/* Improve focus styling */
+:focus-visible {
+⋮----
+/* Fix container margins */
+.container {
+⋮----
+/* Fix sidebar layouts */
+[data-sidebar="sidebar"] {
+⋮----
+[data-sidebar="content"] {
+⋮----
+[data-sidebar="sidebar"][data-state="collapsed"] [data-sidebar="content"] {
+⋮----
+[data-sidebar="sidebar"][data-collapsible="icon"] [data-sidebar="content"] {
+⋮----
+/* Fix navigation alignment */
+.navigation-item {
+⋮----
+/* Fix card layouts in grid contexts */
+.grid .card {
+⋮----
+.grid .card-content {
+⋮----
+@apply flex-1;
 ````
 
 ## File: src/components/common/CallToAction.tsx
@@ -14311,79 +14037,6 @@ interface DocsPageLayoutProps {
    */
 ````
 
-## File: src/components/docs/DocsSearch.tsx
-````typescript
-import { useRouter } from "next/navigation"
-import { BookIcon, FileIcon, SearchIcon } from "lucide-react"
-⋮----
-import { docsConfig } from "@/config/docs"
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import {
-  CommandDialog,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-  CommandSeparator,
-} from "@/components/ui/command"
-import { mockDocs } from "@/lib/mock-docs"
-import { type DocContent, type TextSpan, SectionType, type ListItem } from "@/lib/content-data"
-import { type Doc } from "@/types/docs"
-⋮----
-// Helper function to extract text from DocContent sections
-function extractTextFromSections(sections: DocContent['sections']): string
-⋮----
-const extractFromSpans = (spans: TextSpan[])
-const extractFromListItems = (items: ListItem[]): string =>
-⋮----
-case SectionType.Card: // Assuming Card content is searchable
-⋮----
-case SectionType.Table: // Simple text extraction from table cells
-⋮----
-case SectionType.Code: // Optionally include code in search
-// text += section.code + " ";
-⋮----
-// Ignore Image, Divider
-⋮----
-/**
- * Custom hook for fuzzy searching through documentation content
- *
- * @param query - The search query string
- * @returns An array of search results with title, content snippet, and href
- */
-function useDocsSearch(query: string)
-⋮----
-// Store search results
-⋮----
-// Search through navigation items
-⋮----
-// Search through mock docs content
-⋮----
-// Use helper function to get searchable text
-⋮----
-// Use helper function to get raw text for snippet generation
-⋮----
-// Sort results to prioritize titles matches over content matches
-⋮----
-// Title matches come first
-⋮----
-// Then sort alphabetically
-⋮----
-// Limit results
-⋮----
-/**
- * Documentation search component with keyboard shortcut support
- */
-⋮----
-const down = (e: KeyboardEvent) =>
-⋮----
-setOpen(open)
-⋮----
-// Reset search when dialog closes
-````
-
 ## File: src/components/docs/mdx.tsx
 ````typescript
 import Image from "next/image"
@@ -14405,78 +14058,106 @@ interface MdxProps {
 export function Mdx(
 ````
 
-## File: src/components/sections/PricingTable.tsx
+## File: src/components/docs/Toc.tsx
 ````typescript
-import { Check } from "lucide-react"
-⋮----
+import { TableOfContents } from "@/types/toc"
 import { cn } from "@/lib/utils"
-import { Badge } from "@/components/ui/badge"
-import { Card } from "@/components/ui/card"
-import { Switch } from "@/components/ui/switch"
-import { CallToAction } from "@/components/common/CallToAction"
+import { useTocHighlighting } from "@/hooks/use-toc-highlighting"
 ⋮----
-interface PlanFeature {
-  text: string
-  footnote?: string
+interface TocProps {
+  toc: TableOfContents
 }
 ⋮----
-interface Plan {
-  name: string
-  description: string
-  price: {
-    monthly: string
-    annual: string
-  }
-  features: PlanFeature[]
-  cta: {
-    text: string
-    href: string
-  }
-  popular?: boolean
-}
+function Tree(
 ⋮----
-className=
+<li key=
 ````
 
-## File: src/components/sections/ServiceCard.tsx
+## File: src/components/sections/FaqAccordion.tsx
 ````typescript
-import { useRef, useState } from "react"
-import { LucideIcon, Check } from "lucide-react"
-⋮----
-import { motion } from "framer-motion"
-⋮----
+import { useState, useRef } from "react"
+import { motion, AnimatePresence, useInView } from "framer-motion"
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion"
+import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { IconWrapper } from "@/components/common/IconWrapper"
+import { PlusIcon, MinusIcon, SearchIcon } from "lucide-react"
+import { Input } from "@/components/ui/input"
 ⋮----
-// Define the type for valid icon names based on the lucide-react export
-type IconName = keyof typeof icons;
-⋮----
-interface ServiceCardProps {
-  title: string
-  description: string
-  iconName: IconName // Use the specific type for icon names
-  features?: string[]
-  className?: string
-  variant?: "default" | "featured"
+interface FaqCategory {
+  name: string
+  color?: string
 }
 ⋮----
-iconName: IconName // Use the specific type for icon names
+interface Faq {
+  question: string
+  answer: string
+  category?: string
+  isPopular?: boolean
+}
+⋮----
+// Filter FAQs based on search query and selected category
+⋮----
+{/* Search and filter controls */}
+⋮----
+onChange=
+````
+
+## File: src/components/sections/TestimonialSlider.tsx
+````typescript
+import { useState, useEffect, useRef } from "react";
+import { Quote, Star } from "lucide-react";
+import { type CarouselApi } from "@/components/ui/carousel";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
+import { Card, CardContent } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { motion, AnimatePresence, useInView } from "framer-motion";
+import { cn } from "@/lib/utils";
+⋮----
+interface Testimonial {
+  quote: string;
+  author: string;
+  title: string;
+  avatar: string;
+  company?: string;
+  rating?: number;
+}
 ⋮----
 /**
- * Enhanced ServiceCard with 3D perspective effects, animations, and micro-interactions
- * Implements 2025 design trends with hover states, gradients, and blurs
+ * Enhanced TestimonialCard component with 3D effects and microinteractions
  */
 ⋮----
-// 3D card effect on mouse move
+// Handle mouse movement for 3D effect
 const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) =>
 ⋮----
-// Reset rotation when mouse leaves
 const handleMouseLeave = () =>
 ⋮----
-// Feature list animation variants
+{/* Quote icon with gradient */}
 ⋮----
-className=
+{/* Rating stars */}
+⋮----
+{/* Quote text with animated gradient underline */}
+⋮----
+{/* Author info with hover effects */}
+⋮----
+/**
+ * Enhanced TestimonialSlider with cutting-edge 2025 design trends
+ * Features scroll-triggered animations, 3D effects, and custom navigation
+ */
+⋮----
+// Title animations
+⋮----
+{/* Background decorations */}
 ````
 
 ## File: src/components/sign-in.tsx
@@ -15192,6 +14873,43 @@ id: "graph-rag", // Override the id
 // For backward compatibility.
 ````
 
+## File: src/types/nav.ts
+````typescript
+/**
+ * Navigation item type definitions
+ * @description Defines the structure for navigation items throughout the application
+ */
+⋮----
+export interface NavItem {
+  slug: string;
+  title: string;
+  href: string;
+  disabled?: boolean;
+  external?: boolean;
+  label?: string;
+  description?: string;
+  icon?: string;
+  children?: NavItemChild[];
+}
+⋮----
+export interface NavItemChild {
+  title: string;
+  href: string;
+  description?: string;
+  icon?: string;
+  disabled?: boolean;
+  external?: boolean;
+  slug?: string; // Added slug as optional property
+}
+⋮----
+slug?: string; // Added slug as optional property
+⋮----
+export interface NavSection {
+  title: string;
+  items: NavItem[];
+}
+````
+
 ## File: src/app/(public)/about/page.tsx
 ````typescript
 import { Metadata } from "next";
@@ -15218,6 +14936,311 @@ export default function AboutPage(): JSX.Element
 {/* Guiding Principles Section */}
 ⋮----
 {/* Commitment to Responsible AI */}
+````
+
+## File: src/app/(public)/docs/api-reference/page.tsx
+````typescript
+import { type Metadata } from "next"
+import { notFound } from "next/navigation"
+⋮----
+// Import structured content types and components instead of MDX ones
+import { type DocContent, SectionType } from "@/lib/content-data"
+import { DocPage } from "@/components/docs/DocPage"
+import { mockDocs } from "@/lib/mock-docs"
+⋮----
+export default async function ApiReferencePage()
+⋮----
+// --- Replace this section with your actual data fetching logic ---
+// Fetch the structured document content for 'api-reference/overview'
+// This example uses the mock data source.
+⋮----
+// --- End of data fetching section ---
+⋮----
+// If the specific document wasn't found in the data source, show a fallback or 404 page
+⋮----
+// You can customize this fallback or simply call notFound()
+⋮----
+slugAsParams: "api-reference/overview", // Ensure this matches the expected slug format
+⋮----
+// Define prev/next if applicable for the fallback state
+prev: { title: "Guides", slug: "guides/overview" }, // Example prev link
+// next: { title: "Next Section", slug: "..." },
+⋮----
+// Render the fallback page
+⋮----
+// Alternatively, uncomment the line below to show a standard 404 page
+// notFound();
+⋮----
+// Render the DocPage component, passing the fetched structured content.
+// DocPage handles the layout, table of contents, and content rendering internally.
+⋮----
+// Optionally, render a specific error page or component
+notFound() // Or throw error;
+````
+
+## File: src/app/(public)/docs/core-concepts/agents/page.tsx
+````typescript
+import { type Metadata } from "next"
+import { notFound } from "next/navigation"
+import { type DocContent, SectionType } from "@/lib/content-data"
+import { DocPage } from "@/components/docs/DocPage"
+import { mockDocs } from "@/lib/mock-docs"
+⋮----
+export default async function AgentsPage()
+⋮----
+// Fetch the structured document content for 'core-concepts/agents'
+// This example uses the mock data source.
+⋮----
+// If the specific document wasn't found in the data source, show a fallback or 404 page
+⋮----
+// You can customize this fallback or simply call notFound()
+⋮----
+slugAsParams: "core-concepts/agents", // Ensure this matches the expected slug format
+⋮----
+// Define prev/next if applicable for the fallback state
+prev: { title: "Core Concepts", slug: "core-concepts/overview" }, // Adjusted slug based on original href
+next: { title: "Memory Management", slug: "core-concepts/memory" }, // Example based on original code
+⋮----
+// Render the fallback page
+⋮----
+// Alternatively, uncomment the line below to show a standard 404 page
+// notFound()
+⋮----
+// Render the DocPage component, passing the fetched structured content.
+// DocPage handles the layout, table of contents, and content rendering internally.
+⋮----
+// Optionally, render a specific error page or component
+notFound() // Or throw error
+````
+
+## File: src/app/(public)/docs/core-concepts/page.tsx
+````typescript
+import { type Metadata } from "next"
+import { notFound } from "next/navigation"
+import { type DocContent, SectionType } from "@/lib/content-data"
+import { DocPage } from "@/components/docs/DocPage"
+import { mockDocs } from "@/lib/mock-docs"
+⋮----
+export default async function CoreConceptsPage()
+⋮----
+// Fetch the structured document content for 'core-concepts/overview'
+// This example uses the mock data source.
+⋮----
+// If the specific document wasn't found in the data source, show a fallback or 404 page
+⋮----
+// You can customize this fallback or simply call notFound()
+⋮----
+slugAsParams: "core-concepts/overview", // Ensure this matches the expected slug format
+⋮----
+// Define prev/next if applicable for the fallback state
+prev: { title: "Configuration", slug: "getting-started/configuration" }, // Example based on original code
+next: { title: "AI Agents", slug: "core-concepts/agents" }, // Example based on original code
+⋮----
+// Render the fallback page
+⋮----
+// Render the DocPage component, passing the fetched structured content.
+// DocPage handles the layout, table of contents, and content rendering internally.
+⋮----
+// Optionally, render a specific error page or component
+notFound() // Or throw error;
+````
+
+## File: src/app/(public)/docs/getting-started/configuration/page.tsx
+````typescript
+import { type Metadata } from "next"
+import { notFound } from "next/navigation"
+import { type DocContent, SectionType } from "@/lib/content-data"
+import { DocPage } from "@/components/docs/DocPage"
+import { mockDocs } from "@/lib/mock-docs"
+⋮----
+export default async function ConfigurationPage()
+⋮----
+// --- Replace this section with your actual data fetching logic ---
+// Fetch the structured document content for 'getting-started/configuration'
+// This example uses the mock data source.
+⋮----
+// --- End of data fetching section ---
+⋮----
+// If the specific document wasn't found in the data source, show a fallback or 404 page
+⋮----
+// You can customize this fallback or simply call notFound()
+⋮----
+slugAsParams: "getting-started/configuration", // Ensure this matches the expected slug format
+⋮----
+// Define prev/next if applicable for the fallback state
+prev: { title: "Installation", slug: "getting-started/installation" }, // Example based on original code
+next: { title: "Core Concepts", slug: "core-concepts/overview" }, // Adjusted slug based on original href
+⋮----
+// Render the fallback page
+⋮----
+// Alternatively, uncomment the line below to show a standard 404 page
+// notFound();
+⋮----
+// Render the DocPage component, passing the fetched structured content.
+// DocPage handles the layout, table of contents, and content rendering internally.
+⋮----
+// Optionally, render a specific error page or component
+notFound() // Or throw error;
+````
+
+## File: src/app/(public)/docs/getting-started/installation/page.tsx
+````typescript
+import { type Metadata } from "next"
+import { notFound } from "next/navigation"
+import { type DocContent, SectionType } from "@/lib/content-data"
+import { DocPage } from "@/components/docs/DocPage"
+import { mockDocs } from "@/lib/mock-docs"
+⋮----
+export default async function InstallationPage()
+⋮----
+// --- Replace this section with your actual data fetching logic ---
+// Fetch the structured document content for 'getting-started/installation'
+// This example uses the mock data source.
+⋮----
+// --- End of data fetching section ---
+⋮----
+// If the specific document wasn't found in the data source, show a fallback or 404 page
+⋮----
+// You can customize this fallback or simply call notFound()
+⋮----
+slugAsParams: "getting-started/installation", // Ensure this matches the expected slug format
+⋮----
+// Define prev/next if applicable for the fallback state
+prev: { title: "Getting Started", slug: "getting-started/overview" }, // Adjusted slug based on original href
+next: { title: "Configuration", slug: "getting-started/configuration" }, // Example based on original code
+⋮----
+// Render the fallback page
+⋮----
+// Alternatively, uncomment the line below to show a standard 404 page
+// notFound();
+⋮----
+// Render the DocPage component, passing the fetched structured content.
+// DocPage handles the layout, table of contents, and content rendering internally.
+⋮----
+// Optionally, render a specific error page or component
+notFound() // Or throw error;
+````
+
+## File: src/app/(public)/docs/getting-started/page.tsx
+````typescript
+import { type Metadata } from "next"
+import { notFound } from "next/navigation"
+⋮----
+// Import structured content types and components instead of MDX ones
+import { type DocContent, SectionType } from "@/lib/content-data"
+import { DocPage } from "@/components/docs/DocPage"
+// Temporarily use mockDocs. Replace this with your actual data source/fetching logic.
+import { mockDocs } from "@/lib/mock-docs"
+⋮----
+// --- Replace this section with your actual data fetching logic ---
+// Fetch the structured document content for 'getting-started/overview'
+// This example uses the mock data source.
+⋮----
+// --- End of data fetching section ---
+⋮----
+// If the specific document wasn't found in the data source, show a fallback or 404 page
+⋮----
+// You can customize this fallback or simply call notFound()
+⋮----
+slugAsParams: "getting-started/overview", // Ensure this matches the expected slug format
+⋮----
+// Define prev/next if applicable for the fallback state
+prev: { title: "Introduction", slug: "index" }, // Adjusted slug based on original href "/docs"
+next: { title: "Installation", slug: "getting-started/installation" }, // Example based on original code
+⋮----
+// Render the fallback page without DocsLayoutWrapper since it's already in layout.tsx
+⋮----
+// Alternatively, uncomment the line below to show a standard 404 page
+// notFound();
+⋮----
+// Render the DocPage component, passing the fetched structured content.
+// DocPage handles the layout, table of contents, and content rendering internally.
+// DocsLayoutWrapper is already provided by the parent layout.tsx
+⋮----
+// Optionally, render a specific error page or component
+notFound() // Or throw error;
+````
+
+## File: src/app/(public)/docs/guides/page.tsx
+````typescript
+import { type Metadata } from "next"
+import { notFound } from "next/navigation"
+import { type DocContent, SectionType } from "@/lib/content-data"
+import { DocPage } from "@/components/docs/DocPage"
+import { mockDocs } from "@/lib/mock-docs"
+⋮----
+export default async function GuidesPage()
+⋮----
+// --- Replace this section with your actual data fetching logic ---
+// Fetch the structured document content for 'guides/overview'
+// This example uses the mock data source.
+⋮----
+// --- End of data fetching section ---
+⋮----
+// If the specific document wasn't found in the data source, show a fallback or 404 page
+⋮----
+// You can customize this fallback or simply call notFound()
+⋮----
+slugAsParams: "guides/overview", // Ensure this matches the expected slug format if needed
+⋮----
+// Define prev/next if applicable for the fallback state
+// prev: { title: "Previous Section", slug: "..." },
+// next: { title: "Next Section", slug: "..." },
+⋮----
+// Render the fallback page
+⋮----
+// Alternatively, uncomment the line below to show a standard 404 page
+// notFound();
+⋮----
+// Render the DocPage component, passing the fetched structured content.
+// DocPage handles the layout, table of contents, and content rendering internally.
+⋮----
+// Optionally, render a specific error page or component
+// For now, just re-throwing or using notFound
+notFound() // Or throw error;
+````
+
+## File: src/app/(public)/solutions/page.tsx
+````typescript
+import { Metadata } from "next";
+import Link from "next/link";
+import {
+  Building,
+  Headset,
+  BarChart,
+  ArrowRight,
+  Globe,
+  FileText,
+  Brain,
+  LucideIcon,
+} from "lucide-react";
+import React from 'react';
+⋮----
+import { siteConfig } from "@/config/site";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { IconWrapper } from "@/components/common/IconWrapper";
+import { solutions } from "@/config/solutions"; // Import solutions data
+import { cn } from "@/lib/utils";
+⋮----
+<Link href={solution.href}>Learn More</Link> {/* Use solution.href */}
+⋮----
+{/* Hero Section */}
+⋮----
+{/* Solutions Showcase Section */}
+⋮----
+<SolutionsShowcase /> {/* Render the SolutionsShowcase component */}
+⋮----
+{/* Industry Solutions Section */}
+⋮----
+{/* Case Studies Section */}
+⋮----
+{/* Image placeholder */}
+⋮----
+{/* Image placeholder */}
+⋮----
+{/* CTA Section */}
 ````
 
 ## File: src/app/layout.tsx
@@ -15310,52 +15333,607 @@ interface DocsSidebarProps {
 className=
 ````
 
+## File: src/components/sections/PricingTable.tsx
+````typescript
+import { Check } from "lucide-react"
+⋮----
+import { cn } from "@/lib/utils"
+import { Badge } from "@/components/ui/badge"
+import { Card } from "@/components/ui/card"
+import { Switch } from "@/components/ui/switch"
+import { CallToAction } from "@/components/common/CallToAction"
+⋮----
+interface PlanFeature {
+  text: string
+  footnote?: string
+}
+⋮----
+interface Plan {
+  name: string
+  description: string
+  price: {
+    monthly: string
+    annual: string
+  }
+  features: PlanFeature[]
+  cta: {
+    text: string
+    href: string
+  }
+  popular?: boolean
+}
+⋮----
+// Use null for initial state to indicate "not initialized yet"
+⋮----
+// Initialize state on client-side only to prevent hydration mismatch
+⋮----
+// Check localStorage for saved preference, default to false if not found
+⋮----
+// Handle switching between billing periods
+const handleBillingChange = (checked: boolean) =>
+⋮----
+className=
+````
+
+## File: src/components/sections/ServiceCard.tsx
+````typescript
+import { useRef, useState } from "react"
+import { LucideIcon, Check } from "lucide-react"
+⋮----
+import { motion } from "framer-motion"
+⋮----
+import { cn } from "@/lib/utils"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { IconWrapper } from "@/components/common/IconWrapper"
+⋮----
+// Define the type for valid icon names based on the lucide-react export
+type IconName = keyof typeof icons;
+⋮----
+interface ServiceCardProps {
+  title: string
+  description: string
+  iconName: IconName // Use the specific type for icon names
+  features?: string[]
+  className?: string
+  variant?: "default" | "featured"
+}
+⋮----
+iconName: IconName // Use the specific type for icon names
+⋮----
+/**
+ * Enhanced ServiceCard with 3D perspective effects, animations, and micro-interactions
+ * Implements 2025 design trends with hover states, gradients, and blurs
+ */
+⋮----
+// 3D card effect on mouse move
+const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) =>
+⋮----
+// Reset rotation when mouse leaves
+const handleMouseLeave = () =>
+⋮----
+// Feature list animation variants
+⋮----
+"glass-morphism relative", // New glass morphism effect
+⋮----
+className=
+````
+
+## File: src/app/page.tsx
+````typescript
+import Link from "next/link"
+import { Metadata } from "next";
+import { HeroSection } from "@/components/sections/HeroSection"
+import { FeatureGrid } from "@/components/sections/FeatureGrid"
+import { PricingTable } from "@/components/sections/PricingTable"
+import { TestimonialSlider } from "@/components/sections/TestimonialSlider"
+import { FaqAccordion } from "@/components/sections/FaqAccordion"
+import { buttonVariants } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
+⋮----
+// SEO Metadata for the Homepage - Updated with 2025 Trends
+⋮----
+// Updated Keywords incorporating 2025 trends:
+⋮----
+// Core Offering
+⋮----
+// 2025 SEO & AI Trends
+⋮----
+// Branding
+⋮----
+url: "https://deanmachines.com/og-image-2025.png", // Consider updating OG image
+⋮----
+// site: "@YourTwitterHandle",
+// creator: "@YourTwitterHandle",
+images: ["https://deanmachines.com/twitter-image-2025.png"], // Consider updating Twitter image
+⋮----
+// Optional: Add Schema.org markup via JSON-LD for better structured data
+// Can be added directly here or via a separate component
+// metadataBase: new URL('https://deanmachines.com'), // Recommended for resolving relative URLs
+⋮----
+export default function Home()
+````
+
+## File: src/components/common/breadcrumb.tsx
+````typescript
+import Link from "next/link"
+import { ChevronRight, Home, type LucideIcon } from "lucide-react"
+⋮----
+import { cn } from "@/lib/utils"
+import { IconWrapper } from "./IconWrapper"
+⋮----
+/**
+ * Represents an item in the breadcrumb navigation
+ *
+ * @interface BreadcrumbItem
+ * @property {string} title - The display text for the breadcrumb item
+ * @property {string} [href] - The optional URL this breadcrumb links to
+ * @property {LucideIcon} [icon] - Optional custom icon for the breadcrumb item
+ */
+interface BreadcrumbItem {
+  title: string
+  href?: string
+  icon?: LucideIcon
+}
+⋮----
+/**
+ * Props for the Breadcrumb component
+ *
+ * @interface BreadcrumbProps
+ * @property {BreadcrumbItem[]} items - Array of breadcrumb items to display
+ * @property {string} [className] - Optional additional CSS classes
+ * @property {boolean} [showHomeIcon=true] - Whether to show the home icon in the first position
+ * @property {string} [homeHref="/"] - URL for the home breadcrumb
+ * @property {string} [separator="chevron"] - Type of separator to use between items
+ */
+interface BreadcrumbProps {
+  items: BreadcrumbItem[]
+  className?: string
+  showHomeIcon?: boolean
+  homeHref?: string
+  separator?: "chevron" | "slash" | "dot"
+}
+⋮----
+/**
+ * Renders a breadcrumb navigation component following WAI-ARIA guidelines
+ *
+ * @param props - Component props
+ * @returns A breadcrumb navigation component with responsive design and accessibility features
+ */
+⋮----
+// Memoize last index calculation to avoid recalculation on re-renders
+⋮----
+// Memoize separator element to prevent unnecessary re-renders
+⋮----
+{/* Home item */}
+⋮----
+{/* Breadcrumb items */}
+⋮----
+{/* Show separator except for the first item when home icon is hidden */}
+⋮----
+{/* Render as link if it has href and is not the last item */}
+````
+
+## File: src/components/docs/DocsSearch.tsx
+````typescript
+import { useRouter } from "next/navigation"
+import { BookIcon, FileIcon, SearchIcon } from "lucide-react"
+⋮----
+import { docsConfig } from "@/config/docs"
+import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
+import {
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+  CommandSeparator,
+} from "@/components/ui/command"
+import { mockDocs } from "@/lib/mock-docs"
+import { type DocContent, type TextSpan, SectionType, type ListItem } from "@/lib/content-data"
+import { type Doc } from "@/types/docs"
+⋮----
+/**
+ * Helper function to extract searchable text from DocContent sections
+ * This transforms structured content into a flat text representation for searching
+ *
+ * @param sections - The structured content sections to extract text from
+ * @returns A string containing all the searchable text
+ */
+function extractTextFromSections(sections: DocContent['sections']): string
+⋮----
+// Helper function to extract text from TextSpan arrays
+const extractFromSpans = (spans: TextSpan[])
+⋮----
+// Helper function to recursively extract text from list items
+const extractFromListItems = (items: ListItem[]): string =>
+⋮----
+// Process each section type and extract its textual content
+⋮----
+// Extract text from table cells
+⋮----
+// Optionally include code in search
+⋮----
+// Ignore Image, Divider and other non-text sections
+⋮----
+/**
+ * Custom hook for searching through documentation content
+ * Implements immediate search for navigation items and content
+ *
+ * @param query - The search query string
+ * @returns An array of search results with title, content snippet, and href
+ */
+function useDocsSearch(query: string)
+⋮----
+// Store search results
+⋮----
+// Search through navigation items (sidebar)
+⋮----
+// Search through mock docs content
+⋮----
+// Use helper function to get searchable text
+⋮----
+// Use helper function to get raw text for snippet generation
+⋮----
+// Generate a content snippet that highlights where the match occurs
+⋮----
+// Sort results to prioritize title matches over content matches
+⋮----
+// Title matches come first
+⋮----
+// Then sort alphabetically
+⋮----
+// Limit results and update state
+⋮----
+/**
+ * Documentation search component with keyboard shortcut support
+ * Provides a command palette-style search interface for the documentation
+ */
+⋮----
+// Register keyboard shortcut (Cmd+K or Ctrl+K)
+⋮----
+const down = (e: KeyboardEvent) =>
+⋮----
+// Handle command selection
+⋮----
+setOpen(open)
+⋮----
+// Reset search when dialog closes
+⋮----
+{/* Navigation results */}
+⋮----
+{/* Content results - show only if we have any */}
+⋮----
+{/* Show welcome message when no search is entered */}
+````
+
+## File: src/components/sections/HeroSection.tsx
+````typescript
+import { useState, useEffect } from "react";
+import { ArrowRight, Github, Sparkles } from "lucide-react";
+import { motion, useScroll, useTransform } from "framer-motion";
+⋮----
+import { CallToAction } from "@/components/common/CallToAction";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+⋮----
+/**
+ * Enhanced Hero Section with parallax effects, 3D card transformations,
+ * and micro-interactions following 2025 design trends
+ */
+⋮----
+// Parallax transformations based on scroll position
+⋮----
+// Handle mouse movement for 3D effect
+⋮----
+const handleMouseMove = (e: MouseEvent) =>
+⋮----
+// Normalize coordinates between -0.5 and 0.5
+⋮----
+{/* Animated gradient background */}
+⋮----
+</div>        {/* Floating particles */}
+⋮----
+{/* Use client-side only rendering to avoid hydration errors */}
+⋮----
+// Pre-calculate these values for client-side rendering only
+// This prevents hydration mismatches between server and client
+const xPos = i % 5 * 20 + 5; // Distribute evenly across screen width
+const yPos = Math.floor(i / 5) * 20 + 10; // Distribute evenly across screen height
+⋮----
+{/* 3D Tilting Card with Features */}
+⋮----
+{/* Glassmorphism glow effects */}
+````
+
+## File: src/components/common/IconWrapper.tsx
+````typescript
+import { type LucideIcon } from "lucide-react"
+⋮----
+import { cn } from "@/lib/utils"
+⋮----
+/**
+ * IconWrapper component for consistent icon presentation
+ *
+ * Features:
+ * - Standardized icon sizing
+ * - Customizable variants
+ * - Proper accessibility attributes
+ * - Optional background and color variants
+ * - Support for hover effects
+ *
+ * @param icon - The Lucide icon component to render
+ * @param size - Size variant (sm, md, lg, xl)
+ * @param variant - Visual style variant
+ * @param className - Additional CSS classes
+ * @returns A wrapped icon component
+ */
+interface IconWrapperProps extends React.HTMLAttributes<HTMLDivElement> {
+  icon: LucideIcon;
+  size?: "sm" | "md" | "lg" | "xl";
+  variant?: "default" | "outline" | "solid" | "ghost";
+  withBackground?: boolean;
+  withHoverEffect?: boolean;
+}
+⋮----
+className=
+````
+
+## File: src/components/layout/Footer.tsx
+````typescript
+import Link from "next/link";
+import { Github, Twitter, Linkedin, ArrowUpRight } from "lucide-react";
+import { motion } from "framer-motion";
+⋮----
+// Separate component for the year to prevent hydration mismatches
+function FooterYear()
+⋮----
+import { siteConfig } from "@/config/site";
+import { IconWrapper } from "@/components/common/IconWrapper";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
+⋮----
+/**
+ * Enhanced footer component with modern styling and interactions
+ * Follows 2025 design trends with animations, grid layouts, and theme variables
+ */
+⋮----
+// Animation variants for staggered animations
+⋮----
+{/* Newsletter Section */}
+⋮----
+{/* Main Footer Content */}
+⋮----
+{/* Brand Column */}
+⋮----
+{/* Social Links */}
+⋮----
+{/* Links Columns */}
+⋮----
+</div>        {/* Bottom Copyright Bar */}
+````
+
+## File: src/config/site.ts
+````typescript
+import { NavItem } from "@/types/nav";
+⋮----
+export interface SiteConfig {
+  name: string;
+  description: string;
+  url: string;
+  ogImage: string;
+  links: {
+    linkedin: string;
+    twitter: string;
+    github: string;
+    discord?: string;
+    docs: string;
+  };
+  mainNav: NavItem[];
+}
+````
+
+## File: .gitignore
+````
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+/.contentlayer
+/.github
+.github/
+gen-lang-client-0520765474-firebase-adminsdk-fbsvc-d1e16fc9e0.json
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+.pnpm-debug.log*
+
+# env files (can opt-in for committing if needed)
+.env*
+.mastra
+.repomix
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+api.md
+
+openapi.yaml
+openapi.json
+
+memory.db*
+````
+
+## File: src/app/(public)/docs/page.tsx
+````typescript
+import { type Metadata } from "next"
+import { DocPage } from "@/components/docs/DocPage"
+import { mockDocs } from "@/lib/mock-docs"
+import { SectionType, type DocContent } from "@/lib/content-data"
+import { notFound } from "next/navigation"
+⋮----
+export default async function DocsPage()
+⋮----
+// Use the index document from our mockDocs
+⋮----
+// If for some reason the index doc isn't found, create a basic placeholder
+````
+
 ## File: CHANGELOG.md
 ````markdown
 # Changelog
 
-## [Unreleased]
+## [0.1.4] - 2025-04-13 (03:45 EST)
+
+### Enhanced
+
+- **Solutions Configuration (`src/config/solutions.ts`):**
+  - Comprehensively updated all solution sections with future-forward language for 2025
+  - Added quantifiable benefits and metrics to each solution
+  - Enhanced "Agentic AI for Financial Services" section with:
+    - Detailed Mixture of Experts (MoE) and Reinforcement Learning (RL) descriptions
+    - Explicit mentions of Mastra AI and Agentic.so frameworks
+    - Quantifiable performance metrics for AI capabilities
+  - Improved "Customer Service" solution with:
+    - AI automation benefits
+    - Quantifiable efficiency improvements
+    - Enhanced technical descriptions
+  - Refined "Data Processing" and "Enterprise AI" sections with:
+    - More detailed use cases
+    - Expanded technical specifications
+    - Future-oriented language and framework mentions
+  - Added comprehensive integrations across all solutions, including:
+    - Cloud providers (Google Cloud, Azure, AWS)
+    - AI platforms (OpenAI, Vertex AI, Anthropic)
+    - Industry-specific tools
+
+### Added
+
+- Expanded integration logos and descriptions
+- Included framework-specific highlights (Mastra AI, Agentic.so)
+- Enhanced SEO-optimized descriptions for each solution
+
+### Improved
+
+- Consistent styling and structure across solution sections
+- More compelling value propositions
+- Quantifiable performance metrics for AI capabilities
+
+## [0.1.3] - 2025-04-12 (22:45 EST)
+
+### Added
+
+- Created enterprise solutions page with cutting-edge Tailwind v4.1 styling and animations
+- Enhanced TestimonialSlider component with modern UI interactions and accessibility improvements
+- Added advanced animation effects to navigation indicators in TestimonialSlider
+
+### Fixed
+
+- Resolved TypeScript errors in NavBar component related to NavItem and NavItemChild interfaces
+- Fixed alignment issues in NavBar for better responsiveness and accessibility
+- Updated DocsSearch component with improved search functionality and user experience
+- Enhanced Footer component with proper hydration handling to prevent client/server mismatches
+- Corrected FaqAccordion component with modern styling and improved interaction patterns
+
+### Changed
+
+- Updated NavItemChild interface in nav.ts to include optional slug property for type consistency
+- Improved NavBar component with modern glass morphism effects and responsive design
+- Enhanced components with Tailwind v4.1 features including backdrop blur, improved gradients, and container queries
+- Optimized animations throughout the interface for better performance and reduced motion when appropriate
+- Standardized component architecture for better maintainability and code organization
+
+## [0.1.2] - 2025-04-12 (18:30 EST)
 
 ### Added
 
 - Added support for additional weather data metrics
 - Enhanced Weather component UI with responsive design
 - Implemented caching for weather API requests
-- Added missing props (`language`, `filename`, `showLineNumbers`, `highlightLines`, `image`, `title`) to `CodeBlockWrapper` component to resolve TypeScript errors in documentation pages.
-- Made `href` prop optional in `Card` component to align with data structure.
+- Added missing props (`language`, `filename`, `showLineNumbers`, `highlightLines`, `image`, `title`) to `CodeBlockWrapper` component to resolve TypeScript errors in documentation pages
+- Made `href` prop optional in `Card` component to align with data structure
 - **Implemented Authentication:**
-  - Created `SignIn` component (`@/components/sign-in.tsx`) with Email/Password, Google, and GitHub options.
-  - Created `SignUp` component (`@/components/sign-up.tsx`) with Email/Password, Google, and GitHub options.
-  - Created Login page (`@/app/(public)/login/page.tsx`).
-  - Created Signup page (`@/app/(public)/signup/page.tsx`).
-  - Implemented custom API route (`@/app/api/auth/signup/route.ts`) for handling email/password user creation using Firebase Admin SDK.
-  - Configured NextAuth (`auth.ts`) with Credentials, Google, GitHub providers, Firestore adapter, and JWT session strategy.
-  - Implemented role assignment (admin/user) based on environment variable during signup/user creation.
+  - Created `SignIn` component (`@/components/sign-in.tsx`) with Email/Password, Google, and GitHub options
+  - Created `SignUp` component (`@/components/sign-up.tsx`) with Email/Password, Google, and GitHub options
+  - Created Login page (`@/app/(public)/login/page.tsx`)
+  - Created Signup page (`@/app/(public)/signup/page.tsx`)
+  - Implemented custom API route (`@/app/api/auth/signup/route.ts`) for handling email/password user creation using Firebase Admin SDK
+  - Configured NextAuth (`auth.ts`) with Credentials, Google, GitHub providers, Firestore adapter, and JWT session strategy
+  - Implemented role assignment (admin/user) based on environment variable during signup/user creation
+
+### Fixed
+
+- **Authentication Dataflow:**
+  - Fixed signup API route with improved error handling and user role management
+  - Enhanced client-side signup component with better validation and error feedback
+  - Added proper server-side validation for user credentials
+  - Fixed JWT token generation and session handling in auth.ts
+
+- **Documentation System:**
+  - Completely resolved documentation sidebar duplication issue across all documentation pages
+  - Fixed wrapper nesting issues in all documentation pages structure
+  - Improved DocsSearch component with robust search results display and handling
+  - Enhanced Toc component with better accessibility and highlighting
+
+- **UI and Layout Components:**
+  - Fixed hydration issues in NavBar by correcting useSession hook implementation
+  - Fixed hydration issues in Footer component with proper year rendering
+  - Updated breadcrumb.tsx with improved responsive design and accessibility
+  - Enhanced CallToAction.tsx with proper client directive and styling
+  - Fixed IconWrapper.tsx for better compatibility with Tailwind v4.1
+  - Updated ServiceCard.tsx with modern animations and responsive behavior
+  - Enhanced FeatureGrid.tsx with consistent grid layouts
+
+- **Tailwind CSS v4.1:**
+  - Fixed alignment issues in layout components with better CSS variables
+  - Enhanced globals.css with comprehensive variable definitions and mappings
+  - Added explicit width variables for sidebar components
+  - Improved responsive media queries for consistent layouts
 
 ### Changed
 
 - Optimized Mastra agent response handling
 - Updated documentation for weather functionality
 - **Refactored documentation pages (`/src/app/(public)/docs/**/page.tsx`)**
-  - Replaced MDX rendering (`Mdx`, `DocsPageLayout`) with structured content rendering using `DocPage` and `ContentRenderer`.
-  - Standardized page structure to fetch `DocContent` and render using `<DocPage>`.
-  - Updated fallback logic for missing documents.
-  - Ensured consistent use of `<DocsLayoutWrapper>` within pages.
+  - Replaced MDX rendering (`Mdx`, `DocsPageLayout`) with structured content rendering using `DocPage` and `ContentRenderer`
+  - Standardized page structure to fetch `DocContent` and render using `<DocPage>`
+  - Updated fallback logic for missing documents
+  - Ensured consistent use of `<DocsLayoutWrapper>` within pages
 - **Fixed issues in documentation components and types:**
-  - Imported `createTool` in `src/mastra/tools/index.ts`.
-  - Updated `CalloutType` enum values in `src/lib/content-data.ts` to match component expectations (`default`, `danger`).
-  - Explicitly typed `fallbackDoc` in `/docs/page.tsx` to resolve type incompatibility.
-- Removed redundant `<DocsLayoutWrapper>` from `/docs/layout.tsx`.
-- Removed unused `docsConfig` import from `/docs/layout.tsx`.
-- **Corrected Firebase setup:** Removed redundant/incorrect `firebase.ts`, ensuring distinct client (`client.ts`) and admin (`admin.ts`) initializations.
-- **Updated Middleware (`middleware.ts`):** Added `/signup` to public routes and ensured logged-in users are redirected from auth pages. Added explicit allowance for `/api/auth/signup`.
+  - Imported `createTool` in `src/mastra/tools/index.ts`
+  - Updated `CalloutType` enum values in `src/lib/content-data.ts` to match component expectations (`default`, `danger`)
+  - Explicitly typed `fallbackDoc` in `/docs/page.tsx` to resolve type incompatibility
+- Removed redundant `<DocsLayoutWrapper>` from `/docs/layout.tsx`
+- Removed unused `docsConfig` import from `/docs/layout.tsx`
+- **Corrected Firebase setup:** Removed redundant/incorrect `firebase.ts`, ensuring distinct client (`client.ts`) and admin (`admin.ts`) initializations
+- **Updated Middleware (`middleware.ts`):** Added `/signup` to public routes and ensured logged-in users are redirected from auth pages. Added explicit allowance for `/api/auth/signup`
 - **Fixed Component Errors:**
-  - Added `'use client'` directive to `CallToAction` component.
+  - Added `'use client'` directive to `CallToAction` component
   - Resolved Next.js `<Link>` component issues:
-    - Removed deprecated `legacyBehavior` prop where appropriate in `NavBar` and `Footer`.
-    - Fixed hydration errors from nested `<a>` tags in `NavBar` by using `asChild` on `NavigationMenuLink`.
-  - Corrected client-side `signIn` import in `SignIn` component to use `next-auth/react`.
-- **Adjusted Layout Alignment:** Refined flexbox properties in `NavBar` and `Footer` for better element alignment.  {not fixed, need more info/data}
+    - Removed deprecated `legacyBehavior` prop where appropriate in `NavBar` and `Footer`
+    - Fixed hydration errors from nested `<a>` tags in `NavBar` by using `asChild` on `NavigationMenuLink`
+  - Corrected client-side `signIn` import in `SignIn` component to use `next-auth/react`
 
 ## [0.1.1] - 2025-04-11
 
@@ -15449,229 +16027,9 @@ className=
 - Base configuration setup
 ````
 
-## File: src/app/page.tsx
+## File: next.config.ts
 ````typescript
-import Link from "next/link"
-import { Metadata } from "next";
-import { HeroSection } from "@/components/sections/HeroSection"
-import { FeatureGrid } from "@/components/sections/FeatureGrid"
-import { PricingTable } from "@/components/sections/PricingTable"
-import { TestimonialSlider } from "@/components/sections/TestimonialSlider"
-import { FaqAccordion } from "@/components/sections/FaqAccordion"
-import { buttonVariants } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
-⋮----
-// SEO Metadata for the Homepage - Updated with 2025 Trends
-⋮----
-// Updated Keywords incorporating 2025 trends:
-⋮----
-// Core Offering
-⋮----
-// 2025 SEO & AI Trends
-⋮----
-// Branding
-⋮----
-url: "https://deanmachines.com/og-image-2025.png", // Consider updating OG image
-⋮----
-// site: "@YourTwitterHandle",
-// creator: "@YourTwitterHandle",
-images: ["https://deanmachines.com/twitter-image-2025.png"], // Consider updating Twitter image
-⋮----
-// Optional: Add Schema.org markup via JSON-LD for better structured data
-// Can be added directly here or via a separate component
-// metadataBase: new URL('https://deanmachines.com'), // Recommended for resolving relative URLs
-⋮----
-export default function Home()
-````
-
-## File: src/components/common/IconWrapper.tsx
-````typescript
-import { type LucideIcon } from "lucide-react"
-⋮----
-import { cn } from "@/lib/utils"
-⋮----
-/**
- * IconWrapper component for consistent icon presentation
- *
- * Features:
- * - Standardized icon sizing
- * - Customizable variants
- * - Proper accessibility attributes
- * - Optional background and color variants
- * - Support for hover effects
- *
- * @param icon - The Lucide icon component to render
- * @param size - Size variant (sm, md, lg, xl)
- * @param variant - Visual style variant
- * @param className - Additional CSS classes
- * @returns A wrapped icon component
- */
-interface IconWrapperProps extends React.HTMLAttributes<HTMLDivElement> {
-  icon: LucideIcon;
-  size?: "sm" | "md" | "lg" | "xl";
-  variant?: "default" | "outline" | "solid" | "ghost";
-  withBackground?: boolean;
-  withHoverEffect?: boolean;
-}
-⋮----
-className=
-````
-
-## File: src/components/layout/Footer.tsx
-````typescript
-import Link from "next/link";
-import { Github, Twitter, Linkedin, ArrowUpRight } from "lucide-react";
-import { motion } from "framer-motion";
-⋮----
-import { siteConfig } from "@/config/site";
-import { IconWrapper } from "@/components/common/IconWrapper";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
-⋮----
-/**
- * Enhanced footer component with modern styling and interactions
- * Follows 2025 design trends with animations, grid layouts, and theme variables
- */
-⋮----
-// Animation variants for staggered animations
-⋮----
-{/* Newsletter Section */}
-⋮----
-{/* Main Footer Content */}
-⋮----
-{/* Brand Column */}
-⋮----
-{/* Social Links */}
-⋮----
-{/* Links Columns */}
-⋮----
-{/* Bottom Copyright Bar */}
-````
-
-## File: src/components/sections/HeroSection.tsx
-````typescript
-import { useState, useEffect } from "react";
-import { ArrowRight, Github, Sparkles } from "lucide-react";
-import { motion, useScroll, useTransform } from "framer-motion";
-⋮----
-import { CallToAction } from "@/components/common/CallToAction";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-⋮----
-/**
- * Enhanced Hero Section with parallax effects, 3D card transformations,
- * and micro-interactions following 2025 design trends
- */
-⋮----
-// Parallax transformations based on scroll position
-⋮----
-// Handle mouse movement for 3D effect
-⋮----
-const handleMouseMove = (e: MouseEvent) =>
-⋮----
-// Normalize coordinates between -0.5 and 0.5
-⋮----
-{/* Animated gradient background */}
-⋮----
-</div>        {/* Floating particles */}
-⋮----
-{/* Use client-side only rendering to avoid hydration errors */}
-⋮----
-// Pre-calculate these values for client-side rendering only
-// This prevents hydration mismatches between server and client
-const xPos = i % 5 * 20 + 5; // Distribute evenly across screen width
-const yPos = Math.floor(i / 5) * 20 + 10; // Distribute evenly across screen height
-⋮----
-{/* 3D Tilting Card with Features */}
-⋮----
-{/* Glassmorphism glow effects */}
-````
-
-## File: src/config/site.ts
-````typescript
-import { NavItem } from "@/types/nav";
-⋮----
-export interface SiteConfig {
-  name: string;
-  description: string;
-  url: string;
-  ogImage: string;
-  links: {
-    linkedin: string;
-    twitter: string;
-    github: string;
-    discord?: string;
-    docs: string;
-  };
-  mainNav: NavItem[];
-}
-````
-
-## File: src/app/(public)/docs/page.tsx
-````typescript
-import { type Metadata } from "next"
-import { DocsPageLayout } from "@/components/docs/DocsPageLayout"
-import { DocPage } from "@/components/docs/DocPage"
-import { mockDocs } from "@/lib/mock-docs"
-import { SectionType, type DocContent } from "@/lib/content-data"
-import { notFound } from "next/navigation"
-⋮----
-export default async function DocsPage()
-⋮----
-// Use the index document from our mockDocs
-⋮----
-// If for some reason the index doc isn't found, create a basic placeholder
-````
-
-## File: .gitignore
-````
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-/.contentlayer
-/.github
-.github/
-gen-lang-client-0520765474-firebase-adminsdk-fbsvc-d1e16fc9e0.json
-# dependencies
-/node_modules
-/.pnp
-.pnp.*
-
-
-# testing
-/coverage
-
-# next.js
-/.next/
-/out/
-
-# production
-/build
-
-# misc
-.DS_Store
-*.pem
-
-# debug
-npm-debug.log*
-.pnpm-debug.log*
-
-# env files (can opt-in for committing if needed)
-.env*
-.mastra
-.repomix
-# vercel
-.vercel
-
-# typescript
-*.tsbuildinfo
-next-env.d.ts
-
-api.md
-
-openapi.yaml
-openapi.json
-
-memory.db*
+import type { NextConfig } from "next";
 ````
 
 ## File: src/components/layout/NavBar.tsx
@@ -15693,6 +16051,7 @@ import {
   Rocket,
   Code,
   BookOpen,
+  LineChart,
   type LucideIcon,
 } from "lucide-react";
 ⋮----
@@ -15724,6 +16083,8 @@ import { type NavItem } from "@/types/nav";
 /**
  * Maps icon strings from config to their corresponding Lucide icon components
  */
+⋮----
+chart: LineChart, // Added missing chart icon
 ⋮----
 /**
  * Component for rendering a list item in dropdown navigation
@@ -15759,17 +16120,11 @@ const isActive = (path: string): boolean =>
  * Primary navigation component including desktop and mobile navigation
  */
 ⋮----
-// Using try/catch to handle case when SessionProvider is not available
-// This prevents the "useSession must be wrapped in SessionProvider" error
-// Initialize with a default session state
+// Use the useSession hook at the top level of the component
 ⋮----
-// Safely try to get session after component mounts
+// Use useState with undefined as initial state to avoid hydration mismatch
 ⋮----
-// Get real session data from useSession() directly
-⋮----
-// If SessionProvider is not available, set to unauthenticated
-⋮----
-// Destructure from our safe state
+// Calculate auth status after hydration
 ⋮----
 // Handle scroll event to update navbar styling
 ⋮----
@@ -15779,14 +16134,19 @@ const handleScroll = () =>
 ⋮----
 /**
    * Get navigation items based on authentication status and user role
-   */
-const getNavItems = () =>
+   */  const getNavItems = () => {
+⋮----
+*/  const getNavItems = () =>
 ⋮----
 const items = [...siteConfig.mainNav]; // Create a copy to avoid mutating the original
 ⋮----
 // Add user-specific navigation items
 ⋮----
+slug: "dashboard", // Added slug property to match NavItem interface
+⋮----
 // Add admin-specific navigation items if the user is an admin
+⋮----
+slug: "admin", // Added slug property to match NavItem interface
 ⋮----
 // Get the appropriate navigation items based on auth status
 ⋮----
@@ -15797,11 +16157,8 @@ const items = [...siteConfig.mainNav]; // Create a copy to avoid mutating the or
 {/* Mobile login/signup links for unauthenticated users */}
 ⋮----
 {/* Authentication UI */}
-````
-
-## File: next.config.ts
-````typescript
-import type { NextConfig } from "next";
+⋮----
+// Implementation moved inside the NavBar component
 ````
 
 ## File: README.md
@@ -16482,7 +16839,7 @@ graph TB
 ````json
 {
   "name": "deanmachines-front",
-  "version": "0.1.1",
+  "version": "0.1.3",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -16688,16 +17045,15 @@ graph TB
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "contentlayer/generated": [
-        "./.contentlayer/generated"
+      "@/*": [
+        "src/*"
       ]
     }
   },
   "include": [
     "next-env.d.ts",
     "**/*.ts",
-    "**/*.tsx",
-    ".contentlayer/generated"
+    "**/*.tsx"
   ],
   "pnpm": {
     "overrides": {
