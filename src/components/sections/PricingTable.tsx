@@ -52,12 +52,14 @@ const plans: Plan[] = [
     name: "Pro",
     description: "For professionals and small teams",
     price: {
-      monthly: "$49",
-      annual: "$470",
+      monthly: "$9",
+      annual: "$225",
     },
     features: [
-      { text: "10 AI Agents" },
-      { text: "50,000 API calls/month" },
+      { text: "Agents, Tools, Workflows" },
+      { text: "Bring your own API keys" },
+      { text: "Supports OpenAI, Anthropic, Gemini, VertexAI" },
+      { text: "All models supported" },
       { text: "Advanced memory management" },
       { text: "Priority support" },
       { text: "Private templates" },
@@ -66,7 +68,7 @@ const plans: Plan[] = [
     ],
     cta: {
       text: "Get Started",
-      href: "/signup/pro",
+      href: "/signup",
     },
     popular: true,
   },

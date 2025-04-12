@@ -121,7 +121,7 @@ export function HeroSection() {
               <span className="inline-block">Build AI Agents with</span>{" "}
               <span className="relative inline-block">
                 <span className="bg-gradient-to-r from-primary via-purple-500 to-pink-600 bg-clip-text text-transparent">
-                  Mastra
+                  Deanmachines
                 </span>
                 <motion.span
                   className="absolute -right-6 -top-2 text-primary"
@@ -141,7 +141,8 @@ export function HeroSection() {
               transition={{ duration: 0.5, delay: 0.3 }}
             >
               Create, deploy, and scale AI agents with our powerful platform. From simple
-              automations to complex workflows, Mastra handles it all.
+              automations to complex workflows, Deanmachines handles it all.  With a combination of Mastra and Agentic frameworks, you can build AI agents that are
+              capable of understanding context, making decisions, and learning from their experiences.
             </motion.p>
 
             <motion.div
