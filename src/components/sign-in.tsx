@@ -1,12 +1,13 @@
 'use client';
 
-import { signIn } from "next-auth/react"
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "./ui/button"
 import { Input } from "./ui/input"
 import { Label } from "./ui/label"
 import { Alert, AlertDescription } from "./ui/alert"
 import { AlertCircle, Loader2 } from "lucide-react"
+import { signIn } from "@/lib/auth-client"
 
 /**
  * SignIn component for authenticating users via credentials, Google, or GitHub.
@@ -23,6 +24,7 @@ export default function SignIn(): JSX.Element {
     google: boolean;
     github: boolean;
   }>({ google: false, github: false })
+  const router = useRouter();
 
   /**
    * Handles the credentials sign-in process
@@ -35,17 +37,13 @@ export default function SignIn(): JSX.Element {
     setError(null)
 
     try {
-      const result = await signIn("credentials", {
-        email,
-        password,
-        redirect: false
-      })
+      const result = await signIn(email, password);
 
-      if (result?.error) {
-        setError(result.error === "CredentialsSignin" ? "Invalid email or password." : "Sign-in failed. Please try again.")
-      } else if (result?.ok && !result.error) {
-        // Optional: Handle successful sign-in here (e.g., redirect)
-        // useRouter().push('/'); // Example redirect
+      if (!result.success) {
+        setError(result.error || "Invalid email or password.")
+      } else {
+        // Redirect to homepage or dashboard after successful sign-in
+        router.push('/')
       }
     } catch (err) {
       setError("An unexpected error occurred. Please try again later.")
@@ -54,7 +52,6 @@ export default function SignIn(): JSX.Element {
       setIsLoading(false)
     }
   }
-
   /**
    * Handles sign-in with third-party providers
    *
@@ -65,7 +62,17 @@ export default function SignIn(): JSX.Element {
     setIsProviderLoading(prev => ({ ...prev, [provider]: true }))
 
     try {
-      await signIn(provider, { callbackUrl: "/" })
+      // Redirect to Firebase authentication URL for the selected provider
+      // For static exports, we need to use the Firebase client SDK directly
+      const { signInWithRedirect, GoogleAuthProvider, GithubAuthProvider } = await import('firebase/auth');
+      const { auth } = await import('@/lib/firebase/client');
+
+      const authProvider = provider === 'google'
+        ? new GoogleAuthProvider()
+        : new GithubAuthProvider();
+
+      await signInWithRedirect(auth, authProvider);
+      // The page will redirect, so we don't need to handle the result here
     } catch (err) {
       setError(`Failed to sign in with ${provider}. Please try again.`)
       console.error(`${provider} sign-in error:`, err)

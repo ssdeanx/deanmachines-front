@@ -1,6 +1,5 @@
 'use client';
 
-import { signIn } from "next-auth/react"; // Correct import for client-side use
 import * as React from "react";
 import { useState } from "react";
 import { useRouter } from 'next/navigation';
@@ -10,6 +9,7 @@ import { Label } from "./ui/label";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 import { AlertCircle, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { signUp, signIn } from "@/lib/auth-client";
 
 /**
  * SignUp component for registering users via credentials, Google, or GitHub.
@@ -29,7 +29,6 @@ export default function SignUp(): JSX.Element {
   }>({ google: false, github: false });
 
   const router = useRouter();
-
   /**
    * Handles credentials signup process
    *
@@ -55,66 +54,27 @@ export default function SignUp(): JSX.Element {
     setIsLoading(true);
 
     try {
-      // Log the signup attempt (without sensitive data)
-      console.log(`Attempting signup for email: ${email}`);
+      // Use our client-side signUp utility
+      const signUpResult = await signUp(email, password, name);
 
-      // Set up request timeout
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
-
-      // Call the custom backend API route with timeout
-      const response = await fetch('/api/auth/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, name }),
-        signal: controller.signal
-      });
-
-      // Clear timeout since request completed
-      clearTimeout(timeoutId);
-      const data = await response.json();
-
-      if (!response.ok) {
-        console.error(`Signup failed with status ${response.status}:`, data.message);
-        setError(data.message || "Sign-up failed. Please try again.");
+      if (!signUpResult.success) {
+        setError(signUpResult.error || "Sign-up failed. Please try again.");
       } else {
-        console.log("Signup successful, attempting auto-login");
-        setSuccess("Account created successfully! Signing you in...");
+        setSuccess("Account created successfully!");
+        console.log("Sign-up and auto-login successful, redirecting to dashboard");
 
-        // Short delay to ensure Firestore document is available for NextAuth
-        await new Promise(resolve => setTimeout(resolve, 500));
-
-        // Automatically sign in after successful signup
-        const signInResult = await signIn("credentials", {
-           email,
-           password,
-           redirect: false, // Don't redirect yet
-        });
-
-        if (signInResult?.ok && !signInResult.error) {
-          console.log("Auto-login successful, redirecting to dashboard");
-          router.push('/'); // Redirect after successful sign-in
-        } else {
-          console.error("Auto-login after signup failed:", signInResult?.error);
-          setError("Account created, but auto sign-in failed. Please log in manually.");
-          // Allow user to read the message before redirecting
-          setTimeout(() => router.push('/login'), 3000);
-        }
+        // Short delay to show success message
+        setTimeout(() => {
+          router.push('/'); // Redirect to homepage after successful sign-up
+        }, 1500);
       }
     } catch (err) {
-      // Handle request timeout
-      if (err instanceof DOMException && err.name === 'AbortError') {
-        console.error("Signup request timed out");
-        setError("Request timeout. Please check your internet connection and try again.");
-      } else {
-        console.error("Sign-up fetch error:", err);
-        setError("An unexpected network error occurred. Please try again.");
-      }
+      console.error("Sign-up error:", err);
+      setError("An unexpected error occurred. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
-
   /**
    * Handles sign up/in with third-party providers
    *
@@ -126,8 +86,16 @@ export default function SignUp(): JSX.Element {
     setIsProviderLoading(prev => ({ ...prev, [provider]: true }));
 
     try {
-      console.log(`Attempting sign up/in with ${provider}`);
-      await signIn(provider, { callbackUrl: "/" }); // Use NextAuth's signIn for OAuth
+      // For static exports, use Firebase auth directly
+      const { signInWithRedirect, GoogleAuthProvider, GithubAuthProvider } = await import('firebase/auth');
+      const { auth } = await import('@/lib/firebase/client');
+
+      const authProvider = provider === 'google'
+        ? new GoogleAuthProvider()
+        : new GithubAuthProvider();
+
+      await signInWithRedirect(auth, authProvider);
+      // The page will redirect, so we don't need to handle the result here
     } catch (err) {
       console.error(`${provider} sign-in error:`, err);
       setError(`Failed to sign up with ${provider}. Please try again.`);

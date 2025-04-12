@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { adminAuth, adminDb } from "@/lib/firebase/admin"; // Import admin instances
 import { FirebaseError } from "firebase-admin"; // Import FirebaseError for typing
 
-// Read admin emails from environment variable - ensure consistency with auth.ts
+
 const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || "")
   .split(",")
   .map((email) => email.trim().toLowerCase())
