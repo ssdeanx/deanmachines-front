@@ -53,8 +53,8 @@ gantt
     Category System            :         blog3,     2025-04-21, 2025-04-25
 
     section 7️⃣ User System
-    Auth Architecture          :         auth1,     2025-04-15, 2025-04-18
-    Login/Registration         :         auth2,     2025-04-18, 2025-04-21
+    Auth Architecture          :active,  auth1,     2025-04-15, 2025-04-18
+    Login/Registration         :active,  auth2,     2025-04-18, 2025-04-21
     Profile Management         :         auth3,     2025-04-21, 2025-04-25
 
     section 8️⃣ Agent Interface
@@ -161,11 +161,20 @@ gantt
 | Category System | ⚪ Not Started | Filtering, category pages | 0% |
 | Social Sharing | ⚪ Not Started | Share buttons, meta tags | 0% |
 
-### 7️⃣-10️⃣ Remaining Systems (0% Complete)
+### 7️⃣ User System (40% Complete)
+
+| Component          | Status         | Details                                            | Progress |
+| ------------------ | -------------- | -------------------------------------------------- | -------- |
+| Authentication     | 🟡 In Progress | NextAuth.js (Credentials, Google, GitHub), Firebase | 80%      |
+| Login Page         | ✅ Complete    | UI and basic functionality                         | 100%     |
+| Registration Page  | ✅ Complete    | UI and basic functionality                         | 100%     |
+| Profile Management | ⚪ Not Started | Account settings, password change                 | 0%       |
+| Role Management    | ✅ Complete    | Admin/user roles via Firestore                    | 100%     |
+
+### 8️⃣-10️⃣ Remaining Systems (0% Complete)
 
 | Component | Status | Details | Progress |
 |-----------|--------|---------|----------|
-| Authentication | ⚪ Not Started | Login, registration, profiles | 0% |
 | Agent Interface | ⚪ Not Started | Agent builder, deployment, monitoring | 0% |
 | Dashboard | ⚪ Not Started | Analytics, admin controls | 0% |
 | Testing & QA | ⚪ Not Started | Unit, integration, e2e tests | 0% |
@@ -229,6 +238,8 @@ flowchart TD
     src --> lib[lib/]
     src --> types[types/]
     src --> mastra[mastra/]
+    src --> authTs["auth.ts"]
+    src --> middlewareTs["middleware.ts"]
 
     app --> publicPages["(public)/"]
     app --> appPages["(app)/"]
@@ -241,10 +252,16 @@ flowchart TD
     publicPages --> contact["contact/"]
     publicPages --> docs["docs/"]
     publicPages --> services["services/"]
+    publicPages --> login["login/page.tsx"]
+    publicPages --> signup["signup/page.tsx"]
 
-    appPages --> auth["auth/"]
     appPages --> dashboard["dashboard/"]
     appPages --> agents["agents/"]
+
+    apiRoutes --> authApi["auth/"]
+
+    authApi --> nextauthHandler["[...nextauth]/route.ts"]
+    authApi --> signupHandler["signup/route.ts"]
 
     components --> common["common/"]
     components --> docs["docs/"]
@@ -252,13 +269,18 @@ flowchart TD
     components --> sections["sections/"]
     components --> ui["ui/"]
     components --> app["app/"]
+    components --> signInComp["sign-in.tsx"]
+    components --> signUpComp["sign-up.tsx"]
 
     lib --> utils["utils.ts"]
     lib --> api["api/"]
-    lib --> auth["auth.ts"]
+    lib --> firebase["firebase/"]
     lib --> contentData["content-data.ts"]
     lib --> mockDocs["mock-docs.ts"]
     lib --> analytics["analytics.ts"]
+
+    firebase --> fbClient["client.ts"]
+    firebase --> fbAdmin["admin.ts"]
 
     mastra --> agents["agents/"]
     mastra --> tools["tools/"]
@@ -410,12 +432,14 @@ graph TB
 - **Code Highlighting**: [rehype-pretty-code](https://github.com/atomiks/rehype-pretty-code) - Syntax highlighting
 - **Icons**: [Lucide Icons](https://lucide.dev/) - Consistent, customizable icon system
 
-### Backend / AI
+### Backend / AI / Auth
 
+- **Authentication**: NextAuth.js (Auth.js)
+- **Auth Backend**: Firebase Authentication
 - **AI Orchestration**: Mastra / Agentic Ecosystem
 - **LLMs**: Google Gemini
 - **Vector Database**: Pinecone
-- **Databases**: Upstash, LibSQL
+- **Databases**: Upstash, LibSQL, Firestore (for User Data)
 - **Voice**: ElevenLabs, Google Voice
 
 ### Performance & Optimization
@@ -556,28 +580,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 👥 Contributors
 
 - Dean Machines (@deanmachines) - Lead Developer
-
----
-
-## 📝 Changelog (Summary - See CHANGELOG.md for full details)
-
-### Recent Changes (Unreleased)
-
-- **Documentation Refactor**: Replaced MDX/Contentlayer with a structured content system (`lib/content-data.ts`, `ContentRenderer.tsx`) across all documentation pages. Fixed related component prop type errors.
-- **Mastra/Agentic Backend**: Fully implemented backend services for agents, tools, and workflows.
-- **Bug Fixes**: Resolved various TypeScript errors and component issues.
-
-### April 8, 2025 - Major Frontend Improvements
-
-#### Fixed
-
-- **Content Integration**: Fixed issues in `mock-docs.ts` to properly handle ASCII diagrams in documentation content
-- **Documentation Pages**: Resolved syntax problems in Agent Networks section causing rendering issues
-
-#### Added
-
-- **Contact Form Enhancement**: Implemented comprehensive form handling with React Hook Form and Zod validation
-- **Documentation Search**: Enhanced documentation search functionality
 
 ---
 

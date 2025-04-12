@@ -1,4 +1,6 @@
-import { signIn } from "./../../auth"
+'use client';
+
+import { signIn } from "next-auth/react"
 import { useState } from "react"
 import { Button } from "./ui/button"
 import { Input } from "./ui/input"
@@ -40,7 +42,10 @@ export default function SignIn(): JSX.Element {
       })
 
       if (result?.error) {
-        setError("Invalid email or password. Please try again.")
+        setError(result.error === "CredentialsSignin" ? "Invalid email or password." : "Sign-in failed. Please try again.")
+      } else if (result?.ok && !result.error) {
+        // Optional: Handle successful sign-in here (e.g., redirect)
+        // useRouter().push('/'); // Example redirect
       }
     } catch (err) {
       setError("An unexpected error occurred. Please try again later.")
@@ -60,10 +65,8 @@ export default function SignIn(): JSX.Element {
     setIsProviderLoading(prev => ({ ...prev, [provider]: true }))
 
     try {
-      await signIn(provider, { redirect: true })
-      // No need to handle success case as redirect will occur
+      await signIn(provider, { callbackUrl: "/" })
     } catch (err) {
-      // This will only run if the redirect fails for some reason
       setError(`Failed to sign in with ${provider}. Please try again.`)
       console.error(`${provider} sign-in error:`, err)
       setIsProviderLoading(prev => ({ ...prev, [provider]: false }))
@@ -134,7 +137,7 @@ export default function SignIn(): JSX.Element {
         <Button
           variant="outline"
           onClick={() => handleProviderSignIn("google")}
-          disabled={isProviderLoading.google || isProviderLoading.github}
+          disabled={isLoading || isProviderLoading.google || isProviderLoading.github}
         >
           {isProviderLoading.google ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -144,7 +147,7 @@ export default function SignIn(): JSX.Element {
         <Button
           variant="outline"
           onClick={() => handleProviderSignIn("github")}
-          disabled={isProviderLoading.google || isProviderLoading.github}
+          disabled={isLoading || isProviderLoading.google || isProviderLoading.github}
         >
           {isProviderLoading.github ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />

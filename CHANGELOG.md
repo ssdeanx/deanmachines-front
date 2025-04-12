@@ -9,6 +9,14 @@
 - Implemented caching for weather API requests
 - Added missing props (`language`, `filename`, `showLineNumbers`, `highlightLines`, `image`, `title`) to `CodeBlockWrapper` component to resolve TypeScript errors in documentation pages.
 - Made `href` prop optional in `Card` component to align with data structure.
+- **Implemented Authentication:**
+  - Created `SignIn` component (`@/components/sign-in.tsx`) with Email/Password, Google, and GitHub options.
+  - Created `SignUp` component (`@/components/sign-up.tsx`) with Email/Password, Google, and GitHub options.
+  - Created Login page (`@/app/(public)/login/page.tsx`).
+  - Created Signup page (`@/app/(public)/signup/page.tsx`).
+  - Implemented custom API route (`@/app/api/auth/signup/route.ts`) for handling email/password user creation using Firebase Admin SDK.
+  - Configured NextAuth (`auth.ts`) with Credentials, Google, GitHub providers, Firestore adapter, and JWT session strategy.
+  - Implemented role assignment (admin/user) based on environment variable during signup/user creation.
 
 ### Changed
 
@@ -25,6 +33,15 @@
   - Explicitly typed `fallbackDoc` in `/docs/page.tsx` to resolve type incompatibility.
 - Removed redundant `<DocsLayoutWrapper>` from `/docs/layout.tsx`.
 - Removed unused `docsConfig` import from `/docs/layout.tsx`.
+- **Corrected Firebase setup:** Removed redundant/incorrect `firebase.ts`, ensuring distinct client (`client.ts`) and admin (`admin.ts`) initializations.
+- **Updated Middleware (`middleware.ts`):** Added `/signup` to public routes and ensured logged-in users are redirected from auth pages. Added explicit allowance for `/api/auth/signup`.
+- **Fixed Component Errors:**
+  - Added `'use client'` directive to `CallToAction` component.
+  - Resolved Next.js `<Link>` component issues:
+    - Removed deprecated `legacyBehavior` prop where appropriate in `NavBar` and `Footer`.
+    - Fixed hydration errors from nested `<a>` tags in `NavBar` by using `asChild` on `NavigationMenuLink`.
+  - Corrected client-side `signIn` import in `SignIn` component to use `next-auth/react`.
+- **Adjusted Layout Alignment:** Refined flexbox properties in `NavBar` and `Footer` for better element alignment.
 
 ## [0.1.1] - 2025-04-11
 
