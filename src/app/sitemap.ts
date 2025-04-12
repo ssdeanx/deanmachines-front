@@ -3,10 +3,13 @@ import { mockDocs } from "@/lib/mock-docs";
 
 /**
  * Generate sitemap for all public pages
+ * Compatible with static exports and Firebase hosting
  * @returns Sitemap configuration for the website
  */
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = "https://deanmachines.com";
+  // For Firebase static hosting (update with your Firebase project domain or custom domain)
+  const baseUrl =
+    process.env.NEXT_PUBLIC_SITE_URL || "https://deanmachines-front.web.app";
 
   // Main pages
   const routes = [
@@ -15,8 +18,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/blog",
     "/contact",
     "/docs",
+    "/features",
+    "/login",
+    "/pricing",
     "/privacy",
     "/services",
+    "/signup",
+    "/solutions",
     "/terms",
   ].map((route) => ({
     url: `${baseUrl}${route}`,

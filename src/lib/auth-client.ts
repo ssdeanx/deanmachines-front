@@ -14,7 +14,7 @@ import {
   getIdTokenResult,
   onAuthStateChanged,
   updateProfile,
-  User as FirebaseUser,
+  type User as FirebaseUser,
 } from "firebase/auth";
 import { auth } from "./firebase/client";
 
