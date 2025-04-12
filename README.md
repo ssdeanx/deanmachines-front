@@ -1,16 +1,51 @@
 # DeanMachines AI Platform
 
-![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
-![Next.js](https://img.shields.io/badge/Next.js-15.2.4-black)
+![Version](https://img.shields.io/badge/version-0.1.5-blue.svg)
+![Next.js](https://img.shields.io/badge/Next.js-15.3.0-black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.8.3-blue)
 ![TailwindCSS](https://img.shields.io/badge/TailwindCSS-4.1.3-06B6D4)
+![Firebase](https://img.shields.io/badge/Firebase-11.6.0-orange)
+![Mastra](https://img.shields.io/badge/Mastra-0.8.2-purple)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 
-A modern, high-performance front-end for the DeanMachines AI platform, built with Next.js 15, TypeScript, and TailwindCSS. This platform provides comprehensive AI development and deployment services, featuring a fully implemented backend with **Mastra/Agentic for intelligent agent systems and workflow automation tools** for businesses and developers.
+A modern, high-performance front-end for the DeanMachines AI platform, built with Next.js 15, TypeScript, and TailwindCSS. Designed for both dynamic server-side rendering and static exports with Firebase hosting, this platform provides comprehensive AI development and deployment services featuring:
+
+- **Mastra AI Integration**: Fully implemented agent systems, workflows, and tools with Google Vertex AI
+- **Firebase/Google Cloud**: Complete serverless backend with authentication, database, and cloud functions
+- **Static Export Support**: Optimized for Firebase hosting with client-side compatibility
+- **Agent-driven Tools**: Intelligent workflows powered by LLM models from OpenAI, Anthropic, and Google
+
+## 🌟 Features
+
+### Frontend
+
+- **Next.js 15.3.0**: Leveraging the latest Next.js features with optimized static exports
+- **Tailwind CSS 4.1.3**: Modern utility-first CSS framework with glass morphism and advanced animations
+- **TypeScript 5.x**: Full type safety with strict mode and advanced typing
+- **Authentication System**: Complete client-side Firebase authentication with email/password, Google, and GitHub providers
+- **Responsive Design**: Mobile-first approach with container queries and responsive typography
+- **Static Export Compatibility**: Optimized for Firebase hosting with client-side data fetching
+
+### Mastra AI Integration
+
+- **Agent Architecture**: Fully implemented agent system for weather data, content generation, and customer support
+- **Google Vertex AI**: Integration with Google's enterprise-grade AI models via Vertex AI
+- **Workflow Automation**: Complex multi-step workflows with error handling and retries
+- **Custom Tools**: Weather, content analysis, and data processing tools with typed schemas
+- **Memory Systems**: Conversation history with ClickHouse and Pinecone vector stores
+- **Voice Integration**: Text-to-speech capabilities via ElevenLabs and Google
+
+### Backend (Firebase/Google Cloud)
+
+- **Firebase Functions**: Serverless backend endpoints for Mastra agents and tools
+- **Firestore Database**: NoSQL data storage with real-time capabilities
+- **Firebase Auth**: Secure authentication with custom claims for role management
+- **Cloud Storage**: File storage and serving for static assets
+- **Environment Isolation**: Development, staging, and production environments
 
 ## 📊 Project Status & Roadmap
 
-### Current Status: Beta Development (Q2 2025)
+### Current Status: Alpha Development (April 2025)
 
 ```mermaid
 gantt
@@ -20,22 +55,34 @@ gantt
     todayMarker stroke-width:4px,stroke:#ff3377,opacity:0.9
 
     section 1️⃣ Foundation
-    Project Scaffolding        :done,    setup1,    2025-03-01, 2025-03-03
-    Repository Structure       :done,    setup2,    2025-03-03, 2025-03-05
-    CI/CD Pipeline             :done,    setup3,    2025-03-05, 2025-03-07
+    Project Scaffolding        :done,    setup1,    2025-04-01, 2025-04-03
+    Repository Structure       :done,    setup2,    2025-04-03, 2025-04-05
+    CI/CD Pipeline             :active,  setup3,    2025-04-05, 2025-04-15
 
-    section 2️⃣ Design System
-    Color Palette              :done,    design1,   2025-03-07, 2025-03-09
-    Typography                 :done,    design2,   2025-03-09, 2025-03-11
-    Spacing & Grid             :done,    design3,   2025-03-11, 2025-03-13
-    Responsive Breakpoints     :done,    design4,   2025-03-13, 2025-03-15
+    section 2️⃣ UI/UX
+    Design System              :done,    design1,   2025-04-03, 2025-04-07
+    Component Library          :done,    design2,   2025-04-07, 2025-04-10
+    Responsive Layouts         :done,    design3,   2025-04-10, 2025-04-12
 
-    section 3️⃣ Component Library
-    UI Primitives              :done,    comps1,    2025-03-15, 2025-03-20
-    Form Components            :done,    comps2,    2025-03-20, 2025-03-25
-    Layout Components          :done,    comps3,    2025-03-25, 2025-04-01
+    section 3️⃣ Authentication
+    Firebase Auth Setup        :done,    auth1,     2025-04-09, 2025-04-11
+    Client-side Auth Flow      :done,    auth2,     2025-04-11, 2025-04-12
+    Role Management           :active,   auth3,     2025-04-12, 2025-04-16
 
-    section 4️⃣ Content Pages
+    section 4️⃣ Mastra AI
+    Core Integration          :done,     mastra1,   2025-04-08, 2025-04-12
+    Agent Implementation      :active,   mastra2,   2025-04-12, 2025-04-18
+    Tools & Workflows         :active,   mastra3,   2025-04-12, 2025-04-20
+
+    section 5️⃣ Firebase Functions
+    Serverless Endpoints      :active,   fb1,       2025-04-12, 2025-04-18
+    Database Integration      :planned,  fb2,       2025-04-18, 2025-04-25
+    API Security Layer        :planned,  fb3,       2025-04-25, 2025-05-02
+
+    section 6️⃣ Features
+    Chat Interface            :active,   feat1,     2025-04-14, 2025-04-20
+    Dashboard Analytics       :planned,  feat2,     2025-04-20, 2025-04-28
+    User Management          :planned,   feat3,     2025-04-28, 2025-05-05
     Home Page                  :active,  pages1,    2025-04-01, 2025-04-05
     About Page                 :active,  pages2,    2025-04-05, 2025-04-08
     Services Pages             :active,  pages3,    2025-04-08, 2025-04-12
@@ -591,80 +638,92 @@ graph TB
     Admin((Admin User))
 
     subgraph "Frontend Container"
-        direction TB
-        NextApp["Next.js Application<br>(Next.js 15.3)"]
+        NextApp["Next.js App<br>(Next.js)"]
 
         subgraph "Frontend Components"
-            direction TB
-            AuthModule["Authentication Module<br>(NextAuth)"]
-            ThemeProvider["Theme Provider<br>(next-themes)"]
-            UIComponents["UI Components<br>(Radix UI, Geist)"]
-
-            subgraph "Layout Components"
-                NavBar["Navigation Bar<br>(React)"]
-                Footer["Footer<br>(React)"]
-                MobileNav["Mobile Navigation<br>(React)"]
-            end
-
-            subgraph "Feature Components"
-                DocsSection["Documentation Section<br>(MDX)"]
-                AdminDashboard["Admin Dashboard<br>(React)"]
-                UserDashboard["User Dashboard<br>(React)"]
-            end
+            AuthModule["Auth Module<br>(Firebase Auth)"]
+            UIComponents["UI Components<br>(React/Shadcn)"]
+            ThemeSystem["Theme System<br>(next-themes)"]
+            Navigation["Navigation<br>(Next.js Router)"]
+            Forms["Forms Handler<br>(React Hook Form)"]
         end
     end
 
     subgraph "Backend Container"
-        direction TB
-        APILayer["API Layer<br>(Next.js API Routes)"]
+        FirebaseFunctions["Firebase Functions<br>(Node.js)"]
 
-        subgraph "Core Services"
-            AuthService["Auth Service<br>(Firebase Admin)"]
-            MastraService["Mastra AI Service<br>(Custom)"]
+        subgraph "Mastra AI System"
+            MastraCore["Mastra Core<br>(TypeScript)"]
 
-            subgraph "Mastra Components"
-                AgentNetwork["Agent Network<br>(TypeScript)"]
-                MemorySystem["Memory System<br>(LibSQL)"]
-                ToolRegistry["Tool Registry<br>(TypeScript)"]
-                LangChainIntegration["LangChain Integration<br>(LangChain)"]
+            subgraph "Agent Networks"
+                DeanInsights["DeanInsights Network<br>(Mastra)"]
+                DataFlow["DataFlow Network<br>(Mastra)"]
+                ContentCreation["ContentCreation Network<br>(Mastra)"]
+                KnowledgeMoE["Knowledge Work MoE<br>(Mastra)"]
+            end
+
+            subgraph "Core Agents"
+                ResearchAgent["Research Agent<br>(AI)"]
+                AnalystAgent["Analyst Agent<br>(AI)"]
+                WriterAgent["Writer Agent<br>(AI)"]
+                CoderAgent["Coder Agent<br>(AI)"]
+            end
+
+            subgraph "Tool System"
+                SearchTools["Search Tools<br>(Multiple Providers)"]
+                VectorTools["Vector Tools<br>(Pinecone)"]
+                FileTools["File Tools<br>(Node.js)"]
+                MemoryTools["Memory Tools<br>(LibSQL)"]
             end
         end
     end
 
-    subgraph "Data Layer"
-        FirestoreDB[("Firestore DB<br>Firebase")]
-        VectorStore[("Vector Store<br>Pinecone")]
-        LibSQLDB[("Memory Store<br>LibSQL")]
+    subgraph "Data Storage"
+        FirebaseAuth[("Auth DB<br>Firebase Auth")]
+        VectorDB[("Vector Store<br>Pinecone")]
+        MemoryDB[("Memory Store<br>LibSQL")]
     end
 
     subgraph "External Services"
         GoogleAI["Google AI<br>(Gemini)"]
-        FirebaseAuth["Firebase Auth<br>(Firebase)"]
-        DataConnect["Data Connect<br>(PostgreSQL)"]
+        ExaSearch["Exa Search<br>(API)"]
+        Firebase["Firebase<br>(BaaS)"]
     end
 
     %% Connections
-    User --> NextApp
-    Admin --> NextApp
+    User -->|Accesses| NextApp
+    Admin -->|Manages| NextApp
 
-    NextApp --> AuthModule
-    NextApp --> ThemeProvider
-    NextApp --> UIComponents
+    NextApp -->|Authenticates| AuthModule
+    AuthModule -->|Verifies| FirebaseAuth
+    NextApp -->|Uses| UIComponents
+    NextApp -->|Uses| ThemeSystem
+    NextApp -->|Routes via| Navigation
+    NextApp -->|Handles Forms with| Forms
 
-    AuthModule --> AuthService
-    AuthService --> FirebaseAuth
-    AuthService --> FirestoreDB
+    NextApp -->|Calls| FirebaseFunctions
+    FirebaseFunctions -->|Orchestrates| MastraCore
 
-    APILayer --> MastraService
-    MastraService --> AgentNetwork
-    AgentNetwork --> MemorySystem
-    AgentNetwork --> ToolRegistry
-    AgentNetwork --> LangChainIntegration
+    MastraCore -->|Manages| DeanInsights
+    MastraCore -->|Manages| DataFlow
+    MastraCore -->|Manages| ContentCreation
+    MastraCore -->|Manages| KnowledgeMoE
 
-    MemorySystem --> LibSQLDB
-    MemorySystem --> VectorStore
+    DeanInsights -->|Uses| ResearchAgent
+    DeanInsights -->|Uses| AnalystAgent
+    DataFlow -->|Uses| AnalystAgent
+    ContentCreation -->|Uses| WriterAgent
+    KnowledgeMoE -->|Uses| CoderAgent
 
-    LangChainIntegration --> GoogleAI
+    ResearchAgent -->|Uses| SearchTools
+    AnalystAgent -->|Uses| VectorTools
+    WriterAgent -->|Uses| FileTools
+    CoderAgent -->|Uses| MemoryTools
 
-    MastraService --> DataConnect
+    SearchTools -->|Queries| ExaSearch
+    VectorTools -->|Stores in| VectorDB
+    MemoryTools -->|Persists in| MemoryDB
+
+    MastraCore -->|Uses| GoogleAI
+    FirebaseFunctions -->|Integrates with| Firebase
 ```

@@ -1,5 +1,32 @@
 # Changelog
 
+## [0.1.5] - 2025-04-12 (18:23 EST)
+
+### Mastra AI Implementation with Firebase Functions
+
+- **Core Implementation:**
+  - Created Mastra backend architecture in `functions/src/mastra/` directory
+  - Set up file structure for agents, tools, database, and workflows
+  - Added Firebase Functions deployment for Mastra API hosting
+  - Documented OpenAPI endpoint at http://localhost:4111/openapi.json
+
+- **Mastra Integration Documentation:**
+  - Enhanced Mastra Firebase integration guide
+  - Added comprehensive Mastra Server documentation
+  - Documented Firebase/Google Cloud implementation patterns
+
+### Firebase Functions Implementation
+
+- **Firebase Structure:**
+  - Created Firebase Functions skeleton for Mastra deployment
+  - Established directory structure for serverless Mastra deployment
+  - Set up authentication and authorization for API endpoints
+
+- **API Layer:**
+  - Built client-side Mastra wrapper for static export compatibility
+  - Created API routes for chat and tool interactions
+  - Implemented streaming capabilities for AI responses
+
 ## [0.1.4] - 2025-04-13 (03:45 EST)
 
 ### Static Export Implementation
