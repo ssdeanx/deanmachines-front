@@ -28,7 +28,7 @@ export function DocsPagination({ prev, next }: DocsPaginationProps) {
             "gap-2 hover:bg-transparent hover:text-foreground"
           )}
           rel="prev"
-        >
+          legacyBehavior>
           <ChevronLeft className="h-4 w-4" aria-hidden="true" />
           <span>
             <span className="block text-sm text-muted-foreground">Previous</span>
@@ -44,7 +44,7 @@ export function DocsPagination({ prev, next }: DocsPaginationProps) {
             "ml-auto gap-2 text-right hover:bg-transparent hover:text-foreground"
           )}
           rel="next"
-        >
+          legacyBehavior>
           <span>
             <span className="block text-sm text-muted-foreground">Next</span>
             <span className="block text-base">{next.title}</span>
@@ -52,6 +52,6 @@ export function DocsPagination({ prev, next }: DocsPaginationProps) {
           <ChevronRight className="h-4 w-4" aria-hidden="true" />
         </Link>
         ) : null}
-      </div>
-    )
+    </div>
+  );
   }

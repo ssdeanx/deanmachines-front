@@ -41,7 +41,11 @@ export function MobileNav({ items }: MobileNavProps) {
         <SheetContent side="left" className="w-full max-w-[300px] pr-0">
           <SheetHeader className="px-4">
             <SheetTitle>
-              <Link href="/" className="flex items-center" onClick={() => setIsOpen(false)}>
+              <Link
+                href="/"
+                className="flex items-center"
+                onClick={() => setIsOpen(false)}
+                legacyBehavior>
                 <span className="font-bold text-xl">{siteConfig.name}</span>
               </Link>
             </SheetTitle>
@@ -73,7 +77,7 @@ export function MobileNav({ items }: MobileNavProps) {
         </SheetContent>
       </Sheet>
     </>
-  )
+  );
 }
 
 interface MobileLinkProps {
@@ -100,8 +104,8 @@ function MobileLink({
         disabled && "pointer-events-none opacity-60"
       )}
       onClick={() => setIsOpen(false)}
-    >
+      legacyBehavior>
       {children}
     </Link>
-  )
+  );
 }

@@ -45,7 +45,7 @@ export function UserSidebar() {
   return (
     <aside className="fixed left-0 top-0 z-30 hidden h-screen w-56 border-r bg-background lg:block">
       <div className="flex h-14 items-center border-b px-4">
-        <Link href="/" className="flex items-center space-x-2">
+        <Link href="/" className="flex items-center space-x-2" legacyBehavior>
           <span className="text-xl font-bold">DeanMachines</span>
         </Link>
       </div>
@@ -60,13 +60,13 @@ export function UserSidebar() {
                 "flex items-center rounded-lg px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground",
                 pathname === item.href ? "bg-accent text-accent-foreground" : "text-muted-foreground"
               )}
-            >
+              legacyBehavior>
               <Icon className="mr-2 h-4 w-4" />
               {item.title}
             </Link>
-          )
+          );
         })}
       </nav>
     </aside>
-  )
+  );
 }

@@ -58,13 +58,13 @@ export function AdminHeader({ user }: AdminHeaderProps) {
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
-                <Link href="/admin/profile">
+                <Link href="/admin/profile" legacyBehavior>
                   <User className="mr-2 h-4 w-4" />
                   Profile
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link href="/admin/settings">
+                <Link href="/admin/settings" legacyBehavior>
                   <Settings className="mr-2 h-4 w-4" />
                   Settings
                 </Link>
@@ -82,5 +82,5 @@ export function AdminHeader({ user }: AdminHeaderProps) {
         </div>
       </div>
     </header>
-  )
+  );
 }

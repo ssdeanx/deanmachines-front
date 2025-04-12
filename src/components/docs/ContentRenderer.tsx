@@ -55,7 +55,7 @@ const TextSpan = ({ span }: { span: { text: string; format?: { bold?: boolean; i
         href={format.link.href}
         title={format.link.title}
         className="font-medium underline underline-offset-4"
-      >
+        legacyBehavior>
         {content}
       </Link>
     );

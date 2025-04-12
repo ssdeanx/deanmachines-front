@@ -152,11 +152,11 @@ export class WikipediaClient extends AIFunctionsProvider {
   async search({ query, ...opts }: wikipedia.SearchOptions) {
     return (
       // https://www.mediawiki.org/wiki/API:REST_API
-      this.ky
+      (this.ky
         .get("https://en.wikipedia.org/w/rest.php/v1/search/page", {
           searchParams: { q: query, ...opts },
         })
-        .json<wikipedia.PageSearchResponse>()
+        .json<wikipedia.PageSearchResponse>())
     );
   }
 

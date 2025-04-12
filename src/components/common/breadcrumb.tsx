@@ -82,7 +82,7 @@ export function Breadcrumb({
               className="flex items-center gap-1 hover:text-foreground transition-all duration-300
                 rounded-md p-0.5 hover:bg-accent/30 active:scale-95"
               aria-label="Home"
-            >
+              legacyBehavior>
               <IconWrapper
                 icon={Home}
                 size="sm"
@@ -106,7 +106,7 @@ export function Breadcrumb({
                 href={item.href}
                 className="group flex items-center gap-1.5 hover:text-foreground transition-all duration-300
                   truncate rounded-md py-0.5 px-1 hover:bg-accent/20"
-              >
+                legacyBehavior>
                 {item.icon && (
                   <IconWrapper
                     icon={item.icon}
@@ -135,5 +135,5 @@ export function Breadcrumb({
         ))}
       </ol>
     </nav>
-  )
+  );
 }

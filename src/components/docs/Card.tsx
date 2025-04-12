@@ -33,7 +33,7 @@ export const Card = forwardRef<
   );
 
   return href ? (
-    <Link href={href} passHref>
+    <Link href={href} passHref legacyBehavior>
       {cardContent}
     </Link>
   ) : (

@@ -69,7 +69,7 @@ export function AdminSidebar() {
                     ? "bg-primary text-primary-foreground" 
                     : "hover:bg-muted text-muted-foreground hover:text-foreground"
                 )}
-              >
+                legacyBehavior>
                 <Icon className="h-4 w-4" />
                 <span>{item.title}</span>
               </Link>

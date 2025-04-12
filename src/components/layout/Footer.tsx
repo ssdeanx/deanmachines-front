@@ -149,7 +149,7 @@ export function Footer() {
                   rel="noopener noreferrer"
                   aria-label={link.label}
                   className="group relative rounded-full bg-muted p-2 transition-all duration-300 hover:bg-primary/10 hover:scale-110"
-                >
+                  legacyBehavior>
                   <IconWrapper
                     icon={link.icon}
                     className="h-5 w-5 transition-colors group-hover:text-primary"
@@ -187,7 +187,7 @@ export function Footer() {
                     <Link
                       href={link.href}
                       className="group flex items-center text-sm text-muted-foreground transition-colors hover:text-foreground"
-                    >
+                      legacyBehavior>
                       <span className="transition-transform duration-300 group-hover:translate-x-0.5">
                         {link.title}
                       </span>

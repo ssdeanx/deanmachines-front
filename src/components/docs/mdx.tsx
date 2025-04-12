@@ -97,11 +97,11 @@ const components = {
     ...props
   }: React.ImgHTMLAttributes<HTMLImageElement>) => (
     // eslint-disable-next-line @next/next/no-img-element
-    <img
+    (<img
       className={cn("rounded-md", className)}
       alt={alt}
       {...props}
-    />
+    />)
   ),
   hr: ({ ...props }) => (
     <hr className="my-4 md:my-8" {...props} />

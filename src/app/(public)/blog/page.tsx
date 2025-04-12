@@ -59,7 +59,6 @@ export default function BlogPage() {
           Insights and news from the {siteConfig.name} team
         </p>
       </section>
-
       {/* Search and Filter */}
       <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <SearchInput
@@ -78,11 +77,10 @@ export default function BlogPage() {
           ))}
         </div>
       </div>
-
       {/* Blog Posts Grid */}
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {blogPosts.map((post) => (
-          <Link key={post.slug} href={`/blog/${post.slug}`}>
+          <Link key={post.slug} href={`/blog/${post.slug}`} legacyBehavior>
             <Card className="h-full overflow-hidden transition-all hover:shadow-lg">
               <div className="aspect-video relative">
                 <Image
@@ -126,5 +124,5 @@ export default function BlogPage() {
         ))}
       </div>
     </div>
-  )
+  );
 }

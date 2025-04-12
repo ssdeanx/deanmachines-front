@@ -38,13 +38,13 @@ function FeatureCard({ title, description, icon, href }: FeatureCardProps) {
       </CardContent>
       <CardFooter>
         <Button asChild variant="ghost" className="w-full justify-between">
-          <Link href={href}>
+          <Link href={href} legacyBehavior>
             Learn more <ArrowRight className="ml-2 h-4 w-4" />
           </Link>
         </Button>
       </CardFooter>
     </Card>
-  )
+  );
 }
 
 export default function FeaturesPage() {

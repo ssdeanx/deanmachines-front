@@ -53,7 +53,7 @@ function SolutionCard({ title, description, icon, href, benefits }: SolutionCard
       </CardContent>
       <CardFooter>
         <Button asChild variant="ghost" className="w-full justify-start group">
-          <Link href={href}>
+          <Link href={href} legacyBehavior>
             <span className="flex items-center justify-between w-full">
               <span>Learn more</span>
               <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
