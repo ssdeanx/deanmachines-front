@@ -1,10 +1,14 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { solutions } from "@/config/solutions";
+import { Button } from "@/components/ui/button";
 import { CallToAction } from "@/components/common/CallToAction";
 import { Check } from "lucide-react";
+import { IconWrapper } from "@/components/common/IconWrapper";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { siteConfig } from '@/config/site';
+
 
 // Generate static paths for each solution
 export async function generateStaticParams() {
@@ -24,9 +28,11 @@ export function generateMetadata({ params }: { params: { slug: string } }): Meta
 
   return {
     title: `${solution.page.heading} | ${siteConfig.name}`,
-    description: solution.page.subheading || solution.description,
+    description: solution.page.subheading || solution.description, // Fallback to short description
+    // You can add more metadata here like open graph, twitter, etc.
   };
 }
+
 
 interface SolutionPageProps {
   params: { slug: string };
@@ -37,7 +43,7 @@ export default function SolutionPage({ params }: SolutionPageProps) {
   const solution = solutions.find((s) => s.slug === slug);
 
   if (!solution) {
-    notFound();
+    notFound(); // Next.js function to render a 404 page
   }
 
   return (
@@ -49,6 +55,7 @@ export default function SolutionPage({ params }: SolutionPageProps) {
 
       <section className="mb-16">
         <div className="prose prose-lg max-w-none mx-auto dark:prose-invert">
+          {/* Render detailed description safely */}
           <div>{solution.page.detailedDescription}</div>
         </div>
       </section>
@@ -61,6 +68,9 @@ export default function SolutionPage({ params }: SolutionPageProps) {
               <Card key={useCase.title} className="p-6">
                 <h3 className="text-xl font-semibold mb-2">{useCase.title}</h3>
                 <p className="text-muted-foreground">{useCase.description}</p>
+                <div className="mt-4">
+                  <Badge variant="outline">New</Badge>
+                </div>
               </Card>
             ))}
           </div>
@@ -73,7 +83,9 @@ export default function SolutionPage({ params }: SolutionPageProps) {
           <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-3xl mx-auto">
             {solution.page.keyFeatures.map((feature, index) => (
               <li key={index} className="flex items-center space-x-2">
-                <Check className="h-5 w-5 text-primary" />
+                <IconWrapper icon={Check}>
+                  <Check className="h-5 w-5 text-primary" />
+                </IconWrapper>
                 <span>{feature}</span>
               </li>
             ))}
@@ -92,6 +104,12 @@ export default function SolutionPage({ params }: SolutionPageProps) {
           />
         </section>
       )}
+
+      <section className="mt-16 text-center">
+        <Button variant="outline" size="lg">
+          Learn More
+        </Button>
+      </section>
     </div>
   );
-}
+} 

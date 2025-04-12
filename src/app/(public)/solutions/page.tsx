@@ -10,101 +10,48 @@ import {
   Brain,
   LucideIcon,
 } from "lucide-react";
+import React from 'react';
 
 import { siteConfig } from "@/config/site";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { IconWrapper } from "@/components/common/IconWrapper";
+import { solutions } from "@/config/solutions"; // Import solutions data
+import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: `Solutions - ${siteConfig.name}`,
   description: "Industry-specific AI solutions designed to solve complex business challenges across various sectors.",
 };
-interface SolutionCardProps {
-  title: string;
-  description: string;
-  icon: LucideIcon;
-  href: string;
-  benefits: string[];
-}
 
-function SolutionCard({ title, description, icon, href, benefits }: SolutionCardProps) {
+const SolutionsShowcase = () => {
   return (
-    <Card className="flex flex-col transition-all hover:shadow-md">
-      <CardHeader>
-        <div className="flex items-center gap-4">
-          <IconWrapper
-            icon={icon}
-            size="lg"
-            className="rounded-lg border bg-muted p-2"
-          />
-          <CardTitle>{title}</CardTitle>
-        </div>
-      </CardHeader>
-      <CardContent className="flex-grow">
-        <CardDescription className="text-base mb-4">{description}</CardDescription>
-        <h4 className="font-medium text-sm mb-2">Key Benefits:</h4>
-        <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-          {benefits.map((benefit, index) => (
-            <li key={index}>{benefit}</li>
-          ))}
-        </ul>
-      </CardContent>
-      <CardFooter>
-        <Button asChild variant="ghost" className="w-full justify-start group">
-          <Link href={href} legacyBehavior>
-            <span className="flex items-center justify-between w-full">
-              <span>Learn more</span>
-              <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-            </span>
-          </Link>
-        </Button>
-      </CardFooter>
-    </Card>
+    <section className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+      {solutions.map((solution) => (
+        <Card key={solution.slug} className="p-6 hover:shadow-md transition-shadow duration-200">
+          <div className="flex items-center space-x-4 mb-4">
+            <div className="rounded-full bg-primary/10 p-2">
+              <IconWrapper icon={solution.icon} size="md" className="text-primary" />
+            </div>
+            <h3 className="text-lg font-semibold">{solution.title}</h3>
+          </div>
+          <p className="text-muted-foreground mb-4">{solution.description}</p>
+          <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground mb-4">
+            {solution.benefits.map((benefit, index) => (
+              <li key={index}>{benefit}</li>
+            ))}
+          </ul>
+          <Button asChild variant="outline" size="sm" className="w-full">
+            <Link href={solution.href}>Learn More</Link> {/* Use solution.href */}
+          </Button>
+        </Card>
+      ))}
+    </section>
   );
-}
+};
 
 export default function SolutionsPage() {
-  const primarySolutions = [
-    {
-      title: "Enterprise AI",
-      description: "Comprehensive AI solutions tailored for enterprise-scale operations across departments.",
-      icon: Building,
-      href: "/solutions/enterprise",
-      benefits: [
-        "Automate routine business processes",
-        "Enhance decision making with data-driven insights",
-        "Improve operational efficiency and reduce costs",
-        "Scale AI capabilities across your organization"
-      ]
-    },
-    {
-      title: "Customer Service",
-      description: "Transform your customer experience with intelligent automation and personalized service.",
-      icon: Headset,
-      href: "/solutions/customer-service",
-      benefits: [
-        "24/7 AI-powered customer support",
-        "Personalized customer interactions",
-        "Efficient ticket routing and prioritization",
-        "Reduced resolution time for customer issues"
-      ]
-    },
-    {
-      title: "Data Processing",
-      description: "Extract valuable insights from structured and unstructured data with advanced AI processing.",
-      icon: BarChart,
-      href: "/solutions/data-processing",
-      benefits: [
-        "Automated data extraction and classification",
-        "Advanced pattern recognition and trend analysis",
-        "Integrate insights across multiple data sources",
-        "Transform raw data into actionable intelligence"
-      ]
-    }
-  ];
-
   const industrySolutions = [
     {
       title: "Finance",
@@ -128,31 +75,24 @@ export default function SolutionsPage() {
       {/* Hero Section */}
       <section className="mx-auto max-w-5xl py-12 text-center md:py-20">
         <h1 className="text-3xl font-bold leading-tight tracking-tighter md:text-5xl lg:text-6xl lg:leading-[1.1]">
-          AI Solutions for Every Industry
+          AI Solutions for Every Challenge
         </h1>
         <p className="mt-6 text-lg text-muted-foreground md:text-xl">
-          Our specialized AI solutions address complex business challenges across industries,
-          delivering measurable results and competitive advantages.
+          Explore our range of AI-powered solutions designed to transform your business.
         </p>
       </section>
 
       <Separator className="my-8" />
 
-      {/* Primary Solutions Section */}
-      <section className="py-12 md:py-16">
-        <h2 className="mb-8 text-2xl font-bold md:text-3xl">Core Solutions</h2>
-        <div className="grid gap-6 md:grid-cols-3">
-          {primarySolutions.map((solution) => (
-            <SolutionCard
-              key={solution.title}
-              title={solution.title}
-              description={solution.description}
-              icon={solution.icon}
-              href={solution.href}
-              benefits={solution.benefits}
-            />
-          ))}
+      {/* Solutions Showcase Section */}
+      <section className="mb-16">
+        <div className="text-center mb-10">
+          <h2 className="text-2xl font-bold md:text-3xl mb-4">Explore Our Core Solutions</h2>
+          <p className="text-muted-foreground">
+            Discover how Deanmachines AI can address your key business needs.
+          </p>
         </div>
+        <SolutionsShowcase /> {/* Render the SolutionsShowcase component */}
       </section>
 
       {/* Industry Solutions Section */}
