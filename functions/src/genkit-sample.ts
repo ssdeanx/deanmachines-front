@@ -18,6 +18,9 @@ import { onCallGenkit, hasClaim } from "firebase-functions/https";
 import { defineSecret } from "firebase-functions/params";
 const apiKey = defineSecret("GOOGLE_GENAI_API_KEY");
 
+import fetch from 'node-fetch';
+import fs from 'fs/promises';
+
 const ai = genkit({
   plugins: [
     // Load the Vertex AI plugin. You can optionally specify your project ID
@@ -70,3 +73,31 @@ export const menuSuggestion = onCallGenkit({
   // Grant access to the API key to this function:
   secrets: [apiKey],
 }, menuSuggestionFlow);
+
+/**
+ * Fetches the OpenAPI schema from a running Mastra development server
+ * and saves it to a file for reference or code generation
+ *
+ * @param {string} url - URL to the OpenAPI schema
+ * @param {string} outputPath - File path to save the schema
+ * @returns {Promise<void>}
+ */
+async function fetchAndSaveSchema(url: string, outputPath: string): Promise<void> {
+  try {
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch schema: ${response.statusText}`);
+    }
+
+    const schema = await response.json();
+    await fs.writeFile(outputPath, JSON.stringify(schema, null, 2));
+
+    console.log(`Schema successfully saved to ${outputPath}`);
+  } catch (error) {
+    console.error('Error fetching schema:', error);
+  }
+}
+
+// Example usage
+fetchAndSaveSchema('http://localhost:4111/openapi.json', './mastra-api-schema.json');

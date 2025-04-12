@@ -1,129 +1,262 @@
-# Mastra AI Framework Reference Guide
+# Mastra Documentation Reference
 
 ## Overview
 
-Mastra is a modern AI framework designed for building production-ready AI applications with a focus on agents, tools, and workflows. It provides a modular architecture that allows developers to create sophisticated AI solutions by combining different components. This document serves as a comprehensive reference guide to Mastra's capabilities, integration methods, and deployment options.
+Mastra is an opinionated TypeScript framework for building AI applications and features quickly. It provides a comprehensive set of primitives including workflows, agents, RAG (Retrieval Augmented Generation), integrations, and evals. Mastra applications can run locally or be deployed to serverless cloud environments.
 
-## Table of Contents
+## Key Components
 
-1. [Core Concepts](#core-concepts)
-2. [Installation and Setup](#installation-and-setup)
-3. [Static Export Support](#static-export-support)
-4. [Components and APIs](#components-and-apis)
-   - [Agents](#agents)
-   - [Tools](#tools)
-   - [Workflows](#workflows)
-   - [Memory](#memory)
-   - [Vectors and RAG](#vectors-and-rag)
-   - [Voice and Speech](#voice-and-speech)
-5. [Integration Methods](#integration-methods)
-   - [Client-Side Integration](#client-side-integration)
-   - [Server-Side Integration](#server-side-integration)
-   - [Next.js Integration](#nextjs-integration)
-   - [Firebase Integration](#firebase-integration)
-6. [Advanced Features](#advanced-features)
-   - [MCP (Model Context Protocol)](#mcp-model-context-protocol)
-   - [Evaluation and Testing](#evaluation-and-testing)
-7. [Deployment Options](#deployment-options)
-8. [Troubleshooting and Best Practices](#troubleshooting-and-best-practices)
-9. [References and Resources](#references-and-resources)
+### LLM Models
 
-## Core Concepts
+Mastra uses the Vercel AI SDK for model routing, providing a unified interface to interact with LLM providers:
+- **OpenAI**: GPT-4, GPT-3.5-turbo
+- **Anthropic**: Claude 3 Opus, Claude 3 Sonnet, Claude 3 Haiku
+- **Google Gemini**: Gemini 1.5 Pro, Gemini 1.5 Flash, Vertex AI integration
+- **Groq**: LLaMA 3-70B
+- **Cerebras**: models supported
 
-Mastra is built around several core concepts that work together to create a flexible AI framework:
+### Agents
 
-- **Agents**: Autonomous AI assistants that perform tasks based on instructions
-- **Tools**: Functional capabilities that agents can use to interact with external systems
-- **Workflows**: Multi-step processes that orchestrate complex operations
-- **Memory**: Persistence systems for maintaining context across interactions
-- **MCP (Model Context Protocol)**: A protocol for communication between models and tools
-
-The framework follows a modular design philosophy, allowing developers to use only the components they need and integrate them with other systems and frameworks.
-
-## Installation and Setup
-
-### Prerequisites
-
-- Node.js v20.0 or higher
-- Access to a supported large language model (LLM) such as OpenAI, Anthropic, or Google Gemini
-- API keys for your chosen LLM provider
-
-### Automatic Installation
-
-Using the Mastra CLI:
-
-```bash
-# Using npx
-npx create-mastra@latest
-
-# Using npm
-npm create mastra@latest
-
-# Using yarn
-yarn create mastra@latest
-
-# Using pnpm
-pnpm create mastra@latest
-```
-
-The interactive CLI will guide you through:
-
-- Project naming
-- Component selection (agents, tools, workflows)
-- Default LLM provider selection
-- Example code inclusion
-- MCP server configuration for IDE integration
-
-### Manual Installation
-
-```bash
-# Create project directory
-mkdir my-mastra-project
-cd my-mastra-project
-
-# Initialize project with TypeScript
-npm init -y
-npm install typescript tsx @types/node mastra --save-dev
-npm install @mastra/core zod @ai-sdk/openai
-npx tsc --init
-
-# Create basic project structure
-mkdir -p src/mastra/{agents,tools,workflows}
-touch src/mastra/index.ts
-```
-
-### Environment Configuration
-
-Create a `.env` file in your project root:
-
-```plaintext
-OPENAI_API_KEY=your-openai-key
-# Or for other providers:
-# ANTHROPIC_API_KEY=your-anthropic-key
-# GOOGLE_API_KEY=your-google-key
-```
-
-## Static Export Support
-
-Mastra supports static exports for frameworks like Next.js, allowing AI functionality in environments without server-side capabilities.
-
-### Client-Side Implementation
-
-For static exports, Mastra functionality is moved from server to client:
-
-1. **Client Wrapper**: Create a client-side wrapper using the `fetch` API
-2. **External API Endpoints**: Configure external hosted API endpoints
-3. **Environment Variables**: Use `NEXT_PUBLIC_*` prefix for client-side access
-
-Example client-side wrapper:
+Agents provide LLM models with tools, workflows, and synced data:
 
 ```typescript
-// lib/mastra.ts
+import { Mastra } from "@mastra/core";
+import { createTool } from "@mastra/core";
+
+// Initialize Mastra
+const mastra = new Mastra({
+  apiKey: process.env.OPENAI_API_KEY,  // Required for OpenAI models
+});
+
+// Create an agent
+const weatherAgent = mastra.createAgent({
+  name: "weatherAgent",
+  description: "Provides weather information",
+  model: {
+    provider: "google",  // Using Google's Vertex AI
+    name: "gemini-1.5-pro",
+  },
+  tools: [myWeatherTool], // Custom tools for the agent
+});
+
+// Generate a response
+const response = await weatherAgent.generate("What's the weather in San Francisco?");
+```
+
+### Tools
+
+Tools are typed functions that can be executed by agents or workflows:
+
+```typescript
+import { createTool } from "@mastra/core";
+import { z } from "zod";
+
+// Define a weather tool
+const weatherTool = createTool({
+  name: "getWeather",
+  description: "Get the current weather for a location",
+  schema: z.object({
+    location: z.string().describe("The location to get weather for"),
+  }),
+  execute: async ({ location }) => {
+    // Fetch weather data from API
+    const response = await fetch(`https://api.weather.com?location=${encodeURIComponent(location)}`);
+    const data = await response.json();
+    return data;
+  },
+});
+```
+
+### Workflows
+
+Workflows are durable graph-based state machines that support:
+- Loops and branching
+- Human input
+- Nested workflows
+- Error handling and retries
+- Parsing operations
+
+```typescript
+import { createWorkflow } from "@mastra/core";
+
+// Define a workflow
+const orderProcessingWorkflow = createWorkflow({
+  name: "orderProcessing",
+  steps: {
+    validateOrder: {
+      run: async (context) => {
+        // Validation logic
+        const { orderId } = context.input;
+        // Return next step
+        return { nextStep: "processPayment", output: { orderId, isValid: true } };
+      },
+    },
+    processPayment: {
+      run: async (context) => {
+        // Payment processing logic
+        // Return next step
+        return { nextStep: "sendConfirmation" };
+      },
+    },
+    sendConfirmation: {
+      run: async (context) => {
+        // Send confirmation logic
+        return { nextStep: "end" };
+      },
+    },
+  },
+});
+
+// Execute workflow
+const result = await orderProcessingWorkflow.execute({
+  input: { orderId: "123" },
+});
+```
+
+### RAG (Retrieval Augmented Generation)
+
+Retrieval-augmented generation lets you construct a knowledge base for agents:
+
+```typescript
+import { Mastra } from "@mastra/core";
+import { createVectorStore } from "@mastra/pinecone";
+import { createRAG } from "@mastra/rag";
+
+// Initialize vector store
+const vectorStore = createVectorStore({
+  provider: "pinecone",
+  apiKey: process.env.PINECONE_API_KEY,
+  index: "my-index",
+});
+
+// Create RAG system
+const rag = createRAG({
+  vectorStore,
+  embedModel: "openai:text-embedding-ada-002",
+});
+
+// Add documents to knowledge base
+await rag.addDocuments([
+  { id: "1", text: "Document content 1", metadata: { source: "file1.txt" } },
+  { id: "2", text: "Document content 2", metadata: { source: "file2.txt" } },
+]);
+
+// Query the knowledge base
+const results = await rag.query({
+  text: "Query text",
+  topK: 3,
+});
+```
+
+### Memory and Storage
+
+Mastra provides memory solutions for conversational AI:
+
+```typescript
+import { createMemory } from "@mastra/memory";
+
+// Initialize memory
+const memory = createMemory({
+  provider: "upstash", // or "pinecone", "pg", "clickhouse", etc.
+  connection: { /* connection details */ },
+});
+
+// Store conversation context
+await memory.set("conversation-123", {
+  history: [
+    { role: "user", content: "Hello" },
+    { role: "assistant", content: "Hi there! How can I help you today?" }
+  ]
+});
+
+// Retrieve conversation context
+const context = await memory.get("conversation-123");
+```
+
+#### ClickHouse Integration
+
+Mastra provides integration with ClickHouse for high-performance analytics and storage:
+
+```typescript
+import { createMemory } from "@mastra/memory";
+import { ClickHouseProvider } from "@mastra/clickhouse";
+
+// Initialize ClickHouse provider
+const clickhouseProvider = new ClickHouseProvider({
+  host: process.env.CLICKHOUSE_HOST || "http://localhost:8123",
+  username: process.env.CLICKHOUSE_USER || "default",
+  password: process.env.CLICKHOUSE_PASSWORD || "",
+  database: process.env.CLICKHOUSE_DB || "default",
+});
+
+// Create memory instance with ClickHouse
+const memory = createMemory({
+  provider: "clickhouse",
+  connection: clickhouseProvider,
+});
+
+// Use memory for chat history and analytics
+await memory.set("conversation-123", {
+  history: [...messages],
+  metadata: {
+    userId: "user-123",
+    sessionId: "session-456",
+    analytics: { duration: 120, satisfaction: 0.95 }
+  }
+});
+
+// Query analytics data with ClickHouse's powerful SQL capabilities
+const analyticsData = await clickhouseProvider.executeQuery(`
+  SELECT
+    userId,
+    AVG(metadata.analytics.satisfaction) as avgSatisfaction
+  FROM conversations
+  GROUP BY userId
+  ORDER BY avgSatisfaction DESC
+  LIMIT 10
+`);
+```
+
+### Voice Integration
+
+Mastra supports voice synthesis with multiple providers:
+
+```typescript
+import { createVoice } from "@mastra/voice-elevenlabs"; // or voice-google
+
+// Initialize voice
+const voice = createVoice({
+  apiKey: process.env.ELEVENLABS_API_KEY,
+  voiceId: "voice-id",
+});
+
+// Convert text to speech
+const audio = await voice.textToSpeech("Hello, how can I help you today?");
+```
+
+## Static Export Implementation
+
+For static exports in Next.js, server-side Mastra functionality needs to be moved to external API endpoints. Below is the implementation pattern used in this project:
+
+### Client-Side Mastra Wrapper
+
+```typescript
+// src/lib/mastra.ts
 export const clientMastra = {
+  /**
+   * Get weather information for a specific city
+   */
   getWeatherInfo: async (city: string): Promise<any> => {
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_WEATHER_API_URL || "https://api.example.com/weather"}?city=${encodeURIComponent(city)}`
+        `${process.env.NEXT_PUBLIC_WEATHER_API_URL}?city=${encodeURIComponent(city)}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            ...(process.env.NEXT_PUBLIC_API_KEY ? { "x-api-key": process.env.NEXT_PUBLIC_API_KEY } : {}),
+          },
+        }
       );
 
       if (!response.ok) {
@@ -132,37 +265,39 @@ export const clientMastra = {
 
       return await response.json();
     } catch (error) {
-      console.error("Weather API error:", error);
-      return { error: true, message: error instanceof Error ? error.message : "Failed to fetch weather data" };
+      return {
+        error: true,
+        message: error instanceof Error ? error.message : "Failed to fetch weather data"
+      };
     }
   },
 
+  /**
+   * Stream chat completions
+   */
   streamChat: async (prompt: string): Promise<ReadableStream> => {
     try {
       const response = await fetch(
-        process.env.NEXT_PUBLIC_CHAT_API_URL || "https://api.example.com/chat",
+        process.env.NEXT_PUBLIC_CHAT_API_URL || "https://api.deanmachines.com/chat",
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            ...(process.env.NEXT_PUBLIC_API_KEY ? { "x-api-key": process.env.NEXT_PUBLIC_API_KEY } : {}),
+          },
           body: JSON.stringify({ prompt }),
         }
       );
 
-      if (!response.ok) {
-        throw new Error(`Chat API error: ${response.status}`);
-      }
-
       return response.body as ReadableStream;
     } catch (error) {
-      console.error("Chat API error:", error);
-      // Create a stream with error message
+      // Create a stream that contains an error message
       const encoder = new TextEncoder();
+      const message = error instanceof Error ? error.message : "Failed to connect to chat service";
+
       return new ReadableStream({
         start(controller) {
-          controller.enqueue(encoder.encode(JSON.stringify({
-            error: true,
-            message: error instanceof Error ? error.message : "Failed to connect"
-          })));
+          controller.enqueue(encoder.encode(JSON.stringify({ error: true, message })));
           controller.close();
         }
       });
@@ -171,537 +306,707 @@ export const clientMastra = {
 };
 ```
 
-### Backend Server Requirements
+## Server & Deployment
 
-Static exports require separate backend API services for Mastra functionality:
+### Mastra Server (@mastra/server)
 
-1. **External API Service**: Deploy Mastra agents and tools as serverless functions
-2. **Firebase Functions**: Example implementation with Firebase Cloud Functions
-3. **Environment Configuration**: Set API endpoints and authentication
-
-Example Firebase Function setup:
+The `@mastra/server` package allows you to create standalone API servers for your Mastra agents and workflows that can be deployed separately from your static Next.js application:
 
 ```typescript
-// Firebase function for Mastra agent
-import * as functions from 'firebase-functions';
-import { Mastra } from '@mastra/core';
-import { openai } from '@ai-sdk/openai';
-
-const mastra = new Mastra();
-
-const weatherAgent = mastra.createAgent({
-  name: "Weather Agent",
-  model: openai('gpt-4o-mini'),
-  instructions: "You provide weather information..."
-});
-
-export const weather = functions.https.onRequest(async (req, res) => {
-  // Set CORS headers
-  res.set('Access-Control-Allow-Origin', '*');
-
-  if (req.method === 'OPTIONS') {
-    res.set('Access-Control-Allow-Methods', 'GET');
-    res.set('Access-Control-Allow-Headers', 'Content-Type');
-    res.status(204).send('');
-    return;
-  }
-
-  try {
-    const { city } = req.query;
-
-    if (!city || typeof city !== 'string') {
-      return res.status(400).json({ error: 'City parameter is required' });
-    }
-
-    const result = await weatherAgent.generate(`What's the weather like in ${city}?`);
-
-    res.json(result);
-  } catch (error) {
-    console.error('Weather API error:', error);
-    res.status(500).json({
-      error: error instanceof Error ? error.message : 'Internal server error'
-    });
-  }
-});
-```
-
-## Components and APIs
-
-### Agents
-
-Agents are the central component of Mastra, providing an interface between LLMs and external tools.
-
-#### Creating an Agent
-
-```typescript
-import { openai } from "@ai-sdk/openai";
-import { Agent } from "@mastra/core/agent";
-
-export const weatherAgent = new Agent({
-  name: "Weather Agent",
-  instructions: `You are a helpful weather assistant that provides accurate weather information.`,
-  model: openai("gpt-4o-mini"),
-  tools: { weatherTool },
-});
-```
-
-#### Agent Methods
-
-```typescript
-// Generate a response
-const response = await agent.generate("What's the weather in London?");
-
-// Stream a response
-const stream = await agent.stream("Tell me a story");
-
-// Process the stream
-stream.processDataStream({
-  onTextPart: (text) => {
-    process.stdout.write(text);
-  },
-  onFilePart: (file) => {
-    console.log(file);
-  }
-});
-```
-
-### Tools
-
-Tools extend agent capabilities by allowing interaction with external systems and APIs.
-
-#### Creating a Tool
-
-```typescript
-import { createTool } from "@mastra/core/tools";
-import { z } from "zod";
-
-export const weatherTool = createTool({
-  id: "get-weather",
-  description: "Get current weather for a location",
-  inputSchema: z.object({
-    location: z.string().describe("City name"),
-  }),
-  outputSchema: z.object({
-    temperature: z.number(),
-    humidity: z.number(),
-    conditions: z.string(),
-  }),
-  execute: async ({ context }) => {
-    return await getWeatherData(context.location);
-  },
-});
-```
-
-#### Tool Types
-
-1. **Custom Tools**: Created with `createTool` for specific functionality
-2. **Vector Query Tools**: For RAG applications using vector databases
-3. **Document Chunker Tools**: For processing and chunking documents
-4. **Graph RAG Tools**: For graph-based retrieval augmented generation
-5. **MCP Tools**: For accessing Model Context Protocol capabilities
-
-### Workflows
-
-Workflows orchestrate complex processes involving multiple steps and agents.
-
-#### Creating a Workflow
-
-```typescript
-import { createWorkflowFromSteps } from "@mastra/core/workflow";
-import { z } from "zod";
-
-// Define steps
-const collectUserInfo = createStep({
-  id: "collect-user-info",
-  execution: async (context, { agent }) => {
-    const result = await agent.generate("Collect user information...");
-    return { userInfo: JSON.parse(result.text) };
-  },
-});
-
-const generateRecommendation = createStep({
-  id: "generate-recommendation",
-  execution: async (context, { agent }) => {
-    const userInfo = context.results.collectUserInfo.userInfo;
-    const prompt = `Generate recommendations for ${userInfo.name}...`;
-    return { recommendation: (await agent.generate(prompt)).text };
-  },
-});
-
-// Create workflow from steps
-export const recommendationWorkflow = createWorkflowFromSteps({
-  name: "RecommendationWorkflow",
-  steps: [collectUserInfo, generateRecommendation],
-  inputSchema: z.object({
-    userId: z.string(),
-    preferences: z.array(z.string()),
-  }),
-});
-```
-
-#### Workflow Methods
-
-```typescript
-// Create a run instance
-const { runId } = workflow.createRun();
-
-// Start the workflow
-const result = await workflow.startAsync({
-  runId,
-  triggerData: {
-    userId: "user123",
-    preferences: ["outdoor", "adventure"],
-  },
-});
-
-// Watch workflow transitions
-workflow.watch({ runId }, (record) => {
-  console.log({
-    activePaths: record.activePaths,
-    results: record.results,
-    timestamp: record.timestamp
-  });
-});
-```
-
-### Memory
-
-Mastra provides memory systems for maintaining conversation context and history.
-
-#### Memory Setup
-
-```typescript
-import { createMemoryAdapter } from "@mastra/memory";
+import { createServer } from "@mastra/server";
 import { Mastra } from "@mastra/core";
-
-// Initialize memory
-const memoryAdapter = createMemoryAdapter({
-  provider: "mem0", // Could be upstash, postgres, etc.
-  config: {
-    url: process.env.MEMORY_URL,
-  },
-});
-
-// Create Mastra instance with memory
-const mastra = new Mastra({
-  memory: memoryAdapter,
-});
-```
-
-#### Memory Operations
-
-```typescript
-// Create a memory thread
-const thread = await mastra.memory.createThread({
-  title: "User Conversation",
-  metadata: { userId: "user123" },
-});
-
-// Save messages to memory
-await mastra.memory.saveMessages({
-  messages: [
-    {
-      role: "user",
-      content: "Hello!",
-      threadId: thread.id,
-    }
-  ],
-});
-
-// Retrieve thread messages
-const messages = await mastra.memory.getThreadMessages(thread.id);
-```
-
-### Vectors and RAG
-
-Mastra supports Retrieval Augmented Generation (RAG) through vector stores and embedding models.
-
-#### Vector Store Setup
-
-```typescript
-import { createVectorStore } from "@mastra/core/vector";
-import { openai } from "@ai-sdk/openai";
-
-// Initialize vector store
-const vectorStore = createVectorStore({
-  provider: "pinecone",
-  indexName: "documents",
-  dimensions: 1536,
-});
-
-// Create vector query tool
-const queryTool = createVectorQueryTool({
-  vectorStoreName: "pinecone",
-  indexName: "documents",
-  model: openai.embedding('text-embedding-3-small'),
-});
-```
-
-#### RAG Operations
-
-```typescript
-// Add documents to vector store
-await vectorStore.addDocuments([
-  { content: "Document content...", metadata: { source: "article" } },
-]);
-
-// Query the vector store
-const results = await vectorStore.similaritySearch(
-  "What is Mastra?",
-  { k: 5 }
-);
-```
-
-### Voice and Speech
-
-Mastra supports voice interfaces through various providers.
-
-#### Voice Integration
-
-```typescript
-import { createSpeechToText, createTextToSpeech } from "@mastra/voice-google";
-
-// Create speech-to-text service
-const speechToText = createSpeechToText({
-  apiKey: process.env.GOOGLE_API_KEY,
-});
-
-// Create text-to-speech service
-const textToSpeech = createTextToSpeech({
-  apiKey: process.env.GOOGLE_API_KEY,
-  voice: "en-US-Standard-A",
-});
-
-// Speech-to-text conversion
-const transcription = await speechToText.transcribe(audioBuffer);
-
-// Text-to-speech conversion
-const audio = await textToSpeech.synthesize("Hello, world!");
-```
-
-## Integration Methods
-
-### Client-Side Integration
-
-For frontend applications, Mastra provides the `@mastra/client-js` package:
-
-```typescript
-import { MastraClient } from "@mastra/client-js";
-
-// Initialize client
-const client = new MastraClient({
-  baseUrl: "https://api.example.com/mastra",
-  apiKey: process.env.NEXT_PUBLIC_API_KEY,
-});
-
-// Use the client
-const agent = client.getAgent("weatherAgent");
-const response = await agent.generate("What's the weather in London?");
-```
-
-### Server-Side Integration
-
-For server applications, use the core Mastra library:
-
-```typescript
-import { Mastra } from "@mastra/core";
+import { weatherAgent } from "./agents/weather";
 
 // Initialize Mastra
 const mastra = new Mastra({
-  agents: { weatherAgent },
-  tools: { weatherTool },
+  apiKey: process.env.OPENAI_API_KEY,
 });
 
-// Start the server
-import { createServer } from "@mastra/server";
+// Register your agents
+mastra.registerAgent(weatherAgent);
 
+// Create server with custom routes
 const server = createServer({
   mastra,
-  port: 4111,
-});
-
-server.start();
-```
-
-### Next.js Integration
-
-#### API Routes
-
-```typescript
-// app/api/chat/route.ts
-import { mastra } from "@/mastra";
-import { NextResponse } from "next/server";
-
-export async function POST(req: Request) {
-  const { prompt } = await req.json();
-  const agent = mastra.getAgent("chatAgent");
-
-  const result = await agent.stream(prompt);
-  return result.toDataStreamResponse();
-}
-```
-
-#### Server Actions
-
-```typescript
-// app/actions.ts
-"use server";
-
-import { mastra } from "@/mastra";
-
-export async function getWeatherInfo(city: string) {
-  const agent = mastra.getAgent("weatherAgent");
-  const result = await agent.generate(`What's the weather like in ${city}?`);
-  return result;
-}
-```
-
-### Firebase Integration
-
-For static exports with Firebase:
-
-1. **Firebase Functions**: Deploy Mastra backend as Firebase Functions
-2. **Client Integration**: Use client-side wrappers to call Firebase Function endpoints
-3. **Authentication**: Integrate with Firebase Authentication
-
-## Advanced Features
-
-### MCP (Model Context Protocol)
-
-MCP enables communication between models and tools through a standardized protocol.
-
-#### MCP Server Configuration
-
-```json
-// .cursor/mcp.json
-{
-  "mcpServers": {
-    "mastra": {
-      "command": "npx",
-      "args": ["-y", "@mastra/mcp-docs-server@latest"]
-    }
-  }
-}
-```
-
-#### Using MCP with Agents
-
-```typescript
-import { MCPConfiguration } from '@mastra/mcp';
-import { Agent } from '@mastra/core/agent';
-import { openai } from '@ai-sdk/openai';
-
-// Configure MCP
-const mcp = new MCPConfiguration({
-  servers: {
-    fetch: {
-      command: "npx",
-      args: ["tsx", "fetch-server.ts"],
-    },
+  cors: {
+    origin: ["https://deanmachines.com", "https://deanmachines-front.web.app"],
+    methods: ["GET", "POST"],
   },
-});
-
-// Create agent with MCP tools
-const agent = new Agent({
-  name: "Web Agent",
-  instructions: "You can fetch data from websites",
-  model: openai("gpt-4"),
-  tools: await mcp.getTools(),
-});
-```
-
-### Evaluation and Testing
-
-Mastra provides evaluation tools for testing agent performance:
-
-```typescript
-import { createEval } from "@mastra/evals";
-
-// Create evaluation
-const weatherEval = createEval({
-  name: "weather-accuracy",
-  description: "Evaluates weather information accuracy",
-  tests: [
+  routes: [
     {
-      input: "What's the weather in London?",
-      assertion: (response) => {
-        return response.includes("temperature") && response.includes("London");
+      path: "/weather",
+      method: "get",
+      handler: async (req, res) => {
+        try {
+          const { city } = req.query;
+          const agent = mastra.getAgent("weatherAgent");
+          const result = await agent.generate(`What's the weather like in ${city}?`);
+          res.json(result);
+        } catch (error) {
+          res.status(500).json({ error: "Failed to get weather data" });
+        }
+      },
+    },
+    {
+      path: "/chat",
+      method: "post",
+      handler: async (req, res) => {
+        try {
+          const { prompt } = req.body;
+          const agent = mastra.getAgent("writerAgent");
+
+          // For streaming responses
+          res.setHeader("Content-Type", "text/event-stream");
+          res.setHeader("Cache-Control", "no-cache");
+          res.setHeader("Connection", "keep-alive");
+
+          const stream = await agent.stream(prompt);
+
+          for await (const chunk of stream) {
+            res.write(`data: ${JSON.stringify(chunk)}\n\n`);
+          }
+
+          res.end();
+        } catch (error) {
+          res.status(500).json({ error: "Chat error" });
+        }
       },
     },
   ],
 });
 
-// Run evaluation
-const results = await weatherEval.run(weatherAgent);
-console.log(results);
+// Start server
+server.listen(4111, () => {
+  console.log("Mastra server running on http://localhost:4111");
+});
 ```
 
-## Deployment Options
+### Mastra Deployer (@mastra/deployer) with Firebase/Google Cloud
 
-### Firebase Deployment
+Based on verified research, the `@mastra/deployer` package provides tools for deploying Mastra applications to Firebase and Google Cloud:
 
-1. **Firebase Functions**: Deploy Mastra backend
+```typescript
+import { createDeployer } from "@mastra/deployer";
+import { firebase } from "@mastra/deployer/providers/firebase";
+import * as dotenv from "dotenv";
 
-   ```bash
-   firebase deploy --only functions
-   ```
+/**
+ * Deploy Mastra application to Firebase/Google Cloud Functions
+ *
+ * @returns {Promise<void>}
+ */
+async function deployToGoogleCloud(): Promise<void> {
+  // Load environment variables
+  dotenv.config();
 
-2. **Firebase Hosting**: Deploy static frontend
+  try {
+    console.log("Initializing Mastra deployer for Google Cloud (Firebase)...");
 
-   ```bash
-   npm run build && firebase deploy --only hosting
-   ```
+    // Create deployer with Firebase provider
+    const deployer = createDeployer({
+      provider: firebase({
+        projectId: process.env.FIREBASE_PROJECT_ID || "deanmachines-front",
+        // Optional: path to service account credentials for CI/CD environments
+        serviceAccountPath: process.env.GOOGLE_APPLICATION_CREDENTIALS,
+      }),
 
-### Vercel Deployment
+      // Deployment configuration
+      config: {
+        name: "mastra-api",
+        // Main entry point for your Firebase Functions
+        entrypoint: "./functions/src/index.ts",
 
-For Next.js applications:
+        // Environment variables to be securely stored in Firebase Functions
+        envVars: {
+          // AI provider keys
+          OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+          ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
+          GOOGLE_GENERATIVE_AI_KEY: process.env.GOOGLE_GENERATIVE_AI_KEY,
+
+          // Vertex AI configuration
+          GOOGLE_PROJECT_ID: process.env.GOOGLE_PROJECT_ID,
+          VERTEX_AI_LOCATION: process.env.VERTEX_AI_LOCATION || "us-central1",
+          VERTEX_CREDENTIALS_FILE: "/path/to/vertex-credentials.json",
+
+          // Vector store configuration
+          PINECONE_API_KEY: process.env.PINECONE_API_KEY,
+          PINECONE_ENVIRONMENT: process.env.PINECONE_ENVIRONMENT,
+
+          // Frontend URLs for CORS
+          ALLOWED_ORIGINS: process.env.ALLOWED_ORIGINS || "https://deanmachines-front.web.app,https://deanmachines.com",
+        },
+
+        // Firebase-specific configuration
+        firebase: {
+          region: process.env.FIREBASE_REGION || "us-central1", // Default region for functions
+          runtime: "nodejs20",                                 // Node.js runtime version
+          memory: process.env.FUNCTION_MEMORY || "1GB",        // Memory allocation (LLM operations need more)
+          timeoutSeconds: 540,                                 // Maximum execution time (9 minutes)
+          minInstances: 0,                                     // Minimum instances to keep warm
+          maxInstances: 10,                                    // Maximum instances for scaling
+        },
+      },
+    });
+
+    console.log("Starting deployment to Firebase/Google Cloud...");
+    const deployment = await deployer.deploy();
+
+    console.log(`Deployment successful!`);
+    console.log(`Functions available at: ${deployment.url}`);
+
+  } catch (error) {
+    console.error("Deployment failed:", error);
+    process.exit(1);
+  }
+}
+
+// Run the deployment
+deployToGoogleCloud().catch(console.error);
+```
+
+## Implementing Firebase/Google Cloud Functions with Mastra and Vertex AI
+
+Based on verified research, the following implementation demonstrates how to use Firebase Functions with Mastra and Google Vertex AI for static exports:
+
+### Firebase Functions Setup for Mastra
+
+```typescript
+// functions/src/index.ts
+import * as functions from 'firebase-functions';
+import { Mastra } from '@mastra/core';
+import { createTool } from '@mastra/core';
+import { z } from 'zod';
+
+// Import Google AI SDK integration for Vertex AI
+import { GoogleVertexAI } from '@ai-sdk/google-vertex';
+
+/**
+ * Initialize Mastra with Vertex AI integration
+ *
+ * @returns {Promise<Mastra>} Configured Mastra instance
+ */
+async function initMastra(): Promise<Mastra> {
+  // Get authentication configuration from environment
+  const projectId = process.env.GOOGLE_PROJECT_ID;
+  const location = process.env.VERTEX_AI_LOCATION || 'us-central1';
+
+  if (!projectId) {
+    throw new Error("Missing required environment variable: GOOGLE_PROJECT_ID");
+  }
+
+  // Initialize Google Vertex AI provider
+  const vertexAI = new GoogleVertexAI({
+    projectId,
+    location,
+    // Defaults to Application Default Credentials when deployed to GCP
+    // Can also use explicit credentials path for local development
+    credentials: process.env.VERTEX_CREDENTIALS_FILE
+      ? JSON.parse(require('fs').readFileSync(process.env.VERTEX_CREDENTIALS_FILE, 'utf8'))
+      : undefined,
+  });
+
+  // Initialize Mastra with configured providers
+  const mastra = new Mastra({
+    // Configure AI providers
+    providers: {
+      google: vertexAI,
+    },
+    // Optional: Add logging for Firebase
+    logger: {
+      info: console.info,
+      warn: console.warn,
+      error: console.error,
+      debug: process.env.NODE_ENV !== 'production' ? console.debug : () => {},
+    },
+  });
+
+  // Register agents and tools
+  await setupAgents(mastra);
+
+  return mastra;
+}
+
+/**
+ * Setup Mastra agents with Google Vertex AI models
+ *
+ * @param {Mastra} mastra - Mastra instance
+ */
+async function setupAgents(mastra: Mastra): Promise<void> {
+  // Create a weather tool
+  const weatherTool = createTool({
+    name: 'getWeather',
+    description: 'Get current weather information for a location',
+    schema: z.object({
+      location: z.string().describe('The city or location to get weather for'),
+    }),
+    execute: async ({ location }) => {
+      // In production, you would call a weather API
+      // Mock response for demonstration
+      return {
+        location,
+        temperature: Math.round(10 + Math.random() * 20),
+        condition: ['Sunny', 'Cloudy', 'Rainy', 'Snowy'][Math.floor(Math.random() * 4)],
+        humidity: Math.round(30 + Math.random() * 50),
+      };
+    },
+  });
+
+  // Register a weather agent using Google Vertex AI
+  mastra.createAgent({
+    name: 'weatherAgent',
+    description: 'Provides weather information',
+    model: {
+      provider: 'google', // Using Google's Vertex AI
+      name: 'gemini-1.5-pro', // Or another supported model
+    },
+    tools: [weatherTool],
+    // Additional configuration for the agent
+    configuration: {
+      temperature: 0.2,
+      maxOutputTokens: 500,
+    },
+  });
+
+  // Create a writing agent
+  mastra.createAgent({
+    name: 'writerAgent',
+    description: 'Assists with creative writing and content generation',
+    model: {
+      provider: 'google',
+      name: 'gemini-1.5-flash', // Using a faster model for content generation
+    },
+    // No specific tools needed for basic text generation
+    configuration: {
+      temperature: 0.7, // Higher creativity
+      maxOutputTokens: 1000,
+    },
+  });
+}
+
+// Parse CORS configuration
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',')
+  : ['https://deanmachines-front.web.app', 'https://deanmachines.com'];
+
+// Helper for handling CORS
+const handleCors = (req: functions.https.Request, res: functions.Response) => {
+  // Check if the request origin is in our allowed origins
+  const origin = req.headers.origin;
+
+  if (origin && allowedOrigins.includes(origin)) {
+    res.set('Access-Control-Allow-Origin', origin);
+  } else {
+    // Default when origin header is missing
+    res.set('Access-Control-Allow-Origin', allowedOrigins[0]);
+  }
+
+  res.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-api-key');
+  res.set('Access-Control-Max-Age', '3600');
+};
+
+// Weather endpoint using Mastra agent with Vertex AI
+export const weather = functions
+  .runWith({
+    timeoutSeconds: 300,  // 5 minutes
+    memory: '1GB',        // 1GB of memory
+  })
+  .https.onRequest(async (req, res) => {
+    // Handle CORS preflight requests
+    if (req.method === 'OPTIONS') {
+      handleCors(req, res);
+      res.status(204).send('');
+      return;
+    }
+
+    handleCors(req, res);
+
+    try {
+      const mastra = await initMastra();
+      const { city } = req.query;
+
+      if (!city || typeof city !== 'string') {
+        return res.status(400).json({ error: 'City parameter is required' });
+      }
+
+      const agent = mastra.getAgent('weatherAgent');
+      const result = await agent.generate(`What's the weather like in ${city}?`);
+
+      res.json(result);
+    } catch (error) {
+      console.error('Weather API error:', error);
+      res.status(500).json({
+        error: error instanceof Error ? error.message : 'Internal server error'
+      });
+    }
+  });
+
+// Chat streaming endpoint using Mastra agent with Vertex AI
+export const chat = functions
+  .runWith({
+    timeoutSeconds: 540,  // 9 minutes (max allowed)
+    memory: '1GB',        // 1GB of memory
+  })
+  .https.onRequest(async (req, res) => {
+    // Handle CORS preflight requests
+    if (req.method === 'OPTIONS') {
+      handleCors(req, res);
+      res.status(204).send('');
+      return;
+    }
+
+    handleCors(req, res);
+
+    try {
+      if (req.method !== 'POST') {
+        return res.status(405).json({ error: 'Method not allowed' });
+      }
+
+      const mastra = await initMastra();
+      const { prompt } = req.body;
+
+      if (!prompt || typeof prompt !== 'string') {
+        return res.status(400).json({ error: 'Prompt parameter is required' });
+      }
+
+      const agent = mastra.getAgent('writerAgent');
+
+      // Configure response for streaming
+      res.setHeader('Content-Type', 'text/event-stream');
+      res.setHeader('Cache-Control', 'no-cache');
+      res.setHeader('Connection', 'keep-alive');
+
+      // Stream the response using Vertex AI
+      const stream = await agent.stream(prompt);
+
+      // Process each chunk in the stream
+      for await (const chunk of stream) {
+        // Send the chunk as an SSE event
+        res.write(`data: ${JSON.stringify(chunk)}\n\n`);
+      }
+
+      // End the response
+      res.end();
+    } catch (error) {
+      console.error('Chat API error:', error);
+
+      if (!res.headersSent) {
+        res.status(500).json({
+          error: error instanceof Error ? error.message : 'Internal server error'
+        });
+      } else {
+        // If streaming has started, send error as SSE event
+        res.write(`data: ${JSON.stringify({ error: 'Stream error occurred' })}\n\n`);
+        res.end();
+      }
+    }
+  });
+```
+
+## Setting Up Google Cloud / Firebase for Mastra Deployment
+
+### 1. Project Setup in Google Cloud Console
+
+1. Create a new project or use an existing one in the [Google Cloud Console](https://console.cloud.google.com/)
+2. Enable the required APIs:
+   - Cloud Functions API
+   - Cloud Build API
+   - Vertex AI API
+   - Firebase Admin API
+   - IAM API
+   - Secret Manager API (for securely storing API keys)
+
+### 2. Service Account Setup
+
+1. Create a service account for deployment in the Google Cloud Console
+2. Grant the following roles:
+   - Cloud Functions Admin
+   - Cloud Run Admin
+   - Storage Admin
+   - Service Account User
+   - Vertex AI User
+3. Generate and download a JSON key for the service account
+4. Store the key securely and reference it in your deployment scripts
+
+### 3. Firebase Project Setup
+
+1. Create a new Firebase project or link your existing Google Cloud project
+2. Enable Firebase Hosting
+3. Configure your firebase.json file:
+
+```json
+{
+  "hosting": {
+    "public": "out",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "rewrites": [
+      {
+        "source": "/api/weather",
+        "function": "weather"
+      },
+      {
+        "source": "/api/chat",
+        "function": "chat"
+      },
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ],
+    "headers": [
+      {
+        "source": "**/*.@(js|css|jpg|jpeg|gif|png)",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=31536000, immutable"
+          }
+        ]
+      }
+    ]
+  },
+  "functions": {
+    "source": "functions",
+    "runtime": "nodejs20",
+    "predeploy": [
+      "npm --prefix \"$RESOURCE_DIR\" run build"
+    ]
+  },
+  "emulators": {
+    "functions": {
+      "port": 5001
+    },
+    "hosting": {
+      "port": 5000
+    },
+    "ui": {
+      "enabled": true
+    }
+  }
+}
+```
+
+### 4. Functions Directory Setup
+
+1. Create a functions directory structure:
+
+```
+functions/
+├── package.json
+├── tsconfig.json
+├── src/
+│   ├── index.ts          # Main entry point with Firebase Functions
+│   ├── mastra.ts         # Mastra configuration
+│   ├── agents/           # Agent definitions
+│   │   ├── index.ts
+│   │   ├── weather.ts
+│   │   └── writer.ts
+│   ├── tools/            # Custom tools
+│   │   ├── index.ts
+│   │   └── weather.ts
+│   └── utils/            # Utility functions
+│       └── index.ts
+```
+
+2. Configure `functions/package.json`:
+
+```json
+{
+  "name": "deanmachines-mastra-functions",
+  "version": "1.0.0",
+  "description": "Firebase Functions for Mastra AI integration",
+  "main": "lib/index.js",
+  "scripts": {
+    "build": "tsc",
+    "deploy": "firebase deploy --only functions",
+    "serve": "npm run build && firebase emulators:start --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "20"
+  },
+  "dependencies": {
+    "@ai-sdk/google": "^1.2.10",
+    "@ai-sdk/google-vertex": "^2.2.14",
+    "@ai-sdk/provider": "^1.1.2",
+    "@mastra/core": "^0.8.2",
+    "@mastra/memory": "^0.2.9",
+    "@mastra/clickhouse": "^0.2.9",
+    "firebase-admin": "^12.0.0",
+    "firebase-functions": "^4.5.0",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3",
+    "firebase-functions-test": "^3.1.1",
+    "@types/node": "^20.10.5"
+  },
+  "private": true
+}
+```
+
+3. Configure TypeScript (`functions/tsconfig.json`):
+
+```json
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "outDir": "lib",
+    "strict": true,
+    "target": "es2020",
+    "skipLibCheck": true,
+    "esModuleInterop": true
+  },
+  "compileOnSave": true,
+  "include": [
+    "src"
+  ]
+}
+```
+
+### 5. Setting Environment Variables for Firebase Functions
+
+To securely set environment variables for Firebase Functions:
 
 ```bash
-vercel deploy
+# Set up Google API keys
+firebase functions:config:set google.project_id="your-google-project-id"
+firebase functions:config:set google.location="us-central1"
+
+# Set up Vertex AI configuration
+firebase functions:config:set vertexai.model="gemini-1.5-pro"
+
+# Set up API keys for other providers (if used)
+firebase functions:config:set openai.key="your-openai-api-key"
+firebase functions:config:set anthropic.key="your-anthropic-api-key"
+
+# Set up allowed origins for CORS
+firebase functions:config:set cors.origins="https://deanmachines-front.web.app,https://deanmachines.com"
 ```
 
-### Docker Deployment
+### 6. Automation Scripts for Deployment
 
-```dockerfile
-FROM node:20-alpine
-WORKDIR /app
-COPY package*.json ./
-RUN npm install
-COPY . .
-RUN npm run build
-CMD ["npm", "start"]
+Create a deployment script in your root directory:
+
+```typescript
+// scripts/deploy.ts
+import { execSync } from 'child_process';
+import * as dotenv from 'dotenv';
+import * as fs from 'fs';
+
+// Load environment variables
+dotenv.config();
+
+/**
+ * Deploy frontend and backend for static exports with Mastra
+ */
+async function deploy() {
+  try {
+    // Ensure we have the necessary environment variables
+    const requiredEnvVars = [
+      'GOOGLE_PROJECT_ID',
+      'FIREBASE_PROJECT_ID'
+    ];
+
+    const missing = requiredEnvVars.filter(envVar => !process.env[envVar]);
+    if (missing.length > 0) {
+      throw new Error(`Missing required environment variables: ${missing.join(', ')}`);
+    }
+
+    // Build Next.js static export
+    console.log('Building Next.js static export...');
+    execSync('next build', { stdio: 'inherit' });
+
+    // Deploy Firebase Functions
+    console.log('Deploying Firebase Functions...');
+    execSync('cd functions && npm run build && cd .. && firebase deploy --only functions', {
+      stdio: 'inherit',
+    });
+
+    // Deploy Firebase Hosting (static files)
+    console.log('Deploying Firebase Hosting...');
+    execSync('firebase deploy --only hosting', { stdio: 'inherit' });
+
+    console.log('Deployment completed successfully!');
+  } catch (error) {
+    console.error('Deployment failed:', error);
+    process.exit(1);
+  }
+}
+
+deploy().catch(console.error);
 ```
 
-## Troubleshooting and Best Practices
+Add this to your package.json scripts:
 
-### Common Issues
+```json
+"scripts": {
+  "dev": "next dev",
+  "build": "next build",
+  "start": "next start",
+  "lint": "next lint",
+  "deploy": "ts-node scripts/deploy.ts",
+  "deploy:functions": "cd functions && npm run deploy",
+  "deploy:hosting": "next build && firebase deploy --only hosting"
+}
+```
 
-1. **API Key Configuration**: Ensure API keys are properly set in environment variables
-2. **Memory Persistence**: Use appropriate memory adapters for your deployment environment
-3. **Static Export Limitations**: Be aware of client-side limitations in static exports
+## MCP (Model Context Protocol) Integration
 
-### Best Practices
+Mastra provides an MCP documentation server that gives AI assistants and IDE's structured access to Mastra's knowledge base:
 
-1. **Modular Design**: Use separate files for agents, tools, and workflows
-2. **Error Handling**: Implement comprehensive error handling in tool execution
-3. **Input Validation**: Use Zod schemas to validate inputs and outputs
-4. **Testing**: Create evaluation tests for agents to ensure reliability
+```bash
+# Install with
+pnpm create mastra@latest
+# Select Cursor or Windsurf when prompted to install MCP server
+```
 
-## References and Resources
+## Environment Variables for Static Export
 
-### Official Resources
+Configure the following environment variables for Mastra in static exports:
 
-- [Mastra Documentation](https://mastra.ai/docs)
-- [Mastra GitHub Repository](https://github.com/mastra-ai/mastra)
-- [Mastra Examples](https://github.com/mastra-ai/examples)
+```
+# Base URL of Mastra API
+NEXT_PUBLIC_MASTRA_API_URL=https://us-central1-deanmachines-front.cloudfunctions.net/mastra
 
-### Community Resources
+# API key for authentication
+NEXT_PUBLIC_API_KEY=your-api-key-here
 
-- [Mastra Discord Community](https://discord.gg/mastra)
-- [Mastra Blog](https://mastra.ai/blog)
+# Specific endpoint URLs
+NEXT_PUBLIC_WEATHER_API_URL=https://us-central1-deanmachines-front.cloudfunctions.net/weather
+NEXT_PUBLIC_CHAT_API_URL=https://us-central1-deanmachines-front.cloudfunctions.net/chat
 
-### Related Technologies
+# Site URL for SEO
+NEXT_PUBLIC_SITE_URL=https://deanmachines-front.web.app
+```
 
-- [Model Context Protocol](https://modelcontextprotocol.github.io/)
-- [AI SDK](https://ai-sdk.dev)
-- [LangChain](https://js.langchain.com)
+## Package Versions
+
+Current versions of Mastra packages in this project:
+
+| Package | Version |
+| ------- | ------- |
+| @mastra/client-js | 0.1.16 |
+| @mastra/core | 0.8.2 |
+| @mastra/loggers | 0.1.17 |
+| @mastra/memory | 0.2.9 |
+| @mastra/pinecone | 0.2.7 |
+| @mastra/rag | 0.1.17 |
+| @mastra/upstash | 0.2.4 |
+| @mastra/vector-pinecone | 0.1.5 |
+| @mastra/voice-elevenlabs | 0.1.12 |
+| @mastra/voice-google | 0.1.12 |
+| @mastra/clickhouse | 0.2.9 |
+| @mastra/deployer | 0.2.8 |
+| @agentic/mastra | 7.6.4 |
+| @ai-sdk/google | 1.2.10 |
+| @ai-sdk/google-vertex | 2.2.14 |
+
+## Additional Resources
+
+- [Official Mastra Documentation](https://docs.mastra.ai)
+- [Google Vertex AI Documentation](https://cloud.google.com/vertex-ai/docs)
+- [Firebase Functions Documentation](https://firebase.google.com/docs/functions)
+- [Firebase Hosting Documentation](https://firebase.google.com/docs/hosting)
