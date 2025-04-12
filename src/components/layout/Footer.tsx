@@ -5,6 +5,17 @@ import Link from "next/link";
 import { Github, Twitter, Linkedin, ArrowUpRight } from "lucide-react";
 import { motion } from "framer-motion";
 
+// Separate component for the year to prevent hydration mismatches
+function FooterYear() {
+  const [year, setYear] = React.useState<number | null>(null);
+
+  React.useEffect(() => {
+    setYear(new Date().getFullYear());
+  }, []);
+
+  return <>{year ?? 2025}</>;
+}
+
 import { siteConfig } from "@/config/site";
 import { IconWrapper } from "@/components/common/IconWrapper";
 import { Button } from "@/components/ui/button";
@@ -83,11 +94,9 @@ export function Footer() {
             className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-background p-8 shadow-lg"
           >
             <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-primary/10 blur-2xl" />
-            <div className="absolute bottom-0 left-1/2 h-32 w-96 -translate-x-1/2 bg-primary/5 blur-2xl" />
-
-            <div className="relative grid gap-6 md:grid-cols-2 md:gap-10">
+            <div className="absolute bottom-0 left-1/2 h-32 w-96 -translate-x-1/2 bg-primary/5 blur-2xl" />            <div className="relative grid gap-6 md:grid-cols-2 md:gap-10">
               <div>
-                <h3 className="text-2xl font-semibold tracking-tight">
+                <h3 className="text-2xl font-semibold tracking-tight bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">
                   Stay up to date
                 </h3>
                 <p className="mt-2 text-muted-foreground">
@@ -95,16 +104,20 @@ export function Footer() {
                 </p>
               </div>
               <div className="flex flex-col space-y-3 sm:flex-row sm:space-x-3 sm:space-y-0">
-                <Input
-                  type="email"
-                  placeholder="Enter your email"
-                  className="h-12 w-full bg-background/70 transition-all duration-300 focus-visible:bg-background"
-                />
+                <div className="relative w-full group">
+                  <Input
+                    type="email"
+                    placeholder="Enter your email"
+                    className="h-12 w-full bg-background/70 transition-all duration-300 focus-visible:bg-background pr-10 border-primary/20 focus-visible:border-primary/50 focus-visible:ring-primary/20"
+                  />
+                  <div className="absolute bottom-0 left-0 h-[2px] w-0 bg-gradient-to-r from-primary to-primary/40 group-focus-within:w-full transition-all duration-500"></div>
+                </div>
                 <Button
                   type="submit"
-                  className="h-12 px-8 transition-all duration-300 hover:scale-105"
+                  className="h-12 px-8 transition-all duration-300 hover:scale-105 rounded-full shadow-lg shadow-primary/10 hover:shadow-primary/20 relative overflow-hidden group"
                 >
-                  Subscribe
+                  <span className="absolute inset-0 w-0 bg-gradient-to-r from-white/10 to-transparent group-hover:w-full transition-all duration-500"></span>
+                  <span className="relative">Subscribe</span>
                 </Button>
               </div>
             </div>
@@ -200,21 +213,19 @@ export function Footer() {
               </motion.ul>
             </motion.div>
           ))}
-        </div>
-
-        {/* Bottom Copyright Bar */}
+        </div>        {/* Bottom Copyright Bar */}
         <div className="mt-16 flex flex-col items-center space-y-4 border-t border-border pt-8 text-sm md:flex-row md:justify-between md:space-y-0">
           <p className="text-muted-foreground text-center md:text-left">
-            © {new Date().getFullYear()} {siteConfig.name}. All rights reserved.
+            © <FooterYear /> {siteConfig.name}. All rights reserved.
           </p>
           <div className="flex flex-wrap justify-center space-x-4 md:justify-end md:space-x-6">
-            <Link href="/terms" className="text-muted-foreground underline-offset-4 hover:underline">
+            <Link href="/terms" className="text-muted-foreground transition-colors hover:text-primary underline-offset-4 hover:underline">
               Terms of Service
             </Link>
-            <Link href="/privacy" className="text-muted-foreground underline-offset-4 hover:underline">
+            <Link href="/privacy" className="text-muted-foreground transition-colors hover:text-primary underline-offset-4 hover:underline">
               Privacy Policy
             </Link>
-            <Link href="/cookies" className="text-muted-foreground underline-offset-4 hover:underline">
+            <Link href="/cookies" className="text-muted-foreground transition-colors hover:text-primary underline-offset-4 hover:underline">
               Cookie Policy
             </Link>
           </div>

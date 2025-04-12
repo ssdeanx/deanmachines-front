@@ -109,23 +109,24 @@ export function Breadcrumb({
             {index > 0 || showHomeIcon ? separatorElement : null}
 
             {/* Render as link if it has href and is not the last item */}
-            {item.href && index !== lastIndex ? (
-              <Link
-                href={item.href}
-                className="group inline-flex items-center gap-1.5 hover:text-foreground transition-all duration-300
-                  truncate rounded-md py-0.5 px-1 hover:bg-accent/20 active:scale-95 motion-reduce:transform-none"
-              >
-                {item.icon && (
-                  <IconWrapper
-                    icon={item.icon}
-                    size="sm"
-                    className="text-muted-foreground/70 group-hover:text-muted-foreground transition-colors"
-                  />
-                )}
-                <span className="truncate max-w-[180px] @md:max-w-[240px] @lg:max-w-none">
-                  {item.title}
-                </span>
-              </Link>
+            {item.href && index !== lastIndex ? (            <Link
+              href={item.href}
+              className="group inline-flex items-center gap-1.5 hover:text-foreground transition-all duration-300
+                  truncate rounded-md py-0.5 px-1.5 hover:bg-accent/20 hover:shadow-sm active:scale-95 motion-reduce:transform-none
+                  relative overflow-hidden isolate"
+            >
+              <span className="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" aria-hidden="true"></span>
+              {item.icon && (
+                <IconWrapper
+                  icon={item.icon}
+                  size="sm"
+                  className="text-muted-foreground/70 group-hover:text-primary transition-colors z-10"
+                />
+              )}
+              <span className="truncate max-w-[180px] @md:max-w-[240px] @lg:max-w-none z-10">
+                {item.title}
+              </span>
+            </Link>
             ) : (
               <span
                 className="flex items-center gap-1.5 text-foreground font-medium truncate

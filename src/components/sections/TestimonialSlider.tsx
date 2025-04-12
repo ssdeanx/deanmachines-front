@@ -311,11 +311,9 @@ export function TestimonialSlider() {
                   <TestimonialCard testimonial={testimonial} index={index} />
                 </CarouselItem>
               ))}
-            </CarouselContent>
-
-            <div className="mt-8 flex items-center justify-center gap-4">
+            </CarouselContent>            <div className="mt-8 flex items-center justify-center gap-4">
               <CarouselPrevious
-                className="static mx-0 flex h-10 w-10 translate-y-0 border-primary/20 bg-background/80 hover:bg-primary/10 hover:text-primary backdrop-blur-sm transition-colors"
+                className="static mx-0 flex h-10 w-10 translate-y-0 border border-primary/20 bg-background/80 hover:bg-primary/10 hover:text-primary hover:scale-110 hover:border-primary/40 backdrop-blur-sm transition-all duration-300 shadow-sm hover:shadow-md active:scale-95"
               />
 
               <div className="flex gap-2">
@@ -324,7 +322,7 @@ export function TestimonialSlider() {
                     key={index}
                     onClick={() => api?.scrollTo(index)}
                     aria-label={`Go to slide ${index + 1}`}
-                    className="group relative h-3 w-8 overflow-hidden rounded-full transition-colors"
+                    className="group relative h-3 w-8 overflow-hidden rounded-full transition-all duration-300"
                   >
                     <span
                       className={cn(
@@ -333,16 +331,21 @@ export function TestimonialSlider() {
                     />
                     <span
                       className={cn(
-                        "absolute inset-0 origin-left rounded-full bg-primary transition-transform duration-500",
-                        index === current ? "scale-x-100" : "scale-x-0"
+                        "absolute inset-0 origin-left rounded-full bg-primary transition-all duration-500",
+                        index === current
+                          ? "scale-x-100 bg-gradient-to-r from-primary via-primary/80 to-primary/70"
+                          : "scale-x-0"
                       )}
                     />
+                    {index === current && (
+                      <span className="absolute inset-0 bg-primary/50 animate-pulse-slow rounded-full blur-md -z-10"></span>
+                    )}
                   </button>
                 ))}
               </div>
 
               <CarouselNext
-                className="static mx-0 flex h-10 w-10 translate-y-0 border-primary/20 bg-background/80 hover:bg-primary/10 hover:text-primary backdrop-blur-sm transition-colors"
+                className="static mx-0 flex h-10 w-10 translate-y-0 border border-primary/20 bg-background/80 hover:bg-primary/10 hover:text-primary hover:scale-110 hover:border-primary/40 backdrop-blur-sm transition-all duration-300 shadow-sm hover:shadow-md active:scale-95"
               />
             </div>
           </Carousel>

@@ -197,23 +197,23 @@ export function DocsSearch({ className, ...props }: React.ComponentPropsWithoutR
   }, [])
 
   return (
-    <>
-      <Button
+    <>      <Button
         variant="outline"
         className={cn(
           "relative h-9 w-full justify-start rounded-[0.5rem] text-sm text-muted-foreground sm:pr-12 md:w-40 lg:w-64",
+          "transition-all duration-300 border-primary/20 hover:border-primary hover:bg-accent/20 group",
+          "backdrop-blur-sm bg-background/60",
           className
         )}
         onClick={() => setOpen(true)}
         {...props}
       >
-        <SearchIcon className="mr-2 h-4 w-4" />
-        Search docs...
-        <kbd className="pointer-events-none absolute right-1.5 top-2 hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
+        <SearchIcon className="mr-2 h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors duration-300" />
+        <span className="transition-colors duration-300 group-hover:text-foreground">Search docs...</span>
+        <div className="pointer-events-none absolute right-1.5 top-2 hidden h-5 select-none items-center gap-1 rounded border border-primary/20 bg-background/60 backdrop-blur-sm px-1.5 font-mono text-[10px] font-medium opacity-100 shadow-sm sm:flex group-hover:bg-accent/20 transition-colors duration-300">
           <span className="text-xs">⌘</span>K
-        </kbd>
-      </Button>
-      <CommandDialog
+        </div>
+      </Button>      <CommandDialog
         open={open}
         onOpenChange={(open) => {
           setOpen(open)
@@ -222,16 +222,22 @@ export function DocsSearch({ className, ...props }: React.ComponentPropsWithoutR
             setQuery("")
           }
         }}
-        shouldFilter={false} // Disable built-in filtering since we handle it in the hook
       >
         <CommandInput
           placeholder="Search documentation..."
           value={query}
           onValueChange={setQuery}
-          className="border-b"
+          className="border-b border-border/30 focus-visible:ring-primary/20 focus-visible:ring-offset-0"
         />
-        <CommandList className="max-h-[80vh] overflow-y-auto">
-          <CommandEmpty>No results found</CommandEmpty>
+        <CommandList className="max-h-[80vh] overflow-y-auto scrollbar-thin scrollbar-thumb-primary/20 scrollbar-track-transparent">
+          <CommandEmpty className="py-6 text-center text-sm italic text-muted-foreground">
+            <div className="flex flex-col items-center gap-2">
+              <div className="rounded-full bg-accent/50 p-2">
+                <SearchIcon className="h-5 w-5 text-primary/60" />
+              </div>
+              <p>No results found for "<span className="font-medium text-foreground">{query}</span>"</p>
+            </div>
+          </CommandEmpty>
 
           {/* Navigation results */}
           {results.some(result => result.type === "nav") && (

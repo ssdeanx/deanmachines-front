@@ -1,5 +1,29 @@
 # Changelog
 
+## [0.1.3] - 2025-04-12 (22:45 EST)
+
+### Added
+
+- Created enterprise solutions page with cutting-edge Tailwind v4.1 styling and animations
+- Enhanced TestimonialSlider component with modern UI interactions and accessibility improvements
+- Added advanced animation effects to navigation indicators in TestimonialSlider
+
+### Fixed
+
+- Resolved TypeScript errors in NavBar component related to NavItem and NavItemChild interfaces
+- Fixed alignment issues in NavBar for better responsiveness and accessibility
+- Updated DocsSearch component with improved search functionality and user experience
+- Enhanced Footer component with proper hydration handling to prevent client/server mismatches
+- Corrected FaqAccordion component with modern styling and improved interaction patterns
+
+### Changed
+
+- Updated NavItemChild interface in nav.ts to include optional slug property for type consistency
+- Improved NavBar component with modern glass morphism effects and responsive design
+- Enhanced components with Tailwind v4.1 features including backdrop blur, improved gradients, and container queries
+- Optimized animations throughout the interface for better performance and reduced motion when appropriate
+- Standardized component architecture for better maintainability and code organization
+
 ## [0.1.2] - 2025-04-12 (18:30 EST)
 
 ### Added

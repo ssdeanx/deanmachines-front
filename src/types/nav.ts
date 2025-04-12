@@ -4,6 +4,7 @@
  */
 
 export interface NavItem {
+  slug: string;
   title: string;
   href: string;
   disabled?: boolean;
@@ -21,6 +22,7 @@ export interface NavItemChild {
   icon?: string;
   disabled?: boolean;
   external?: boolean;
+  slug?: string; // Added slug as optional property
 }
 
 export interface NavSection {

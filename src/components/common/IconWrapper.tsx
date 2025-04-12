@@ -51,19 +51,33 @@ export function IconWrapper({
   className,
   ...props
 }: IconWrapperProps) {
+  const [isHovered, setIsHovered] = React.useState(false);
+
   return (
     <div
       className={cn(
-        "inline-flex items-center justify-center",
+        "inline-flex items-center justify-center relative",
         variant !== "default" && variantClasses[variant],
-        withBackground && "bg-muted/40 rounded-md p-1",
-        withHoverEffect && "transition-all duration-300 hover:scale-110",
+        withBackground && "bg-muted/40 rounded-md p-1.5",
+        withHoverEffect && "transition-all duration-300 hover:scale-110 hover:rotate-3",
         className
       )}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
       {...props}
     >
+      {withHoverEffect && isHovered && (
+        <span
+          className="absolute inset-0 bg-primary/10 blur-md rounded-full animate-pulse"
+          aria-hidden="true"
+        />
+      )}
       <Icon
-        className={cn(sizeClasses[size])}
+        className={cn(
+          sizeClasses[size],
+          withHoverEffect && "transition-all duration-300",
+          withHoverEffect && isHovered && "text-primary"
+        )}
         aria-hidden="true"
       />
     </div>

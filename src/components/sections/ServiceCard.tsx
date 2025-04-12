@@ -102,17 +102,20 @@ export function ServiceCard({
           transform: `rotateX(${rotate.x}deg) rotateY(${rotate.y}deg) scale(${isHovered ? 1.02 : 1})`,
           transition: "transform 0.2s ease-out",
         }}
-      >
-        <Card
+      >        <Card
           className={cn(
-            "h-full transition-all duration-300 overflow-hidden",
-            isHovered ? "shadow-xl" : "shadow-md",
-            isFeatured && "border-primary/50 bg-gradient-to-b from-primary/5 to-background",
+            "h-full transition-all duration-300 overflow-hidden border-opacity-50",
+            isHovered ? "shadow-xl scale-[1.01] border-primary/40" : "shadow-md",
+            isFeatured && "border-primary/50 bg-gradient-to-b from-primary/5 to-background backdrop-blur-sm",
+            "glass-morphism relative", // New glass morphism effect
             className
           )}
         >
           {isFeatured && (
-            <div className="absolute -right-12 -top-12 h-24 w-24 rounded-full bg-primary/10 blur-2xl" />
+            <>
+              <div className="absolute -right-12 -top-12 h-32 w-32 rounded-full bg-primary/15 blur-2xl animate-pulse-slow" />
+              <div className="absolute right-12 bottom-12 h-16 w-16 rounded-full bg-secondary/10 blur-xl animate-float" />
+            </>
           )}
 
           <CardHeader className="space-y-4">

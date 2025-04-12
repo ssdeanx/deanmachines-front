@@ -18,6 +18,7 @@ import {
   Rocket,
   Code,
   BookOpen,
+  LineChart,
   type LucideIcon,
 } from "lucide-react";
 
@@ -57,6 +58,7 @@ const iconMap: Record<string, LucideIcon> = {
   building: Building,
   headset: Headset,
   barChart: BarChart,
+  chart: LineChart, // Added missing chart icon
   rocket: Rocket,
   code: Code,
   bookOpen: BookOpen,
@@ -130,30 +132,29 @@ function MainNav() {
   };
 
   return (
-    <div className="flex items-center gap-6 md:gap-10">
-      <Link
+    <div className="flex items-center gap-6 md:gap-10">      <Link
         href="/"
         className="flex items-center space-x-2 transition-opacity duration-300 hover:opacity-80"
         aria-label="Home"
-        legacyBehavior={false}
       >
         <span className="sr-only md:not-sr-only font-bold text-xl bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">{siteConfig.name}</span>
         <span className="md:hidden font-bold text-xl">dm</span>
       </Link>
       <NavigationMenu className="hidden md:flex">
-        <NavigationMenuList className="gap-1">
-          <NavigationMenuItem>
-            <Link href="/" legacyBehavior={false}>
-              <NavigationMenuLink asChild
-                className={cn(
-                  navigationMenuTriggerStyle(),
-                  "group transition-all duration-300 px-3",
-                  isActive("/") ? "bg-accent text-accent-foreground" : "hover:bg-accent/40"
-                )}
-              >
-                <span className="flex items-center gap-1">
-                  <Home className="h-4 w-4 group-hover:scale-110 transition-transform duration-300" />
-                  <span>Home</span>
+        <NavigationMenuList className="gap-1">          <NavigationMenuItem>
+            <Link href="/">
+              <NavigationMenuLink asChild>
+                <span
+                  className={cn(
+                    navigationMenuTriggerStyle(),
+                    "group transition-all duration-300 px-3",
+                    isActive("/") ? "bg-accent text-accent-foreground" : "hover:bg-accent/40"
+                  )}
+                >
+                  <span className="flex items-center gap-1">
+                    <Home className="h-4 w-4 group-hover:scale-110 transition-transform duration-300" />
+                    <span>Home</span>
+                  </span>
                 </span>
               </NavigationMenuLink>
             </Link>
@@ -197,16 +198,17 @@ function MainNav() {
 
             // Otherwise render as regular link
             return (
-              <NavigationMenuItem key={item.title}>
-                <Link href={item.href} legacyBehavior={false}>
-                  <NavigationMenuLink asChild
-                    className={cn(
-                      navigationMenuTriggerStyle(),
-                      "transition-all duration-300 px-3",
-                      isActive(item.href) ? "bg-accent text-accent-foreground" : "hover:bg-accent/40"
-                    )}
-                  >
-                    {item.title}
+              <NavigationMenuItem key={item.title}>                <Link href={item.href}>
+                  <NavigationMenuLink asChild>
+                    <span
+                      className={cn(
+                        navigationMenuTriggerStyle(),
+                        "transition-all duration-300 px-3",
+                        isActive(item.href) ? "bg-accent text-accent-foreground" : "hover:bg-accent/40"
+                      )}
+                    >
+                      {item.title}
+                    </span>
                   </NavigationMenuLink>
                 </Link>
               </NavigationMenuItem>
@@ -295,9 +297,7 @@ function MobileNavItem({
                   isActive(child.href)
                     ? "text-primary font-semibold"
                     : "text-foreground/70 hover:text-foreground hover:translate-x-1"
-                )}
-                legacyBehavior={false}
-              >
+                )}              >
                 {child.icon && iconMap[child.icon] && (
                   <IconWrapper icon={iconMap[child.icon]} size="sm" withHoverEffect />
                 )}
@@ -318,11 +318,14 @@ function MobileNavItem({
  * Primary navigation component including desktop and mobile navigation
  */
 export function NavBar() {
-  const pathname = usePathname();  // Properly use the useSession hook at the top level of the component
-  // This avoids hydration mismatches between server and client renders
+  const pathname = usePathname();
+  // Use the useSession hook at the top level of the component
   const { data: session, status } = useSession();
 
-  const [isScrolled, setIsScrolled] = React.useState(false);
+  // Use useState with undefined as initial state to avoid hydration mismatch
+  const [isScrolled, setIsScrolled] = React.useState<boolean | undefined>(undefined);
+
+  // Calculate auth status after hydration
   const isAuthenticated = status === "authenticated" && !!session?.user;
   const isAdmin = isAuthenticated && session?.user?.role === "admin";
 
@@ -345,8 +348,7 @@ export function NavBar() {
 
   /**
    * Get navigation items based on authentication status and user role
-   */
-  const getNavItems = () => {
+   */  const getNavItems = () => {
     const items = [...siteConfig.mainNav]; // Create a copy to avoid mutating the original
 
     if (isAuthenticated) {
@@ -354,31 +356,34 @@ export function NavBar() {
       if (!items.some(item => item.href === "/dashboard")) {
         items.push({
           title: "Dashboard",
+          slug: "dashboard", // Added slug property to match NavItem interface
           href: "/dashboard",
         });
       }
-
       // Add admin-specific navigation items if the user is an admin
       if (isAdmin && !items.some(item => item.href === "/admin")) {
         items.push({
           title: "Admin",
-          href: "/admin/dashboard",
-          children: [
+          slug: "admin", // Added slug property to match NavItem interface
+          href: "/admin/dashboard",          children: [
             {
               title: "Dashboard",
               href: "/admin/dashboard",
+              slug: "admin-dashboard",
               icon: "barChart",
               description: "Admin dashboard with key metrics and performance indicators",
             },
             {
               title: "Users",
               href: "/admin/users",
+              slug: "admin-users",
               icon: "building",
               description: "Manage user accounts and permissions",
             },
             {
               title: "Settings",
               href: "/admin/settings",
+              slug: "admin-settings",
               icon: "wrench",
               description: "Configure system settings and preferences",
             },
@@ -391,7 +396,7 @@ export function NavBar() {
   };
 
   // Get the appropriate navigation items based on auth status
-  const navItems = getNavItems();
+  const navigationItems = getNavItems();
 
   return (
     <header className={cn(
@@ -441,13 +446,13 @@ export function NavBar() {
                   </Link>
 
                   {/* Mobile navigation items */}
-                  {navItems.map((item) => (
+                    {navigationItems.map((item) => (
                     <MobileNavItem
                       key={item.href}
                       item={item}
                       isActive={isActive}
                     />
-                  ))}
+                    ))}
 
                   {/* Mobile login/signup links for unauthenticated users */}
                   {!isAuthenticated && (
@@ -506,4 +511,7 @@ export function NavBar() {
       </div>
     </header>
   );
+}
+function getNavItems() {
+// Implementation moved inside the NavBar component
 }

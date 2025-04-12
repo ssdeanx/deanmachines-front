@@ -32,6 +32,7 @@ export const siteConfig: SiteConfig = {
     {
       title: "Features",
       href: "/features",
+      slug: "features",
       children: [
         {
           title: "AI Agents",
@@ -72,6 +73,7 @@ export const siteConfig: SiteConfig = {
     {
       title: "Solutions",
       href: "/solutions",
+      slug: "solutions",
       children: [
         {
           title: "Enterprise AI",
@@ -96,10 +98,12 @@ export const siteConfig: SiteConfig = {
     {
       title: "About",
       href: "/about",
+      slug: "about",
     },
     {
       title: "Docs",
       href: "/docs",
+      slug: "docs",
       children: [
         {
           title: "Getting Started",
@@ -117,21 +121,24 @@ export const siteConfig: SiteConfig = {
           title: "Tutorials",
           description: "Step-by-step guides and examples",
           href: "/docs/tutorials",
-          icon: "bookOpen",
+          icon: "book",
         },
       ],
     },
     {
       title: "Pricing",
       href: "/pricing",
+      slug: "pricing",
     },
     {
       title: "Blog",
       href: "/blog",
+      slug: "blog",
     },
     {
       title: "Contact",
       href: "/contact",
+      slug: "contact",
     },
   ],
 };
