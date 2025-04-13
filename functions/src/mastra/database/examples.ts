@@ -25,13 +25,18 @@ export async function memoryConversationExample() {
   console.log(`Starting a conversation with user ${userId} using thread ${threadInfo.id}`);
 
   // Use the consistent thread ID for all interactions
+  // Stream the response with proper handling for rendered content
   const response1 = await researchAgent.stream(
     "I need to research the impact of AI on healthcare diagnostics. Can you help me organize this research?",
     {
       threadId: threadInfo.id,
       resourceId: userId,
+      // Note: markAsRead is not handled here
     }
   );
+
+  // Mark the message as read after processing
+  await threadManager.markThreadRead(threadInfo.id, userId);
 
   console.log("First response received");
 
