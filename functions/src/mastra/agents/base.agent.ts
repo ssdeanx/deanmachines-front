@@ -4,23 +4,25 @@
  * This module provides utility functions to create agents from configurations,
  * ensuring consistent agent creation patterns across the application.
  */
+import { StreamResult } from '@mastra/core';
+import { Agent } from '@mastra/core/agent';
+import { createLogger } from '@mastra/core/logger';
+import { Tool } from '@mastra/core/tools';
 
-import { Agent } from "@mastra/core/agent";
-import { Tool } from "@mastra/core/tools";
-import { createLogger } from "@mastra/core/logger";
-import { sharedMemory } from "../database";
+import { sharedMemory } from '../database';
+import { createResponseHook } from '../hooks';
+import { allToolsMap } from '../tools';
 import {
   BaseAgentConfig,
-  defaultErrorHandler,
-  DEFAULT_MODEL_ID,
-  DEFAULT_MAX_TOKENS,
+  createModelInstance,
   DEFAULT_MAX_CONTEXT_TOKENS,
+  DEFAULT_MAX_TOKENS,
+  DEFAULT_MODEL_ID,
+  defaultErrorHandler,
   defaultResponseValidation,
-  type ResponseHookOptions,
-  createModelInstance
-} from "./config/index";
-import { createResponseHook } from "../hooks";
-import { allToolsMap } from "../tools";
+  ResponseHookOptions,
+} from './config';
+
 
 // Configure logger for agent initialization
 const logger = createLogger({ name: "agent-initialization", level: "info" });
@@ -81,10 +83,19 @@ export function createAgentFromConfig({
   // Create and return the agent instance
   logger.info(
     `Creating agent: ${config.id} with ${Object.keys(tools).length} tools`
-  );
-  try {
+  );  try {
     // Create model instance using the new modelConfig property
     const model = createModelInstance(config.modelConfig);
+
+    // Create debug logger specifically for streaming operations
+    // Assuming createLogger can take additional context or a modified name
+    const streamLogger = createLogger({
+      name: `agent-${config.id}-stream`, // Incorporate context into the name
+      level: "info", // Set level explicitly, e.g., 'info' or 'debug'
+      // Pass additional context if the logger supports it, e.g.:
+      // defaultMeta: { component: `${config.id}-stream`, agentId: config.id }
+    });
+
 
     return new Agent({
       model,
@@ -94,7 +105,42 @@ export function createAgentFromConfig({
       tools,
       ...(responseHook ? { onResponse: responseHook } : {}),
       ...(onError ? { onError } : {}), // Add error handler if provided
-    });
+
+
+        hooks: { // Group hooks under a 'hooks' property
+          ...(responseHook ? { onResponse: responseHook } : {}),
+          ...(onError ? { onError } : {}), // Add error handler if provided
+
+          // Before stream hook - logs attempt to start streaming
+          beforeStream: async (messages: unknown, options: unknown) => {
+            streamLogger.debug('Starting stream operation', {
+          messageCount: Array.isArray(messages) ? messages.length : 1,
+          hasTools: Object.keys(tools).length > 0,
+          options: JSON.stringify(options, null, 2) // Consider security/verbosity of logging options
+            });
+            // Ensure the return value matches what Mastra expects for this hook
+            // This might need adjustment based on the actual Mastra API.
+            return { messages, options };
+          },
+
+          // After stream hook - logs successful stream creation
+          // Ensure StreamResult type is imported, e.g., from '@mastra/core' or similar
+          afterStream: async (result: StreamResult) => {
+            try {
+          streamLogger.debug('Stream operation completed successfully', {
+            // Adjust property access based on actual StreamResult structure
+            hasTextStream: !!result.textStream
+          });
+          return result;
+            } catch (streamError) {
+          streamLogger.error('Error in afterStream hook', {
+            error: streamError instanceof Error ? streamError.message : String(streamError)
+          });
+            throw streamError; // Re-throw error after logging
+            }
+          }
+        } // Closing brace for the 'hooks' object
+    }); // Closing parenthesis for the new Agent call
   } catch (error) {
     logger.error(
       `Failed to create agent ${config.id}: ${

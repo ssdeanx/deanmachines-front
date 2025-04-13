@@ -1,3 +1,9 @@
+import { LibSQLStore } from '@mastra/core/storage/libsql';
+import { LibSQLVector } from '@mastra/core/vector/libsql';
+import { Memory } from '@mastra/memory';
+
+import { cacheService, redis, RedisOperation } from './redis';
+
 /**
  * Database configuration for memory persistence using LibSQL.
  *
@@ -5,31 +11,16 @@
  * allowing agent conversations and context to be stored reliably.
  */
 
-import { LibSQLStore } from "@mastra/core/storage/libsql";
-import { LibSQLVector } from "@mastra/core/vector/libsql";
-import { Memory } from "@mastra/memory";
 import type { MastraStorage, MastraVector } from "@mastra/core";
-import { Redis } from '@upstash/redis';
-export { RedisOperation } from './redis';
-
-// Initialize Redis client
-export const redisClient = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL || "",
-  token: process.env.UPSTASH_REDIS_REST_TOKEN || "",
-});
+// Re-export Redis components
+export { redis, cacheService, RedisOperation };
 
 /**
  * Check if Redis connection is available
  * @returns {Promise<boolean>} Connection status
  */
 export async function checkRedisConnection(): Promise<boolean> {
-  try {
-    await redisClient.ping();
-    return true;
-  } catch (error) {
-    console.error("Redis connection failed:", error);
-    return false;
-  }
+  return cacheService.ping();
 }
 
 // Define the memory configuration type

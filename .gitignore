@@ -7,7 +7,7 @@ gen-lang-client-0520765474-firebase-adminsdk-fbsvc-d1e16fc9e0.json
 /.pnp
 .pnp.*
 
-
+.vscode
 # testing
 /coverage
 

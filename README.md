@@ -7,6 +7,7 @@
 ![Firebase](https://img.shields.io/badge/Firebase-11.6.0-orange)
 ![Mastra](https://img.shields.io/badge/Mastra-0.8.2-purple)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
+[![wakatime](https://wakatime.com/badge/user/7a2fb9a0-188b-4568-887f-7645f9249e62.svg)](https://wakatime.com/@7a2fb9a0-188b-4568-887f-7645f9249e62)
 
 A modern, high-performance front-end for the DeanMachines AI platform, built with Next.js 15, TypeScript, and TailwindCSS. Designed for both dynamic server-side rendering and static exports with Firebase hosting, this platform provides comprehensive AI development and deployment services featuring:
 
