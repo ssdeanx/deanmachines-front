@@ -5,50 +5,12 @@
  * creating compelling marketing copy and content for various channels.
  */
 
-import { z, type ZodTypeAny } from "zod";
-import type { Tool } from "@mastra/core/tools";
+import { z } from "zod";
 import {
   BaseAgentConfig,
   DEFAULT_MODELS,
   defaultResponseValidation,
 } from "./config.types";
-
-/**
- * Configuration for retrieving relevant tools for the agent
- *
- * @param toolIds - Array of tool identifiers to include
- * @param allTools - Map of all available tools
- * @returns Record of tools mapped by their IDs
- * @throws {Error} When required tools are missing
- */
-export function getToolsFromIds(
-  toolIds: string[],
-  allTools: ReadonlyMap<
-    string,
-    Tool<ZodTypeAny | undefined, ZodTypeAny | undefined>
-  >
-): Record<string, Tool<ZodTypeAny | undefined, ZodTypeAny | undefined>> {
-  const tools: Record<
-    string,
-    Tool<ZodTypeAny | undefined, ZodTypeAny | undefined>
-  > = {};
-  const missingTools: string[] = [];
-
-  for (const id of toolIds) {
-    const tool = allTools.get(id);
-    if (tool) {
-      tools[id] = tool;
-    } else {
-      missingTools.push(id);
-    }
-  }
-
-  if (missingTools.length > 0) {
-    throw new Error(`Missing required tools: ${missingTools.join(", ")}`);
-  }
-
-  return tools;
-}
 
 /**
  * Configuration for the Copywriter Agent.

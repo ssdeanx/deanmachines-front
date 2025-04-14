@@ -5,50 +5,12 @@
  * which specializes in system design, architecture decisions, and technical planning.
  */
 
-import { z, type ZodTypeAny } from "zod";
-import type { Tool } from "@mastra/core/tools";
+import { z } from "zod";
 import {
   BaseAgentConfig,
   DEFAULT_MODELS,
   defaultResponseValidation,
 } from "./config.types";
-
-/**
- * Configuration for retrieving relevant tools for the agent
- *
- * @param toolIds - Array of tool identifiers to include
- * @param allTools - Map of all available tools
- * @returns Record of tools mapped by their IDs
- * @throws {Error} When required tools are missing
- */
-export function getToolsFromIds(
-  toolIds: string[],
-  allTools: ReadonlyMap<
-    string,
-    Tool<ZodTypeAny | undefined, ZodTypeAny | undefined>
-  >
-): Record<string, Tool<ZodTypeAny | undefined, ZodTypeAny | undefined>> {
-  const tools: Record<
-    string,
-    Tool<ZodTypeAny | undefined, ZodTypeAny | undefined>
-  > = {};
-  const missingTools: string[] = [];
-
-  for (const id of toolIds) {
-    const tool = allTools.get(id);
-    if (tool) {
-      tools[id] = tool;
-    } else {
-      missingTools.push(id);
-    }
-  }
-
-  if (missingTools.length > 0) {
-    throw new Error(`Missing required tools: ${missingTools.join(", ")}`);
-  }
-
-  return tools;
-}
 
 /**
  * Architecture Agent Configuration
@@ -154,5 +116,73 @@ export const architectConfig: BaseAgentConfig = {
     "embed-document",
   ],
 };
+
+/**
+ * Schema for structured architect agent responses
+ */
+export const architectResponseSchema = z.object({
+  design: z.object({
+    title: z.string().describe("Title of the architectural design"),
+    summary: z.string().describe("Executive summary of the architecture"),
+    requirements: z.object({
+      functional: z.array(z.string()).describe("Key functional requirements addressed"),
+      nonFunctional: z.array(z.string()).describe("Key non-functional requirements addressed"),
+      constraints: z.array(z.string()).optional().describe("Technical or business constraints considered"),
+    }).describe("Requirements analysis"),
+  }).describe("Overall architectural design"),
+  
+  components: z.array(
+    z.object({
+      name: z.string().describe("Component name"),
+      purpose: z.string().describe("Component's primary responsibility"),
+      interfaces: z.array(z.string()).optional().describe("Key interfaces exposed by the component"),
+      dependencies: z.array(z.string()).optional().describe("Other components this component depends on"),
+    })
+  ).describe("Key architectural components"),
+  
+  interactions: z.array(
+    z.object({
+      flow: z.string().describe("Description of the interaction flow"),
+      components: z.array(z.string()).describe("Components involved in this interaction"),
+      dataExchanged: z.string().optional().describe("Key data exchanged during this interaction"),
+    })
+  ).optional().describe("Critical component interactions"),
+  
+  technologies: z.array(
+    z.object({
+      name: z.string().describe("Technology name"),
+      purpose: z.string().describe("Purpose in the architecture"),
+      justification: z.string().describe("Justification for this technology choice"),
+      alternatives: z.array(z.string()).optional().describe("Alternative technologies considered"),
+    })
+  ).optional().describe("Technology choices"),
+  
+  qualityAttributes: z.object({
+    performance: z.string().optional().describe("Performance considerations"),
+    scalability: z.string().optional().describe("Scalability approach"),
+    security: z.string().optional().describe("Security considerations"),
+    reliability: z.string().optional().describe("Reliability approach"),
+    maintainability: z.string().optional().describe("Maintainability considerations"),
+  }).describe("Quality attribute considerations"),
+  
+  risks: z.array(
+    z.object({
+      description: z.string().describe("Risk description"),
+      impact: z.string().describe("Potential impact"),
+      mitigation: z.string().describe("Mitigation strategy"),
+    })
+  ).optional().describe("Identified architectural risks"),
+  
+  implementationStrategy: z.object({
+    phases: z.array(z.string()).optional().describe("Recommended implementation phases"),
+    priorities: z.array(z.string()).optional().describe("Implementation priorities"),
+    guidelines: z.array(z.string()).optional().describe("Implementation guidelines"),
+  }).optional().describe("Implementation strategy recommendations"),
+});
+
+/**
+ * Type for structured responses from the Architect agent
+ */
+export type ArchitectResponse = z.infer<typeof architectResponseSchema>;
 
 export type ArchitectConfig = typeof architectConfig;

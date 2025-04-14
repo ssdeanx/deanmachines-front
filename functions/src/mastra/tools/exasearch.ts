@@ -26,6 +26,20 @@ const ExaSearchInputSchema = z.object({
   useRAG: z.boolean().optional().default(false),
 });
 
+const ExaSearchOutputSchema = z.object({
+  results: z.array(
+    z.object({
+      title: z.string(),
+      url: z.string(),
+      text: z.string(),
+      highlights: z.array(z.string()).optional(),
+      score: z.number().optional(),
+      published: z.string().optional(),
+    })
+  ),
+  error: z.string().optional(),
+});
+
 type ExaSearchInput = z.infer<typeof ExaSearchInputSchema>;
 
 /**
@@ -59,37 +73,35 @@ export class ExaSearchProvider extends AIFunctionsProvider {
     description:
       "Performs web searches using Exa search API with various filtering options",
     inputSchema: ExaSearchInputSchema,
+    outputSchema: ExaSearchOutputSchema, // <-- Add output schema here
   })
   async search(
     input: ExaSearchInput
-  ): Promise<{ results: string; error?: string }> {
-    // Prepare config for service calls, including the API key if available
+  ): Promise<{ results: ExaSearchResult[]; error?: string }> {
     const serviceConfig: ExaConfig = {
-      apiKey: this.apiKey, // Pass the API key
+      apiKey: this.apiKey,
       numResults: input.numResults,
-      useHighlights: input.useRAG, // Assuming useHighlights corresponds to RAG usage
+      useHighlights: input.useRAG,
     };
-
     try {
-      let results;
+      let results: ExaSearchResult[];
       if (input.useRAG) {
-        // Assuming searchForRAG accepts ExaConfig
-        results = await searchForRAG(input.query, serviceConfig);
+        // searchForRAG returns a string, so wrap in a result object
+        const ragText = await searchForRAG(input.query, serviceConfig);
+        results = [{ title: "RAG Result", url: "", text: ragText }];
       } else if (input.filters) {
-        // Assuming searchWithFilters accepts ExaConfig
         results = await searchWithFilters(
           input.query,
           input.filters,
           serviceConfig
         );
       } else {
-        // Assuming searchWeb accepts ExaConfig
         results = await searchWeb(input.query, serviceConfig);
       }
-      return { results: JSON.stringify(results, null, 2) };
+      return { results };
     } catch (error) {
       return {
-        results: "",
+        results: [],
         error:
           error instanceof Error
             ? error.message

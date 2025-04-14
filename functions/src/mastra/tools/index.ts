@@ -13,12 +13,13 @@
 import { env } from "process";
 
 // === Third-party imports ===
-import { z } from "zod";
-import { Tool, createTool } from "@mastra/core/tools";
+import { z, ZodType, ZodTypeAny } from "zod"; // Import specific Zod types
+import { Tool, createTool } from "@mastra/core/tools"; // Using Mastra core Tool
 import { createLogger } from "@mastra/core/logger";
-import { createMastraTools } from "@agentic/mastra";
+// Note: createMastraTools from @agentic/mastra is used internally by tool modules now
 
 // === Internal tool imports ===
+// --- Core & Optional Tools ---
 import {
   vectorQueryTool,
   googleVectorQueryTool,
@@ -41,25 +42,24 @@ import {
 } from "./rlReward";
 import { memoryQueryTool } from "./memoryQueryTool";
 
-// --- Import additional tools from new modules ---
+// --- Additional Tools ---
 import { analyzeContentTool, formatContentTool } from "./contentTools";
 import { searchDocumentsTool, embedDocumentTool } from "./document-tools";
 
-// --- Import extra modules that return or represent tool instances ---
-import { GitHubClient } from "./github";
-import { GraphNode } from "./graphRag";
+// --- Extra Tools (Import Helper Functions & Direct Tools) ---
 import { createCalculatorTool } from "./calculator";
 import { createLlamaIndexTools } from "./llamaindex";
-import { McpTools } from "./mcptools";
-import { arxiv } from "./arxiv";
-import { WikipediaClient } from "./wikibase";
-import { createAISDKTools } from "./ai-sdk";
-import { e2b } from "./e2b";
-// Import GraphRag tools so that they are read and fully functional.
-import { createGraphRagTool, graphRagQueryTool } from "./graphRag";
-import { llmChainTool, aiSdkPromptTool } from "./llmchain";
-import { github } from "../integrations";
-// === Export all tool modules ===
+import { createMastraArxivTools } from "./arxiv"; // Import Mastra helper
+import { createMastraWikipediaTools } from "./wikibase"; // Import Mastra helper
+import { createMastraAISDKTools } from "./ai-sdk"; // Import Mastra helper
+import { createMastraE2BTools } from "./e2b"; // Import Mastra helper
+import { createGraphRagTool, graphRagQueryTool } from "./graphRag"; // These are Mastra core tools
+import { createMastraLLMChainTools } from "./llmchain"; // Import Mastra helper
+import { createMastraGitHubTools } from "./github"; // Import Mastra helper
+import { github } from "../integrations"; // Used for custom getMainBranchRef
+import { ExaSearchOutputSchema } from "./exasearch";
+
+// === Export all tool modules (Consider if all are needed) ===
 export * from "./e2b";
 export * from "./exasearch";
 export * from "./google-search";
@@ -74,7 +74,7 @@ export * from "./github";
 export * from "./graphRag";
 export * from "./calculator";
 export * from "./llamaindex";
-export * from "./mcptools";
+export * from "./mcptools"; // Keep export even if tools commented out
 export * from "./arxiv";
 export * from "./wikibase";
 export * from "./ai-sdk";
@@ -111,7 +111,6 @@ export type EnvConfig = z.infer<typeof envSchema>;
 
 /**
  * Validates the environment configuration.
- *
  * @returns {EnvConfig} The validated environment configuration.
  * @throws {Error} When validation fails.
  */
@@ -141,7 +140,18 @@ function validateConfig(): EnvConfig {
 // === Initialize Environment Configuration ===
 const config: EnvConfig = validateConfig();
 
-export const getMainBranchRef = createTool({
+// === Custom Tool Definition (Example: GitHub - using Mastra core createTool) ===
+// Define a potential type for the GitHub API client (adjust based on actual client)
+// This interface reflects the expected structure for the git.getRef method from Octokit REST client
+interface GitHubApiClient {
+    git: {
+        getRef: (options: { owner: string; repo: string; ref: string; [key: string]: any }) => Promise<{ data?: { ref?: string } }>;
+        // Add other git methods if needed
+    };
+    // Add other top-level client methods if needed (e.g., repos, users)
+}
+
+export const getMainBranchRef = createTool({ // Using @mastra/core/tools createTool
   id: "getMainBranchRef",
   description: "Fetch the main branch reference from a GitHub repository",
   inputSchema: z.object({
@@ -151,18 +161,37 @@ export const getMainBranchRef = createTool({
   outputSchema: z.object({
     ref: z.string().optional(),
   }),
-  execute: async ({ context }) => {
-    const client = await github.getApiClient();
+  async execute(context) { // Correctly define the execute function signature
+    // Cast to unknown first, then to the specific interface to satisfy TS strictness
+    const client = (await github.getApiClient()) as unknown as GitHubApiClient;
 
-    const mainRef = await client.gitGetRef({
-      path: {
-        owner: context.owner,
-        repo: context.repo,
-        ref: "heads/main",
-      },
-    });
+    // Check for the nested structure
+    if (!client || !client.git || typeof client.git.getRef !== 'function') {
+        logger.error("GitHub client or git.getRef method not available.");
+        throw new Error("GitHub integration is not configured correctly.");
+    }
 
-    return { ref: mainRef.data?.ref };
+    try {
+        // Call the method using the nested structure
+        // Access input parameters via context.context
+        const mainRef = await client.git.getRef({
+            owner: context.context.owner, // Access via context.context
+            repo: context.context.repo,   // Access via context.context
+            ref: "heads/main", // Common way to reference main branch head
+        });
+        // Access data safely
+        return { ref: mainRef?.data?.ref };
+    } catch (error: any) {
+        // Handle cases where the ref might not exist (e.g., 404)
+        if (error.status === 404) {
+            // Use correct context access in logging as well
+            logger.warn(`Main branch ref not found for ${context.context.owner}/${context.context.repo}`); // Use context.context
+            return { ref: undefined };
+        }
+        // Use correct context access in logging as well
+        logger.error(`Error fetching main branch ref for ${context.context.owner}/${context.context.repo}:`, error); // Use context.context
+        throw error; // Re-throw unexpected errors
+    }
   },
 });
 
@@ -172,12 +201,34 @@ export const getMainBranchRef = createTool({
  * Record type for search tools.
  */
 interface SearchToolRecord {
-  [key: string]: Tool<z.ZodTypeAny, z.ZodTypeAny> | undefined;
+  [key: string]: Tool<ZodTypeAny, ZodTypeAny> | undefined;
 }
 
 /**
+ * Helper function to ensure a tool has a valid Zod output schema.
+ * Defaults to `z.object({})` if undefined.
+ * Needed for tools not created via Mastra helpers (e.g., LlamaIndex, Calculator, Exa).
+ */
+function ensureToolOutputSchema<
+  TInput extends ZodTypeAny,
+  TOutput extends ZodTypeAny | undefined
+>(tool: Tool<TInput, TOutput>): Tool<TInput, ZodTypeAny> {
+  // Check if outputSchema is a valid Zod schema instance
+  if (tool.outputSchema && tool.outputSchema instanceof ZodType) {
+    // If it is, the type is already correct or compatible
+    return tool as Tool<TInput, ZodTypeAny>;
+  }
+  // If not, provide a default empty object schema
+  logger.warn(`Tool "${tool.id}" missing valid output schema, defaulting to empty object.`);
+  return {
+    ...tool,
+    outputSchema: z.object({}).describe("Default empty output"),
+  } as Tool<TInput, ZodTypeAny>; // Cast needed after modification
+}
+
+
+/**
  * Initializes search tools based on available API keys.
- * Each tool is wrapped with createMastraTools to ensure proper adapter implementation.
  */
 const searchTools: SearchToolRecord = {
   brave: config.BRAVE_API_KEY
@@ -193,11 +244,13 @@ const searchTools: SearchToolRecord = {
   tavily: config.TAVILY_API_KEY
     ? createTavilySearchTool({ apiKey: config.TAVILY_API_KEY })
     : undefined,
-  // createMastraExaSearchTools returns an object like { 'exa_search': Tool }, extract the tool.
   exa: config.EXA_API_KEY
-    ? ensureToolOutputSchema(
-        createMastraExaSearchTools({ apiKey: config.EXA_API_KEY })["exa_search"]
-      ) // Ensure schema and access the specific tool
+    ? (() => {
+        const exaTool = createMastraExaSearchTools({ apiKey: config.EXA_API_KEY })["exa_search"] as Tool<any, any>;
+        // Patch outputSchema directly
+        (exaTool as any).outputSchema = ExaSearchOutputSchema;
+        return exaTool;
+      })()
     : undefined,
 };
 
@@ -206,23 +259,24 @@ const searchTools: SearchToolRecord = {
 /**
  * Core tools that are always available.
  */
-const coreTools: Tool<z.ZodTypeAny, z.ZodTypeAny>[] = [
-  vectorQueryTool as Tool<z.ZodTypeAny, z.ZodTypeAny>,
-  googleVectorQueryTool as Tool<z.ZodTypeAny, z.ZodTypeAny>,
-  filteredQueryTool as Tool<z.ZodTypeAny, z.ZodTypeAny>,
-  readFileTool as Tool<z.ZodTypeAny, z.ZodTypeAny>,
-  writeToFileTool as Tool<z.ZodTypeAny, z.ZodTypeAny>,
-  memoryQueryTool as Tool<z.ZodTypeAny, z.ZodTypeAny>,
-  collectFeedbackTool as Tool<z.ZodTypeAny, z.ZodTypeAny>,
-  analyzeFeedbackTool as Tool<z.ZodTypeAny, z.ZodTypeAny>,
-  applyRLInsightsTool as Tool<z.ZodTypeAny, z.ZodTypeAny>,
-  calculateRewardTool as Tool<z.ZodTypeAny, z.ZodTypeAny>,
-  defineRewardFunctionTool as Tool<z.ZodTypeAny, z.ZodTypeAny>,
-  optimizePolicyTool as Tool<z.ZodTypeAny, z.ZodTypeAny>,
+const coreTools: Tool<any, any>[] = [
+  vectorQueryTool,
+  googleVectorQueryTool,
+  filteredQueryTool,
+  readFileTool,
+  writeToFileTool,
+  memoryQueryTool,
+  collectFeedbackTool,
+  analyzeFeedbackTool,
+  applyRLInsightsTool,
+  calculateRewardTool,
+  defineRewardFunctionTool,
+  optimizePolicyTool,
+  getMainBranchRef, // Added the custom GitHub tool here
 ];
 
 // === Additional Tools from contentTools and document-tools ===
-const additionalTools: Tool<z.ZodTypeAny, z.ZodTypeAny>[] = [
+const additionalTools: Tool<any, any>[] = [
   analyzeContentTool,
   formatContentTool,
   searchDocumentsTool,
@@ -230,166 +284,155 @@ const additionalTools: Tool<z.ZodTypeAny, z.ZodTypeAny>[] = [
 ];
 
 // === Extra Tools Initialization ===
-/**
- * Extra tools aggregated from modules that expose tool instances.
- * NOTE: Some imports (like GraphNode, CalculatorConfig, WikipediaClient) are types or configurations,
- * so only tool instances are added to the tools map.
- */
 
-/**
- * Helper function to ensure a tool has a valid Zod output schema.
- * If the output schema is undefined, it defaults to `z.object({})`.
- *
- * @template TInput - The Zod type of the input schema.
- * @template TOutput - The Zod type of the output schema (can be undefined).
- * @param {Tool<TInput, TOutput>} tool - The tool to process.
- * @returns {Tool<TInput, z.ZodTypeAny>} - The tool with a guaranteed valid output schema.
- */
-function ensureToolOutputSchema<
-  TInput extends z.ZodTypeAny,
-  TOutput extends z.ZodTypeAny | undefined
->(tool: Tool<TInput, TOutput>): Tool<TInput, z.ZodTypeAny> {
-  // If outputSchema is already a ZodType, return the tool as is, but typed correctly.
-  if (tool.outputSchema && tool.outputSchema instanceof z.ZodType) {
-    return tool as Tool<TInput, z.ZodTypeAny>;
-  }
-  // Otherwise, provide a default schema and return the modified tool.
-  // Use 'unknown' in the cast as the exact TInput is generic here.
-  return {
-    ...tool,
-    outputSchema: z.object({}).describe("Default empty output"),
-  } as unknown as Tool<TInput, z.ZodTypeAny>;
+// Array to hold all extra tools
+const extraTools: Tool<any, any>[] = [];
+
+// --- E2B Tools (using Mastra helper) ---
+try {
+    const e2bToolsObject = createMastraE2BTools(); // Use the helper from e2b.ts, returns an object
+    const e2bToolsArray = Object.values(e2bToolsObject); // Extract tool values into an array
+    // Cast to Tool<any, any> to resolve potential type mismatches
+    extraTools.push(...e2bToolsArray.map(tool => tool as Tool<any, any>));
+    logger.info(`Added ${e2bToolsArray.length} E2B tools.`);
+} catch (error) {
+    logger.error("Failed to initialize E2B tools:", { error });
 }
 
-const extraTools: Tool<z.ZodTypeAny, z.ZodTypeAny>[] = [];
-
-// Instantiate GitHub client using the provided API key.
-const gitHubTool = new GitHubClient({ apiKey: config.GITHUB_API_KEY });
-const gitHubToolsRaw = Object.values(createMastraTools(gitHubTool));
-extraTools.push(...gitHubToolsRaw.map(ensureToolOutputSchema));
-
-// Instantiate (or use) the E2B tool if it is already an instance.
-if (e2b && typeof e2b === "object" && "id" in e2b) {
-  // Assuming e2b conforms to AIFunctionsProvider
-  const e2bToolsRaw = Object.values(createMastraTools(e2b));
-  extraTools.push(...e2bToolsRaw.map(ensureToolOutputSchema));
+// --- LlamaIndex Tools (needs schema check) ---
+try {
+    const llamaIndexArrayRaw = createLlamaIndexTools(); // Returns FunctionTool[]
+    if (Array.isArray(llamaIndexArrayRaw)) {
+      const llamaIndexTools = llamaIndexArrayRaw.map(llamaTool => {
+          // Adapt FunctionTool to Mastra Tool structure
+          const mastraTool: Tool<any, any> = {
+              id: llamaTool.metadata.name,
+              description: llamaTool.metadata.description,
+              inputSchema: llamaTool.metadata.parameters as z.ZodSchema | undefined, // Cast schema if needed
+              execute: llamaTool.call as any, // Use the 'call' method for execution
+              // outputSchema is handled by ensureToolOutputSchema
+          };
+          return ensureToolOutputSchema(mastraTool); // Now apply schema check
+      });
+      extraTools.push(...llamaIndexTools);
+      logger.info(`Added ${llamaIndexTools.length} LlamaIndex tools.`);
+    } else {
+        logger.warn("createLlamaIndexTools did not return an array.");
+    }
+} catch (error) {
+    logger.error("Failed to initialize LlamaIndex tools:", { error });
 }
 
-// Create and add LlamaIndex tools.
-// Assuming createLlamaIndexTools returns Tool[] directly
-const llamaIndexArray = createLlamaIndexTools();
-if (Array.isArray(llamaIndexArray)) {
-  // Ensure schema for LlamaIndex tools as well, casting to satisfy the map function's parameter type
-  extraTools.push(
-    ...llamaIndexArray.map((tool) =>
-      ensureToolOutputSchema(tool as unknown as Tool<any, any>)
-    )
-  );
+// --- MCP Tools (Intentionally Commented Out) ---
+// import { createMcpTools } from "@agentic/mcp"; // Assuming this path is correct if uncommented
+// (async () => {
+//   try {
+//     const mcpTools = await createMcpTools({ /* config */ });
+//     // Need a createMastraMcpTools helper or use createMastraTools directly if uncommented
+//     // const mcpMastraTools = createMastraTools(mcpTools);
+//     // const mcpToolsArray = Object.values(mcpMastraTools).map(ensureToolOutputSchema);
+//     // extraTools.push(...mcpToolsArray);
+//     // logger.info(`Added ${mcpToolsArray.length} MCP tools`);
+//   } catch (error) {
+//     logger.error("Failed to initialize MCP tools:", { error });
+//   }
+// })();
+
+// --- Arxiv Tools (using Mastra helper) ---
+try {
+    const arxivToolsObject = createMastraArxivTools(); // Use the helper from arxiv.ts
+    const arxivToolsArray = Object.values(arxivToolsObject); // Extract tool values into an array
+    // Cast to Tool<any, any> to resolve potential type mismatches
+    extraTools.push(...arxivToolsArray.map(tool => tool as Tool<any, any>));
+    logger.info(`Added ${arxivToolsArray.length} Arxiv tools.`);
+} catch (error) {
+    logger.error("Failed to initialize Arxiv tools:", { error });
 }
 
-// Initialize MCP tools to connect to Docker socat bridge
-// This can work with: docker run -i --rm alpine/socat STDIO TCP:host.docker.internal:8811
-import { createMcpTools } from "@agentic/mcp";
-
-// Initialize MCP tools asynchronously and add them to extraTools later
-(async () => {
-  try {
-    const mcpTools = await createMcpTools({
-      name: "docker-mcp-server",
-      // Connect to external TCP server using serverUrl
-      serverUrl: "http://localhost:8811",
-    });
-
-    // Wrap with createMastraTools and add to extraTools
-    const mcpMastraTools = createMastraTools(mcpTools);
-    const mcpToolsArray = Object.values(mcpMastraTools).map(
-      ensureToolOutputSchema
-    );
-
-    // Add to extraTools
-    extraTools.push(...mcpToolsArray);
-    logger.info(
-      `Added ${mcpToolsArray.length} MCP tools from Docker socat bridge`
-    );
-  } catch (error) {
-    logger.error("Failed to initialize Docker socat MCP tools:", {
-      error: error instanceof Error ? error.message : String(error),
-    });
-  }
-})();
-
-// Include 'arxiv' tool if it is a valid tool instance.
-// Assuming 'arxiv' is a provider-like object
-if (arxiv && typeof arxiv === "object" && "id" in arxiv) {
-  const arxivProvider = {
-    ...arxiv, // Spread properties if arxiv is an object
-    id: String(arxiv.id || "arxiv-fallback-id"), // Ensure id is a string
-    description: (arxiv as any).description || "Arxiv Tool", // Ensure description exists
-    // Ensure 'arxiv' conforms to AIFunctionsProvider structure if needed by createMastraTools
-  };
-  // Cast to 'any' to bypass strict type check if the exact structure of 'arxiv' is uncertain but expected to work at runtime.
-  const arxivToolsRaw = Object.values(createMastraTools(arxivProvider as any));
-  extraTools.push(...arxivToolsRaw.map(ensureToolOutputSchema));
+// --- AI SDK Tools (using Mastra helper) ---
+// Assuming createMastraAISDKTools() in ai-sdk.ts correctly finds/uses AIFunctionLike[]
+try {
+    const aisdkToolsObject = createMastraAISDKTools(); // Helper likely returns an object
+    const aisdkToolsArray = Object.values(aisdkToolsObject); // Extract tool values into an array
+    // Cast to Tool<any, any> to resolve potential type mismatches
+    extraTools.push(...aisdkToolsArray.map(tool => tool as Tool<any, any>));
+    logger.info(`Added ${aisdkToolsArray.length} AI SDK tools (via Mastra helper).`);
+} catch (error) {
+    logger.error("Failed to initialize AI SDK tools:", { error });
 }
 
-// Create and add AISDK tools.
-// Assuming createAISDKTools returns Tool[] directly
-const aisdkToolsArray = createAISDKTools();
-if (Array.isArray(aisdkToolsArray)) {
-  extraTools.push(...aisdkToolsArray.map(ensureToolOutputSchema));
+// --- Wikipedia Tools (using Mastra helper) ---
+try {
+  const wikiToolsObject = createMastraWikipediaTools(); // Use the helper from wikibase.ts
+  const wikiToolsArray = Object.values(wikiToolsObject); // Extract tool values
+  // Cast to Tool<any, any> to resolve potential type mismatches
+  extraTools.push(...wikiToolsArray.map(tool => tool as Tool<any, any>));
+  logger.info(`Added ${wikiToolsArray.length} Wikipedia tools.`);
+} catch (error) {
+  logger.error("Failed to initialize Wikipedia tools:", { error });
 }
 
-// Instantiate Wikipedia client.
-const wikiClient = new WikipediaClient();
-const wikiToolsRaw = Object.values(createMastraTools(wikiClient));
-extraTools.push(...wikiToolsRaw.map(ensureToolOutputSchema));
-
-// Instantiate Calculator tool.
-// createCalculatorTool returns a Tool instance directly.
-const calculatorToolInstance = createCalculatorTool();
-// Ensure the schema is valid and add it directly.
-extraTools.push(ensureToolOutputSchema(calculatorToolInstance));
-
-// Add GraphRag tools to the extra tools array.
-// Assuming createGraphRagTool and graphRagQueryTool are Tool instances.
-// If they are providers, they should be wrapped like other providers.
-// If they are Tool instances, add them directly.
-extraTools.push(ensureToolOutputSchema(createGraphRagTool));
-extraTools.push(ensureToolOutputSchema(graphRagQueryTool));
-
-// Create an alias tool for "graph-rag" required by data-manager-agent.
-// This alias uses the properties of createGraphRagTool but overrides the id.
-// Ensure createGraphRagTool is a valid Tool object before spreading.
-if (
-  createGraphRagTool &&
-  typeof createGraphRagTool === "object" &&
-  "id" in createGraphRagTool
-) {
-  const graphRagAliasTool: Tool<any, any> = {
-    ...(createGraphRagTool as Tool<any, any>), // Spread properties of the original tool
-    id: "graph-rag", // Override the id
-  };
-  extraTools.push(ensureToolOutputSchema(graphRagAliasTool));
-} else {
-  logger.warn(
-    "Could not create 'graph-rag' alias: createGraphRagTool is not a valid Tool object."
-  );
+// --- Calculator Tool (needs schema check) ---
+try {
+    const calculatorToolInstance = createCalculatorTool();
+    extraTools.push(ensureToolOutputSchema(calculatorToolInstance)); // Schema check needed
+    logger.info("Added Calculator tool.");
+} catch (error) {
+    logger.error("Failed to initialize Calculator tool:", { error });
 }
 
-// Add LLM chain tools for AI model interactions
-// Assuming llmChainTool and aiSdkPromptTool are providers or provider-like objects
-// that createMastraTools can handle.
-const llmChainToolsRaw = Object.values(createMastraTools(llmChainTool));
-extraTools.push(...llmChainToolsRaw.map(ensureToolOutputSchema));
+// --- GraphRag Tools (Mastra core tools, need schema check) ---
+try {
+    // Add the main GraphRag tools if they are valid Tool objects
+    if (createGraphRagTool && typeof createGraphRagTool === 'object' && 'id' in createGraphRagTool) {
+        extraTools.push(ensureToolOutputSchema(createGraphRagTool as Tool<any, any>)); // Schema check
+    } else { logger.warn("createGraphRagTool is not a valid Tool object."); }
 
-const aiSdkPromptToolsRaw = Object.values(createMastraTools(aiSdkPromptTool));
-extraTools.push(...aiSdkPromptToolsRaw.map(ensureToolOutputSchema));
+    if (graphRagQueryTool && typeof graphRagQueryTool === 'object' && 'id' in graphRagQueryTool) {
+        extraTools.push(ensureToolOutputSchema(graphRagQueryTool as Tool<any, any>)); // Schema check
+    } else { logger.warn("graphRagQueryTool is not a valid Tool object."); }
+
+    // Create and add the 'graph-rag' alias
+    if (createGraphRagTool && typeof createGraphRagTool === 'object' && 'id' in createGraphRagTool) {
+      const baseTool = createGraphRagTool as Tool<any, any>;
+      const graphRagAliasTool: Tool<any, any> = { ...baseTool, id: "graph-rag" };
+      extraTools.push(ensureToolOutputSchema(graphRagAliasTool)); // Schema check
+      logger.info("Added GraphRag tools and 'graph-rag' alias.");
+    } else {
+      logger.warn("Could not create 'graph-rag' alias: createGraphRagTool is not valid.");
+    }
+} catch (error) {
+    logger.error("Failed to initialize GraphRag tools:", { error });
+}
+
+// --- LLM Chain Tools (using Mastra helper) ---
+try {
+    const llmChainToolsObject = createMastraLLMChainTools(); // Use the helper from llmchain.ts
+    const llmChainToolsArray = Object.values(llmChainToolsObject); // Get tool values
+    // Cast to Tool<any, any> to resolve potential type mismatches from different internal definitions
+    extraTools.push(...llmChainToolsArray.map(tool => tool as Tool<any, any>));
+    logger.info(`Added ${llmChainToolsArray.length} LLM Chain tools.`);
+} catch (error) {
+    logger.error("Failed to initialize LLM Chain tools:", { error });
+}
+
+// --- GitHub Tools (using Mastra helper) ---
+try {
+    const githubToolsObject = createMastraGitHubTools(); // Use the helper from github.ts
+    const githubToolsArray = Object.values(githubToolsObject); // Extract tool values
+    // Cast to Tool<any, any> to resolve potential type mismatches
+    extraTools.push(...githubToolsArray.map(tool => tool as Tool<any, any>));
+    logger.info(`Added ${githubToolsArray.length} GitHub tools (via Mastra helper).`);
+} catch (error) {
+    logger.error("Failed to initialize GitHub tools:", { error });
+}
+
 
 // === Filter Optional Search Tools ===
-const optionalTools: Tool<z.ZodTypeAny, z.ZodTypeAny>[] = Object.values(
+const optionalTools: Tool<any, any>[] = Object.values(
   searchTools
 ).filter(
-  (tool): tool is Tool<z.ZodTypeAny, z.ZodTypeAny> => tool !== undefined
+  (tool): tool is Tool<any, any> => tool !== undefined
 );
 
 // === Aggregate All Tools ===
@@ -397,7 +440,7 @@ const optionalTools: Tool<z.ZodTypeAny, z.ZodTypeAny>[] = Object.values(
 /**
  * Complete collection of all available tools (core + optional + additional + extra).
  */
-export const allTools: readonly Tool<z.ZodTypeAny, z.ZodTypeAny>[] =
+export const allTools: readonly Tool<any, any>[] =
   Object.freeze([
     ...coreTools,
     ...optionalTools,
@@ -410,16 +453,14 @@ export const allTools: readonly Tool<z.ZodTypeAny, z.ZodTypeAny>[] =
  */
 export const allToolsMap: ReadonlyMap<
   string,
-  Tool<z.ZodTypeAny, z.ZodTypeAny>
+  Tool<any, any>
 > = new Map(allTools.map((tool) => [tool.id, tool]));
 
 /**
  * Grouped tools by category for easier access.
  */
 export const toolGroups = {
-  search: Object.values(searchTools).filter(
-    (tool): tool is Tool<z.ZodTypeAny, z.ZodTypeAny> => tool !== undefined
-  ),
+  search: optionalTools,
   vector: [vectorQueryTool, googleVectorQueryTool, filteredQueryTool],
   file: [readFileTool, writeToFileTool],
   memory: [memoryQueryTool],
@@ -431,18 +472,28 @@ export const toolGroups = {
     defineRewardFunctionTool,
     optimizePolicyTool,
   ],
-  content: [analyzeContentTool, formatContentTool],
-  document: [searchDocumentsTool, embedDocumentTool],
-  extra: extraTools,
+  content: additionalTools.filter(t => ['analyzeContentTool', 'formatContentTool'].includes(t.id)),
+  document: additionalTools.filter(t => ['searchDocumentsTool', 'embedDocumentTool'].includes(t.id)),
+  github: [getMainBranchRef, ...extraTools.filter(t => t.id.startsWith('github_'))], // Group custom and provider tools
+  extra: extraTools, // Contains all tools added above
 };
 
 // === Log Initialization Results ===
-logger.info(`Initialized ${allTools.length} tools successfully`);
+logger.info(`Initialized ${allTools.length} tools successfully.`);
 logger.info(
   `Search tools available: ${
     toolGroups.search.map((t) => t.id).join(", ") || "none"
   }`
 );
+// Add specific checks for included tools based on expected IDs from helpers
+logger.info(`GraphRag tools included: ${extraTools.some(t => t.id.startsWith('graphRag') || t.id === 'createGraphRagTool' || t.id === 'graph-rag')}`);
+logger.info(`Wikipedia tools included: ${extraTools.some(t => t.id.startsWith('wikipedia_'))}`); // Assuming helper creates IDs like 'wikipedia_...'
+logger.info(`LLMChain tools included: ${extraTools.some(t => t.id.startsWith('llm-chain_'))}`); // Assuming helper creates IDs like 'llm-chain_...'
+logger.info(`GitHub tools included: ${extraTools.some(t => t.id.startsWith('github_'))}`); // Assuming helper creates IDs like 'github_...'
+logger.info(`E2B tools included: ${extraTools.some(t => t.id.startsWith('e2b_'))}`); // Assuming helper creates IDs like 'e2b_...'
+logger.info(`Arxiv tools included: ${extraTools.some(t => t.id.startsWith('arxiv_'))}`); // Assuming helper creates IDs like 'arxiv_...'
+logger.info(`AI SDK tools included: ${extraTools.some(t => t.id.startsWith('ai-sdk_'))}`); // Assuming helper creates IDs like 'ai-sdk_...'
+
 
 // For backward compatibility.
 export { allToolsMap as toolMap };

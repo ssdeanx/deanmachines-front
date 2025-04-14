@@ -56,7 +56,7 @@ export const DEFAULT_MODELS = {
   // Standard Google model - fast, versatile
   GOOGLE_STANDARD: {
     provider: "google" as const,
-    modelId: "gemini-2.0-flash-live-001",
+    modelId: "gemini-2.0-flash",
     temperature: 0.6,
     topP: 0.95,
     maxTokens: DEFAULT_MAX_TOKENS,
@@ -64,7 +64,7 @@ export const DEFAULT_MODELS = {
       maxContextTokens: 1048576,
       multimodalInput: true,
       imageGeneration: false,
-      audioOutput: true,
+      audioOutput: false,
       functionCalling: true,
       structuredOutput: true,
       enhancedThinking: false,

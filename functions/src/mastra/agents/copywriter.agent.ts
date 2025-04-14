@@ -5,9 +5,8 @@
  * marketing copy and content within the DeanmachinesAI system.
  */
 
-import { Agent } from "@mastra/core/agent";
 import { createAgentFromConfig } from "./base.agent";
-import {copywriterAgentConfig }from "./config";
+import { copywriterAgentConfig } from "./config"; // Corrected import name
 import { createLogger } from "@mastra/core/logger";
 import { sharedMemory } from "../database";
 
@@ -15,35 +14,28 @@ import { sharedMemory } from "../database";
 const logger = createLogger({ name: "copywriter-agent", level: "info" });
 
 /**
- * Initialize the copywriter agent instance using its configuration
- *
- * @returns The initialized copywriter agent instance
+ * Copywriter Agent
+ * 
+ * Specializes in creating marketing copy, blog posts, social media content,
+ * and other written materials.
+ * 
+ * @remarks
+ * This agent leverages language models to generate creative and persuasive text
+ * tailored to specific audiences and marketing goals.
  */
-export function initializeCopywriterAgent(): Agent {
-  logger.info("Initializing copywriter agent");
-  try {
-    return createAgentFromConfig({
-      config: copywriterAgentConfig,
-      memory: sharedMemory, // Following RULE-MemoryInjection
-      onError: async (error: Error) => {
-        logger.error("Copywriter agent error:", error);
-        return {
-          text: "I encountered an error while creating content. Please provide more specific requirements.",
-        };
-      },
-    });
-  } catch (error) {
-    logger.error(
-      `Failed to initialize copywriter agent: ${
-        error instanceof Error ? error.message : String(error)
-      }`
-    );
-    throw error;
-  }
-}
+export const copywriterAgent = createAgentFromConfig({
+  config: copywriterAgentConfig,
+  memory: sharedMemory, // Following RULE-MemoryInjection
+  onError: async (error: Error) => {
+    logger.error("Copywriter agent error:", error);
+    return {
+      text: "I encountered an error while creating content. Please provide more specific requirements.",
+    };
+  },
+});
 
-/**
- * Singleton instance of the copywriter agent
- */
-export const copywriterAgent = initializeCopywriterAgent();
+// Export the agent instance as default and named export
+export default copywriterAgent;
+// Export the type for use elsewhere
+export type CopywriterAgent = typeof copywriterAgent;
 
