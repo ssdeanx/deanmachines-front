@@ -635,96 +635,105 @@ Made with ❤️ by the DeanMachines team
 
 ```mermaid
 graph TB
-    User((External User))
-    Admin((Admin User))
+    User(("External User"))
+    Admin(("Admin User"))
 
     subgraph "Frontend Container"
-        NextApp["Next.js App<br>(Next.js)"]
+        direction TB
+        NextApp["Next.js App<br>(Next.js 15.x)"]
+        
+        subgraph "Public Pages"
+            PublicPages["Public Routes<br>(Next.js Pages)"]
+            AboutPage["About Page<br>(React)"]
+            ContactPage["Contact Page<br>(React)"]
+            PricingPage["Pricing Page<br>(React)"]
+            DocsPage["Documentation<br>(React/MDX)"]
+        end
 
-        subgraph "Frontend Components"
-            AuthModule["Auth Module<br>(Firebase Auth)"]
-            UIComponents["UI Components<br>(React/Shadcn)"]
+        subgraph "Admin Interface"
+            AdminDashboard["Admin Dashboard<br>(React)"]
+            Analytics["Analytics Panel<br>(React)"]
+            UserManagement["User Management<br>(React)"]
+            Settings["Settings Panel<br>(React)"]
+        end
+
+        subgraph "User Interface"
+            UserDashboard["User Dashboard<br>(React)"]
+            ChatInterface["Chat Interface<br>(React)"]
+            ProjectsPanel["Projects Panel<br>(React)"]
+            DocumentsPanel["Documents Panel<br>(React)"]
+        end
+
+        subgraph "Shared Components"
+            UIComponents["UI Components<br>(shadcn/ui)"]
+            AuthComponents["Auth Components<br>(React)"]
+            Navigation["Navigation<br>(React)"]
             ThemeSystem["Theme System<br>(next-themes)"]
-            Navigation["Navigation<br>(Next.js Router)"]
-            Forms["Forms Handler<br>(React Hook Form)"]
         end
     end
 
     subgraph "Backend Container"
-        FirebaseFunctions["Firebase Functions<br>(Node.js)"]
+        direction TB
+        APILayer["API Layer<br>(Next.js API Routes)"]
+        
+        subgraph "Authentication"
+            AuthService["Auth Service<br>(NextAuth.js)"]
+            FirebaseAuth["Firebase Auth<br>(Firebase Admin)"]
+        end
 
-        subgraph "Mastra AI System"
-            MastraCore["Mastra Core<br>(TypeScript)"]
-
-            subgraph "Agent Networks"
-                DeanInsights["DeanInsights Network<br>(Mastra)"]
-                DataFlow["DataFlow Network<br>(Mastra)"]
-                ContentCreation["ContentCreation Network<br>(Mastra)"]
-                KnowledgeMoE["Knowledge Work MoE<br>(Mastra)"]
+        subgraph "Mastra Core"
+            MastraInstance["Mastra Instance<br>(Node.js)"]
+            
+            subgraph "Agent System"
+                AgentNetwork["Agent Network<br>(Mastra Core)"]
+                AgentRegistry["Agent Registry<br>(TypeScript)"]
+                WorkflowEngine["Workflow Engine<br>(Mastra Core)"]
             end
 
-            subgraph "Core Agents"
-                ResearchAgent["Research Agent<br>(AI)"]
-                AnalystAgent["Analyst Agent<br>(AI)"]
-                WriterAgent["Writer Agent<br>(AI)"]
-                CoderAgent["Coder Agent<br>(AI)"]
-            end
-
-            subgraph "Tool System"
+            subgraph "Tools System"
+                ToolRegistry["Tool Registry<br>(TypeScript)"]
                 SearchTools["Search Tools<br>(Multiple Providers)"]
-                VectorTools["Vector Tools<br>(Pinecone)"]
+                VectorTools["Vector Tools<br>(Mastra Core)"]
                 FileTools["File Tools<br>(Node.js)"]
-                MemoryTools["Memory Tools<br>(LibSQL)"]
+            end
+
+            subgraph "Services"
+                Telemetry["Telemetry<br>(OpenTelemetry)"]
+                LangfuseService["Langfuse Service<br>(Langfuse)"]
+                SignozService["Signoz Service<br>(Signoz)"]
             end
         end
     end
 
     subgraph "Data Storage"
-        FirebaseAuth[("Auth DB<br>Firebase Auth")]
-        VectorDB[("Vector Store<br>Pinecone")]
-        MemoryDB[("Memory Store<br>LibSQL")]
-    end
-
-    subgraph "External Services"
-        GoogleAI["Google AI<br>(Gemini)"]
-        ExaSearch["Exa Search<br>(API)"]
-        Firebase["Firebase<br>(BaaS)"]
+        FirebaseDB[("Firebase DB<br>Firestore")]
+        LibSQLStore[("LibSQL Store<br>SQLite")]
+        VectorStore[("Vector Store<br>LibSQL")]
+        Redis[("Cache<br>Redis")]
     end
 
     %% Connections
-    User -->|Accesses| NextApp
-    Admin -->|Manages| NextApp
-
-    NextApp -->|Authenticates| AuthModule
-    AuthModule -->|Verifies| FirebaseAuth
-    NextApp -->|Uses| UIComponents
-    NextApp -->|Uses| ThemeSystem
-    NextApp -->|Routes via| Navigation
-    NextApp -->|Handles Forms with| Forms
-
-    NextApp -->|Calls| FirebaseFunctions
-    FirebaseFunctions -->|Orchestrates| MastraCore
-
-    MastraCore -->|Manages| DeanInsights
-    MastraCore -->|Manages| DataFlow
-    MastraCore -->|Manages| ContentCreation
-    MastraCore -->|Manages| KnowledgeMoE
-
-    DeanInsights -->|Uses| ResearchAgent
-    DeanInsights -->|Uses| AnalystAgent
-    DataFlow -->|Uses| AnalystAgent
-    ContentCreation -->|Uses| WriterAgent
-    KnowledgeMoE -->|Uses| CoderAgent
-
-    ResearchAgent -->|Uses| SearchTools
-    AnalystAgent -->|Uses| VectorTools
-    WriterAgent -->|Uses| FileTools
-    CoderAgent -->|Uses| MemoryTools
-
-    SearchTools -->|Queries| ExaSearch
-    VectorTools -->|Stores in| VectorDB
-    MemoryTools -->|Persists in| MemoryDB
-
-    MastraCore -->|Uses| GoogleAI
-    FirebaseFunctions -->|Integrates with| Firebase
+    User --> NextApp
+    Admin --> NextApp
+    NextApp --> APILayer
+    APILayer --> AuthService
+    AuthService --> FirebaseAuth
+    FirebaseAuth --> FirebaseDB
+    
+    APILayer --> MastraInstance
+    MastraInstance --> AgentNetwork
+    AgentNetwork --> ToolRegistry
+    AgentNetwork --> WorkflowEngine
+    
+    MastraInstance --> LibSQLStore
+    MastraInstance --> VectorStore
+    MastraInstance --> Redis
+    
+    ToolRegistry --> SearchTools
+    ToolRegistry --> VectorTools
+    ToolRegistry --> FileTools
+    
+    MastraInstance --> Telemetry
+    Telemetry --> LangfuseService
+    Telemetry --> SignozService
 ```
