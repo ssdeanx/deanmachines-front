@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved type safety and error handling in workflowFactory.ts and related workflow logic.  
 - Ensured all lint/type errors are fixed after every file edit.  
 - Updated README and documentation to reflect new memory, RAG, and workflow patterns.  
+- Added csv-reader, docx-reader, tools  
+  
 - Date: 2025-04-15  
 - Time: 15:00 UTC
 
@@ -42,6 +44,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - cheerio: For parsing HTML content (from files or web pages).
   - node-fetch: For reliably fetching documents from URLs.
 - Implementation: These packages should be utilized within a new Mastra AI Tool (e.g., readDocumentContent). This tool will inspect the input file path or URL, determine the likely document type (based on extension or potentially content-type for URLs), and invoke the appropriate parsing library to return the extracted text content for further processing by the agent.
+- 
 
 
 ## [v0.0.5] - 2025-04-15

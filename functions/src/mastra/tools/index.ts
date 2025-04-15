@@ -51,7 +51,7 @@ import { memoryQueryTool } from "./memoryQueryTool";
 
 // --- Additional Tools ---
 import { analyzeContentTool, formatContentTool } from "./contentTools";
-import { searchDocumentsTool, embedDocumentTool } from "./document-tools";
+import { searchDocumentsTool, embedDocumentTool, docxReaderTool, csvReaderTool, jsonReaderTool, extractHtmlTextTool} from "./document-tools";
 
 // --- Extra Tools (Import Helper Functions & Direct Tools) ---
 import { createCalculatorTool } from "./calculator";
@@ -298,6 +298,12 @@ const coreTools: Tool<any, any>[] = [
   editFileTool, 
   deleteFileTool, 
   listFilesTool,
+  //pdfReaderTool, 
+  docxReaderTool, 
+  csvReaderTool,
+  jsonReaderTool,
+  extractHtmlTextTool, 
+  //fetchAndExtractDocumentTool,
   memoryQueryTool,
   collectFeedbackTool,
   analyzeFeedbackTool,

@@ -110,6 +110,12 @@ export const researchAgentConfig: BaseAgentConfig = {
     "create-file",
     "write-knowledge-file",
     "read-knowledge-file",
+    //"pdf-reader",
+    "csv-reader",
+    "docx-reader",
+    //"fetch-and-extract-document",
+    //"extract-html-text",
+    //"json-reader",
   ],
 };
 
