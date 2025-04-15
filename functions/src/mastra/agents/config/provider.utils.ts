@@ -10,10 +10,10 @@
 import { google } from "@ai-sdk/google";
 import { createVertex } from "@ai-sdk/google-vertex";
 import { env } from "process";
-import { util } from "zod";
+import { z } from "zod";
 
 /** Supported model providers */
-export type ModelProvider = "google" | "vertex";
+export type ModelProvider = "google" | "vertex" | "openai" | "anthropic";
 
 /** Options for configuring the Google AI provider setup */
 export type GoogleOptions = Partial<Pick<GoogleProviderConfig, 'apiKey'>>;
@@ -23,7 +23,6 @@ export type GoogleVertexOptions = Partial<Pick<VertexProviderConfig, 'projectId'
 
 /** Union type for all provider setup options */
 export type ProviderSetupOptions = GoogleOptions | GoogleVertexOptions;
-
 
 /**
  * Configuration for Google AI provider
@@ -46,9 +45,40 @@ export interface VertexProviderConfig {
 }
 
 /**
+ * Configuration for OpenAI provider
+ */
+export type OpenAIProviderConfig = z.infer<typeof OpenAIProviderConfigSchema>;
+
+/**
+ * Configuration for Anthropic provider
+ */
+export type AnthropicProviderConfig = z.infer<typeof AnthropicProviderConfigSchema>;
+
+/**
  * Generic provider configuration type
  */
-export type ProviderConfig = GoogleProviderConfig | VertexProviderConfig;
+export type ProviderConfig = GoogleProviderConfig | VertexProviderConfig | OpenAIProviderConfig | AnthropicProviderConfig;
+
+// --- Zod Schemas for Provider Configs ---
+export const GoogleProviderConfigSchema = z.object({
+  apiKey: z.string().min(1, "Google API key is required"),
+});
+
+export const VertexProviderConfigSchema = z.object({
+  projectId: z.string().min(1, "Vertex project ID is required"),
+  location: z.string().min(1, "Vertex location is required"),
+  credentials: z.record(z.unknown()),
+});
+
+export const OpenAIProviderConfigSchema = z.object({
+  apiKey: z.string().min(1, "OpenAI API key is required"),
+  baseUrl: z.string().url().optional(),
+});
+
+export const AnthropicProviderConfigSchema = z.object({
+  apiKey: z.string().min(1, "Anthropic API key is required"),
+  baseUrl: z.string().url().optional(),
+});
 
 /**
  * Sets up the Google AI provider configuration
@@ -79,18 +109,11 @@ export function setupGoogleProvider(
  * Creates a Google AI client configuration object
  *
  * @param config - Google provider configuration
- * @param config - Google provider configuration (contains validated apiKey)
  * @returns Google AI client configuration for @ai-sdk/google
  */
 export function createGoogleClientConfig(
-  // config parameter is currently unused as the SDK reads the API key from the environment.
-  // It's kept for potential future configuration options.
   config: GoogleProviderConfig
 ): Parameters<typeof google>[1] {
-  // The @ai-sdk/google provider automatically uses the
-  // GOOGLE_GENERATIVE_AI_API_KEY environment variable.
-  // The config object passed here is for other settings (e.g., baseURL, headers).
-  // setupGoogleProvider ensures the API key exists in the environment or options.
   return {};
 }
 
@@ -120,8 +143,6 @@ export function setupVertexProvider(
   const credentials: Record<string, unknown> = {
     client_email: env.GOOGLE_CLIENT_EMAIL,
     private_key: env.GOOGLE_PRIVATE_KEY,
-    // For direct usage without a JSON file, we may need just the key parts
-    // or rely on application default credentials when deployed
   };
 
   return {
@@ -143,13 +164,61 @@ export function createVertexClientConfig(
   return createVertex({
     project: config.projectId,
     location: config.location,
-    // Credentials are often handled via environment variables (GOOGLE_APPLICATION_CREDENTIALS)
-    // or Application Default Credentials (ADC) when running on GCP.
-    // Explicitly passing credentials here might be needed in specific scenarios.
-    // If config.credentials contains the necessary structure, pass it here.
-    // Example (if credentials are a service account key object):
-    // credentials: config.credentials,
   });
+}
+
+/**
+ * Sets up the OpenAI provider configuration
+ *
+ * @param options - OpenAI specific options
+ * @returns OpenAI provider configuration
+ * @throws {Error} If required environment variables are not available
+ */
+export function setupOpenAIProvider(
+  options?: Partial<OpenAIProviderConfig>
+): OpenAIProviderConfig {
+  const apiKey = options?.apiKey || env.OPENAI_API_KEY;
+  const baseUrl = options?.baseUrl || env.OPENAI_API_BASE;
+  const parsed = OpenAIProviderConfigSchema.safeParse({ apiKey, baseUrl });
+  if (!parsed.success) throw new Error(parsed.error.message);
+  return parsed.data;
+}
+
+/**
+ * Creates an OpenAI client configuration
+ *
+ * @param config - OpenAI provider configuration
+ * @returns OpenAI client configuration
+ */
+export function createOpenAIClientConfig(config: OpenAIProviderConfig) {
+  return { apiKey: config.apiKey, baseUrl: config.baseUrl };
+}
+
+/**
+ * Sets up the Anthropic provider configuration
+ *
+ * @param options - Anthropic specific options
+ * @returns Anthropic provider configuration
+ * @throws {Error} If required environment variables are not available
+ */
+export function setupAnthropicProvider(
+  options?: Partial<AnthropicProviderConfig>
+): AnthropicProviderConfig {
+  const apiKey = options?.apiKey || env.ANTHROPIC_API_KEY;
+  const baseUrl = options?.baseUrl || env.ANTHROPIC_API_BASE;
+  const parsed = AnthropicProviderConfigSchema.safeParse({ apiKey, baseUrl });
+  if (!parsed.success) throw new Error(parsed.error.message);
+  return parsed.data;
+}
+
+/**
+ * Creates an Anthropic client configuration
+ *
+ * @param config - Anthropic provider configuration
+ * @returns Anthropic client configuration
+ */
+export function createAnthropicClientConfig(config: AnthropicProviderConfig) {
+  return { apiKey: config.apiKey, baseUrl: config.baseUrl };
 }
 
 /**
@@ -169,6 +238,10 @@ export function getProviderConfig(
       return setupGoogleProvider(options as GoogleOptions);
     case "vertex":
       return setupVertexProvider(options as GoogleVertexOptions);
+    case "openai":
+      return setupOpenAIProvider(options as Partial<OpenAIProviderConfig>);
+    case "anthropic":
+      return setupAnthropicProvider(options as Partial<AnthropicProviderConfig>);
     default:
       throw new Error(`Unsupported model provider: ${provider}`);
   }

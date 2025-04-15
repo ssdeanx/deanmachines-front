@@ -7,7 +7,7 @@
 
 import { createTool } from "@mastra/core/tools";
 import { z } from "zod";
-import { promises as fs } from "fs";
+import fs from "fs-extra";
 import { resolve, dirname, extname, join } from "path";
 import { createLangSmithRun, trackFeedback } from "../services/langsmith";
 
@@ -44,7 +44,7 @@ export enum FileWriteMode {
 /**
  * Base path for knowledge folder
  */
-const KNOWLEDGE_BASE_PATH = resolve(process.cwd(), "knowledge");
+const KNOWLEDGE_BASE_PATH = resolve(process.cwd(), "src", "mastra", "knowledge");
 
 /**
  * Validates if a path is within the knowledge folder
@@ -345,7 +345,7 @@ export const writeToFileTool = createTool({
 
       // Create parent directories if requested
       if (context.createDirectory) {
-        await fs.mkdir(dirname(absolutePath), { recursive: true });
+        await fs.ensureDir(dirname(absolutePath));
       }
 
       // Check if the file exists
@@ -602,6 +602,225 @@ export const writeKnowledgeFileTool = createTool({
           error instanceof Error
             ? error.message
             : "Unknown error writing knowledge file",
+      };
+    }
+  },
+});
+
+// CREATE FILE TOOL
+export const createFileTool = createTool({
+  id: "create-file",
+  description: "Creates a new file. Fails if the file already exists.",
+  inputSchema: z.object({
+    path: z.string().describe("Path to the file to create (absolute or relative)"),
+    content: z.string().describe("Content to write to the new file"),
+    encoding: z.enum([
+      FileEncoding.UTF8,
+      FileEncoding.ASCII,
+      FileEncoding.UTF16LE,
+      FileEncoding.LATIN1,
+      FileEncoding.BASE64,
+      FileEncoding.HEX,
+    ]).default(FileEncoding.UTF8),
+    createDirectory: z.boolean().optional().default(false),
+  }),
+  outputSchema: z.object({
+    metadata: z.object({
+      path: z.string(),
+      size: z.number(),
+      extension: z.string(),
+      encoding: z.string(),
+    }),
+    success: z.boolean(),
+    error: z.string().optional(),
+  }),
+  execute: async ({ context }) => {
+    const absolutePath = resolve(context.path);
+    try {
+      // Check if file exists
+      await fs.access(absolutePath);
+      return {
+        metadata: {
+          path: absolutePath,
+          size: 0,
+          extension: extname(absolutePath),
+          encoding: context.encoding,
+        },
+        success: false,
+        error: "File already exists.",
+      };
+    } catch {
+      // File does not exist, proceed
+    }
+    if (context.createDirectory) {
+      await fs.ensureDir(dirname(absolutePath));
+    }
+    await fs.writeFile(absolutePath, context.content, context.encoding);
+    return {
+      metadata: {
+        path: absolutePath,
+        size: Buffer.byteLength(context.content, context.encoding),
+        extension: extname(absolutePath),
+        encoding: context.encoding,
+      },
+      success: true,
+    };
+  },
+});
+
+// EDIT FILE TOOL (simple search/replace)
+export const editFileTool = createTool({
+  id: "edit-file",
+  description: "Edits a file by searching and replacing text.",
+  inputSchema: z.object({
+    path: z.string().describe("Path to the file to edit (absolute or relative)"),
+    search: z.string().describe("Text or regex to search for"),
+    replace: z.string().describe("Replacement text"),
+    encoding: z.enum([
+      FileEncoding.UTF8,
+      FileEncoding.ASCII,
+      FileEncoding.UTF16LE,
+      FileEncoding.LATIN1,
+      FileEncoding.BASE64,
+      FileEncoding.HEX,
+    ]).default(FileEncoding.UTF8),
+    isRegex: z.boolean().optional().default(false),
+  }),
+  outputSchema: z.object({
+    metadata: z.object({
+      path: z.string(),
+      size: z.number(),
+      extension: z.string(),
+      encoding: z.string(),
+      edits: z.number(),
+    }),
+    success: z.boolean(),
+    error: z.string().optional(),
+  }),
+  execute: async ({ context }) => {
+    const absolutePath = resolve(context.path);
+    try {
+      let content = await fs.readFile(absolutePath, context.encoding);
+      let edits = 0;
+      let newContent;
+      if (context.isRegex) {
+        const regex = new RegExp(context.search, "g");
+        newContent = content.replace(regex, (match) => {
+          edits++;
+          return context.replace;
+        });
+      } else {
+        newContent = content.split(context.search).join(context.replace);
+        edits = (content.match(new RegExp(context.search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), "g")) || []).length;
+      }
+      await fs.writeFile(absolutePath, newContent, context.encoding);
+      return {
+        metadata: {
+          path: absolutePath,
+          size: Buffer.byteLength(newContent, context.encoding),
+          extension: extname(absolutePath),
+          encoding: context.encoding,
+          edits,
+        },
+        success: true,
+      };
+    } catch (error) {
+      return {
+        metadata: {
+          path: absolutePath,
+          size: 0,
+          extension: extname(absolutePath),
+          encoding: context.encoding,
+          edits: 0,
+        },
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error editing file",
+      };
+    }
+  },
+});
+
+// DELETE FILE TOOL
+export const deleteFileTool = createTool({
+  id: "delete-file",
+  description: "Deletes a file at the given path.",
+  inputSchema: z.object({
+    path: z.string().describe("Path to the file to delete (absolute or relative)"),
+  }),
+  outputSchema: z.object({
+    path: z.string(),
+    success: z.boolean(),
+    error: z.string().optional(),
+  }),
+  execute: async ({ context }) => {
+    const absolutePath = resolve(context.path);
+    try {
+      await fs.remove(absolutePath);
+      return { path: absolutePath, success: true };
+    } catch (error) {
+      return {
+        path: absolutePath,
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error deleting file",
+      };
+    }
+  },
+});
+
+// LIST FILES TOOL
+export const listFilesTool = createTool({
+  id: "list-files",
+  description: "Lists files and folders in a directory.",
+  inputSchema: z.object({
+    path: z.string().describe("Directory path (absolute or relative)"),
+    filterExtension: z.string().optional().describe("Filter by file extension (e.g. .ts)"),
+    recursive: z.boolean().optional().default(false),
+  }),
+  outputSchema: z.object({
+    files: z.array(z.object({
+      name: z.string(),
+      path: z.string(),
+      isDirectory: z.boolean(),
+      extension: z.string(),
+    })),
+    success: z.boolean(),
+    error: z.string().optional(),
+  }),
+  execute: async ({ context }) => {
+    const absolutePath = resolve(context.path);
+    const results: Array<{ name: string; path: string; isDirectory: boolean; extension: string }> = [];
+    async function walk(dir: string) {
+      const entries = await fs.readdir(dir, { withFileTypes: true });
+      for (const entry of entries) {
+        const entryPath = join(dir, entry.name);
+        if (entry.isDirectory()) {
+          results.push({
+            name: entry.name,
+            path: entryPath,
+            isDirectory: true,
+            extension: "",
+          });
+          if (context.recursive) await walk(entryPath);
+        } else {
+          if (!context.filterExtension || entry.name.endsWith(context.filterExtension)) {
+            results.push({
+              name: entry.name,
+              path: entryPath,
+              isDirectory: false,
+              extension: extname(entry.name),
+            });
+          }
+        }
+      }
+    }
+    try {
+      await walk(absolutePath);
+      return { files: results, success: true };
+    } catch (error) {
+      return {
+        files: [],
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error listing files",
       };
     }
   },

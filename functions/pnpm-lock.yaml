@@ -314,6 +314,9 @@ importers:
       remark:
         specifier: ^15.0.1
         version: 15.0.1
+      type-fest:
+        specifier: ^4.40.0
+        version: 4.40.0
       wikibase-sdk:
         specifier: ^10.2.3
         version: 10.2.3
@@ -327,6 +330,9 @@ importers:
       '@genkit-ai/googleai':
         specifier: ^1.6.0
         version: 1.6.0(encoding@0.1.13)(genkit@1.6.0)
+      '@types/fs-extra':
+        specifier: ^11.0.4
+        version: 11.0.4
       '@types/node':
         specifier: ^22.14.1
         version: 22.14.1
@@ -5070,6 +5076,9 @@ packages:
   '@types/express@4.17.21':
     resolution: {integrity: sha512-ejlPM315qwLpaQlQDTjPdsUFSc6ZsP4AN6AlWnogPjQ7CVi7PYF3YVz+CY3jE2pwYf7E/7HlDAN0rV2GxTG0HQ==}
 
+  '@types/fs-extra@11.0.4':
+    resolution: {integrity: sha512-yTbItCNreRooED33qjunPthRcSjERP1r4MqCZc7wv0u2sUkzTFp45tgUfS5+r7FrZPdmCCNflLhVSP/o+SemsQ==}
+
   '@types/graceful-fs@4.1.9':
     resolution: {integrity: sha512-olP3sd1qOEe5dXTSaFvQG+02VdRXcdytWLAZsAq1PecU8uqQAhkrnbli7DagjtXKW/Bl7YJbUsa8MPcuc8LHEQ==}
 
@@ -5097,6 +5106,9 @@ packages:
 
   '@types/json5@0.0.29':
     resolution: {integrity: sha512-dRLjCWHYg4oaA77cxO64oO+7JwCwnIzkZPdrrC71jQmQtlhM556pwKo5bUzqvZndkVbeFLIIi+9TC40JNF5hNQ==}
+
+  '@types/jsonfile@6.1.4':
+    resolution: {integrity: sha512-D5qGUYwjvnNNextdU59/+fI+spnwtTFmyQP0h+PfIOSkNfpU6AOICUOkm4i0OnSk+NyjdPJrxCDro0sJsWlRpQ==}
 
   '@types/jsonwebtoken@9.0.9':
     resolution: {integrity: sha512-uoe+GxEuHbvy12OUQct2X9JenKM3qAscquYymuQN4fMWG9DBQtykrQEFcAbVACF7qaLw9BePSodUL0kquqBJpQ==}
@@ -9787,8 +9799,8 @@ packages:
     resolution: {integrity: sha512-t0rzBq87m3fVcduHDUFhKmyyX+9eo6WQjZvf51Ea/M0Q7+T374Jp1aUiyUl0GKxp8M/OETVHSDvmkyPgvX+X2w==}
     engines: {node: '>=10'}
 
-  type-fest@4.39.1:
-    resolution: {integrity: sha512-uW9qzd66uyHYxwyVBYiwS4Oi0qZyUqwjU+Oevr6ZogYiXt99EOYtwvzMSLw1c3lYo2HzJsep/NB23iEVEgjG/w==}
+  type-fest@4.40.0:
+    resolution: {integrity: sha512-ABHZ2/tS2JkvH1PEjxFDTUWC8dB5OsIGZP4IFLhR293GqT5Y5qB1WwL2kMPYhQW9DVgVD8Hd7I8gjwPIf5GFkw==}
     engines: {node: '>=16'}
 
   type-flag@3.0.0:
@@ -10345,7 +10357,7 @@ snapshots:
       ky: 1.8.1
       openai-zod-to-json-schema: 1.0.3(zod@3.24.2)
       p-throttle: 6.2.0
-      type-fest: 4.39.1
+      type-fest: 4.40.0
       zod: 3.24.2
       zod-validation-error: 3.4.0(zod@3.24.2)
     transitivePeerDependencies:
@@ -10433,7 +10445,7 @@ snapshots:
     dependencies:
       '@agentic/core': 7.6.4(zod@3.24.2)
       googleapis: 148.0.0(encoding@0.1.13)
-      type-fest: 4.39.1
+      type-fest: 4.40.0
       zod: 3.24.2
     transitivePeerDependencies:
       - babel-plugin-macros
@@ -10442,7 +10454,7 @@ snapshots:
     dependencies:
       '@agentic/core': 7.6.4(zod@3.24.2)
       googleapis: 148.0.0(encoding@0.1.13)
-      type-fest: 4.39.1
+      type-fest: 4.40.0
       zod: 3.24.2
     transitivePeerDependencies:
       - babel-plugin-macros
@@ -10757,7 +10769,7 @@ snapshots:
       ky: 1.8.1
       p-throttle: 6.2.0
       twitter-api-sdk: 1.2.1(encoding@0.1.13)
-      type-fest: 4.39.1
+      type-fest: 4.40.0
       zod: 3.24.2
     transitivePeerDependencies:
       - babel-plugin-macros
@@ -16995,6 +17007,11 @@ snapshots:
       '@types/qs': 6.9.18
       '@types/serve-static': 1.15.7
 
+  '@types/fs-extra@11.0.4':
+    dependencies:
+      '@types/jsonfile': 6.1.4
+      '@types/node': 22.14.1
+
   '@types/graceful-fs@4.1.9':
     dependencies:
       '@types/node': 22.14.1
@@ -17022,6 +17039,10 @@ snapshots:
   '@types/json-schema@7.0.15': {}
 
   '@types/json5@0.0.29': {}
+
+  '@types/jsonfile@6.1.4':
+    dependencies:
+      '@types/node': 22.14.1
 
   '@types/jsonwebtoken@9.0.9':
     dependencies:
@@ -21914,7 +21935,7 @@ snapshots:
 
   remeda@2.21.2:
     dependencies:
-      type-fest: 4.39.1
+      type-fest: 4.40.0
 
   replicate@1.0.1:
     optionalDependencies:
@@ -22779,7 +22800,7 @@ snapshots:
 
   type-fest@0.21.3: {}
 
-  type-fest@4.39.1: {}
+  type-fest@4.40.0: {}
 
   type-flag@3.0.0: {}
 

@@ -9,8 +9,8 @@
 
 import { google } from "@ai-sdk/google";
 import { vertex } from "@ai-sdk/google-vertex";
-import { ModelConfig, ModelProvider } from "./config.types";
-
+import { OpenAIProviderConfig, AnthropicProviderConfig } from "./provider.utils";
+import { ModelConfig } from "./config.types";
 
 /**
  * Model creation options
@@ -37,18 +37,34 @@ export interface ModelCreationOptions {
 export function createModelFromConfig(
   modelConfig: ModelConfig,
   options: ModelCreationOptions = {}
-): ReturnType<typeof google> | ReturnType<typeof vertex> {  try {
-    const { provider, modelId, temperature, topP, maxTokens, providerOptions } =
-      modelConfig;
-
-    switch (provider) {      case "google": {
-        // Create and return Google model instance using the @ai-sdk/google format
+): any {
+  try {
+    const { provider, modelId, providerOptions } = modelConfig;
+    switch (provider) {
+      case "google":
         return google(modelId);
-      }      case "vertex": {
-        // Create and return Vertex model instance
+      case "vertex":
         return vertex(modelId);
+      case "openai": {
+        if (providerOptions && (providerOptions as OpenAIProviderConfig).apiKey) {
+          const openai = require("@ai-sdk/openai").openai({
+            apiKey: (providerOptions as OpenAIProviderConfig).apiKey,
+            baseUrl: (providerOptions as OpenAIProviderConfig).baseUrl,
+          });
+          return openai.chat(modelId as any);
+        }
+        return require("@ai-sdk/openai").openai.chat(modelId as any);
       }
-
+      case "anthropic": {
+        if (providerOptions && (providerOptions as AnthropicProviderConfig).apiKey) {
+          const anthropic = require("@ai-sdk/anthropic").anthropic({
+            apiKey: (providerOptions as AnthropicProviderConfig).apiKey,
+            baseUrl: (providerOptions as AnthropicProviderConfig).baseUrl,
+          });
+          return anthropic.messages(modelId as any);
+        }
+        return require("@ai-sdk/anthropic").anthropic.messages(modelId as any);
+      }
       default:
         throw new Error(`Unsupported model provider: ${provider}`);
     }
@@ -123,6 +139,6 @@ export function createVertexModel(
 export function createModelInstance(
   config: ModelConfig,
   options: ModelCreationOptions = {}
-): ReturnType<typeof google> | ReturnType<typeof vertex> {
+): any {
   return createModelFromConfig(config, options);
 }

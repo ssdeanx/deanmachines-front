@@ -8,9 +8,12 @@
 import { createTool } from "@mastra/core/tools";
 import { z } from "zod";
 import { LibSQLStore } from "@mastra/core/storage/libsql";
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import { createLangSmithRun, trackFeedback } from "../services/langsmith";
 import { Memory } from "@mastra/memory";
+import sigNoz from "../services/signoz";
+import { threadManager } from "../utils/thread-manager";
+import { createVertexModel } from "../agents/config/model.utils";
+import { generateText } from "ai";
 
 // Helper function to get environment variable with fallback
 const getEnvVar = (name: string, fallback: string = ''): string => {
@@ -140,6 +143,8 @@ export const collectFeedbackTool = createTool({
     error: z.string().optional(),
   }),
   execute: async ({ context }) => {
+    const span = sigNoz.createSpan("rlFeedback.collectFeedback", { tool: "collect-feedback" });
+    const startTime = performance.now();
     const runId = await createLangSmithRun("collect-feedback", [
       "rl",
       "feedback",
@@ -152,13 +157,12 @@ export const collectFeedbackTool = createTool({
       // Instead of using the LibSQLStore directly, use Memory API to store feedback
       // First, create or get an existing thread for the agent's RL feedback
       const threadId = `rl_feedback_${context.agentId}`;
-      let thread;
 
       try {
-        thread = await memoryInstance.getThreadById({ threadId });
+        await memoryInstance.getThreadById({ threadId });
       } catch (e) {
         // Thread doesn't exist yet, create it
-        thread = await memoryInstance.createThread({
+        await memoryInstance.createThread({
           resourceId: context.agentId,
           threadId,
           title: `RL Feedback for Agent ${context.agentId}`,
@@ -195,6 +199,9 @@ export const collectFeedbackTool = createTool({
         type: "text"
       });
 
+      // Mark thread as read after feedback is collected
+      threadManager.markThreadAsRead(threadId);
+
       // Track in LangSmith as well if available
       await trackFeedback(runId, {
         score: context.feedback.metrics.quality / 10, // Normalize to 0-1
@@ -206,6 +213,8 @@ export const collectFeedbackTool = createTool({
         },
       });
 
+      sigNoz.recordMetrics(span, { latencyMs: performance.now() - startTime, status: "success" });
+      span.end();
       return {
         success: true,
         feedbackId,
@@ -220,6 +229,8 @@ export const collectFeedbackTool = createTool({
         key: "feedback_collection_failure",
       });
 
+      sigNoz.recordMetrics(span, { latencyMs: performance.now() - startTime, status: "error", errorMessage: error instanceof Error ? error.message : String(error) });
+      span.end();
       return {
         success: false,
         error:
@@ -271,15 +282,14 @@ export const analyzeFeedbackTool = createTool({
     }),
   }),
   execute: async ({ context }) => {
+    const span = sigNoz.createSpan("rlFeedback.analyzeFeedback", { tool: "analyze-feedback" });
+    const startTime = performance.now();
     const runId = await createLangSmithRun("analyze-feedback", [
       "rl",
       "analysis",
     ]);
 
     try {
-      // Get memory adapter for retrieving feedback
-      const memoryAdapter = getStorage();
-
       // Query parameters for feedback retrieval
       const startDate = context.startDate
         ? new Date(context.startDate)
@@ -300,43 +310,20 @@ export const analyzeFeedbackTool = createTool({
       );
 
       // Use LLM to generate insights from feedback data
-      const apiKey = getEnvVar('GOOGLE_GENERATIVE_AI_API_KEY');
-      if (!apiKey) {
-        throw new Error("Google Generative AI API key is required");
-      }
-
-      const genAI = new GoogleGenerativeAI(apiKey);
-      const model = genAI.getGenerativeModel({
-        model: "models/gemini-2.0-pro",
-      });
+      const model = createVertexModel("models/gemini-2.0-pro");
 
       // Aggregate metrics
       const metrics = aggregateMetrics(sampleFeedback);
 
       // Generate insights using LLM
-      const result = await model.generateContent(`
-        Analyze the following performance metrics for an AI agent and provide insights:
-
-        ${JSON.stringify(metrics, null, 2)}
-
-        For each metric, provide:
-        1. The current average score
-        2. The trend (improving, declining, stable)
-        3. 2-3 specific suggestions for improvement
-
-        Return ONLY a valid JSON array with this structure:
-        [
-          {
-            "metric": "quality",
-            "averageScore": 7.5,
-            "trend": "improving",
-            "improvementSuggestions": ["suggestion 1", "suggestion 2"]
-          },
-          ...
+      const result = await generateText({
+        model,
+        messages: [
+          { role: "user", content: `Analyze the following performance metrics for an AI agent and provide insights:\n\n${JSON.stringify(metrics, null, 2)}\n\nFor each metric, provide:\n1. The current average score\n2. The trend (improving, declining, stable)\n3. 2-3 specific suggestions for improvement\n\nReturn ONLY a valid JSON array with this structure:\n[\n  {\n    \"metric\": \"quality\",\n    \"averageScore\": 7.5,\n    \"trend\": \"improving\",\n    \"improvementSuggestions\": [\"suggestion 1\", \"suggestion 2\"]\n  },\n  ...\n]` }
         ]
-      `);
+      });
+      const insightsText = result.text;
 
-      const insightsText = result.response.text();
       let insights: Array<{
         metric: string;
         averageScore: number;
@@ -370,6 +357,8 @@ export const analyzeFeedbackTool = createTool({
         key: "feedback_analysis_success",
       });
 
+      sigNoz.recordMetrics(span, { latencyMs: performance.now() - startTime, status: "success" });
+      span.end();
       return {
         insights,
         sampleSize: sampleFeedback.length,
@@ -388,6 +377,8 @@ export const analyzeFeedbackTool = createTool({
         key: "feedback_analysis_failure",
       });
 
+      sigNoz.recordMetrics(span, { latencyMs: performance.now() - startTime, status: "error", errorMessage: error instanceof Error ? error.message : String(error) });
+      span.end();
       return {
         insights: [],
         sampleSize: 0,
@@ -433,6 +424,8 @@ export const applyRLInsightsTool = createTool({
     error: z.string().optional(),
   }),
   execute: async ({ context }) => {
+    const span = sigNoz.createSpan("rlFeedback.applyRLInsights", { tool: "apply-rl-insights" });
+    const startTime = performance.now();
     const runId = await createLangSmithRun("apply-rl-insights", [
       "rl",
       "improvement",
@@ -440,58 +433,25 @@ export const applyRLInsightsTool = createTool({
 
     try {
       // Use LLM to generate improved instructions based on insights
-      const apiKey = getEnvVar('GOOGLE_GENERATIVE_AI_API_KEY');
-      if (!apiKey) {
-        throw new Error("Google Generative AI API key is required");
-      }
+      const model = createVertexModel("models/gemini-2.0-pro");
 
-      const genAI = new GoogleGenerativeAI(apiKey);
-      const model = genAI.getGenerativeModel({
-        model: "models/gemini-2.0-pro",
+      const result = await generateText({
+        model,
+        messages: [
+          { role: "user", content: `You are an AI instruction optimizer. Your task is to improve these agent instructions:\n\nCURRENT INSTRUCTIONS:\n${context.currentInstructions}\n\nBased on these performance insights:\n${JSON.stringify(context.insights, null, 2)}\n\nProvide improved instructions that address the issues identified in the insights.\nThe new instructions should maintain the original intent and style while enhancing areas\nthat need improvement according to feedback.\n\nIMPROVED INSTRUCTIONS:` }
+        ]
       });
-
-      const result = await model.generateContent(`
-        You are an AI instruction optimizer. Your task is to improve these agent instructions:
-
-        CURRENT INSTRUCTIONS:
-        ${context.currentInstructions}
-
-        Based on these performance insights:
-        ${JSON.stringify(context.insights, null, 2)}
-
-        Provide improved instructions that address the issues identified in the insights.
-        The new instructions should maintain the original intent and style while enhancing areas
-        that need improvement according to feedback.
-
-        IMPROVED INSTRUCTIONS:
-      `);
-
-      const improvedInstructions = result.response.text();
+      const improvedInstructions = result.text;
 
       // Generate summary of changes
-      const changeResult = await model.generateContent(`
-        Summarize the key changes made to these instructions:
-
-        ORIGINAL:
-        ${context.currentInstructions}
-
-        IMPROVED:
-        ${improvedInstructions}
-
-        For each of these metrics that was improved, describe the specific change made:
-        ${context.insights.map((i) => i.metric).join(", ")}
-
-        Return ONLY a valid JSON array with this structure:
-        [
-          {
-            "metric": "quality",
-            "change": "Added more specific guidance on response formatting"
-          },
-          ...
+      const changeResult = await generateText({
+        model,
+        messages: [
+          { role: "user", content: `Summarize the key changes made to these instructions:\n\nORIGINAL:\n${context.currentInstructions}\n\nIMPROVED:\n${improvedInstructions}\n\nFor each of these metrics that was improved, describe the specific change made:\n${context.insights.map((i) => i.metric).join(", ")}\n\nReturn ONLY a valid JSON array with this structure:\n[\n  {\n    \"metric\": \"quality\",\n    \"change\": \"Added more specific guidance on response formatting\"\n  },\n  ...\n]` }
         ]
-      `);
+      });
+      const changesText = changeResult.text;
 
-      const changesText = changeResult.response.text();
       let changes: Array<{
         metric: string;
         change: string;
@@ -519,6 +479,8 @@ export const applyRLInsightsTool = createTool({
         value: { changeCount: changes.length },
       });
 
+      sigNoz.recordMetrics(span, { latencyMs: performance.now() - startTime, status: "success" });
+      span.end();
       return {
         success: true,
         improvedInstructions,
@@ -534,6 +496,8 @@ export const applyRLInsightsTool = createTool({
         key: "rl_application_failure",
       });
 
+      sigNoz.recordMetrics(span, { latencyMs: performance.now() - startTime, status: "error", errorMessage: error instanceof Error ? error.message : String(error) });
+      span.end();
       return {
         success: false,
         improvedInstructions: context.currentInstructions,
@@ -710,3 +674,13 @@ function determineTrend(
   if (difference < -0.5) return "declining";
   return "stable";
 }
+
+/**
+ * Helper to get unread RL feedback threads for an agent
+ * @param agentId - The agent/resource ID
+ * @returns Array of unread ThreadInfo
+ */
+export function getUnreadFeedbackThreads(agentId: string) {
+  return threadManager.getUnreadThreadsByResource(agentId);
+}
+

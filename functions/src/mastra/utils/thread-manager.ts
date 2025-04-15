@@ -19,6 +19,8 @@ interface ThreadInfo {
   createdAt: Date;
   /** Optional metadata for thread categorization */
   metadata?: Record<string, unknown>;
+  /** When the thread was last read */
+  lastReadAt?: Date;
 }
 
 /**
@@ -39,6 +41,7 @@ interface CreateThreadOptions {
 export class ThreadManager {
   private threads: Map<string, ThreadInfo> = new Map();
   private resourceThreads: Map<string, Set<string>> = new Map();
+  private threadReadStatus: Map<string, Date> = new Map(); // threadId -> lastReadAt
 
   /**
    * Creates a new conversation thread
@@ -126,6 +129,33 @@ export class ThreadManager {
     }
 
     return this.createThread({ resourceId, metadata });
+  }
+
+  /**
+   * Mark a thread as read (updates lastReadAt)
+   * @param threadId - The ID of the thread to mark as read
+   * @param date - Optional date (defaults to now)
+   */
+  public markThreadAsRead(threadId: string, date: Date = new Date()): void {
+    this.threadReadStatus.set(threadId, date);
+    const thread = this.threads.get(threadId);
+    if (thread) {
+      thread.lastReadAt = date;
+    }
+  }
+
+  /**
+   * Get unread threads for a resource (threads never read or with new activity)
+   * @param resourceId - The resource ID to check
+   * @returns Array of unread ThreadInfo
+   */
+  public getUnreadThreadsByResource(resourceId: string): ThreadInfo[] {
+    const threads = this.getThreadsByResource(resourceId);
+    return threads.filter(thread => {
+      const lastRead = this.threadReadStatus.get(thread.id);
+      // Unread if never read, or created/updated after lastRead
+      return !lastRead || thread.createdAt > lastRead;
+    });
   }
 }
 

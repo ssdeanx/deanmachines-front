@@ -1,6 +1,13 @@
 import { createTool } from "@mastra/core/tools";
 import { z } from "zod";
 import sigNoz from "../services/signoz";
+import { createVertexModel } from "../agents/config/model.utils";
+import { generateText } from "ai";
+
+// Helper to get modelId from env/config or use default
+function getEvalModelId() {
+  return process.env.EVAL_MODEL_ID || "models/gemini-2.0-flash-001";
+}
 
 // Utility: Token count (simple whitespace split)
 export const tokenCountEvalTool = createTool({
@@ -106,10 +113,10 @@ export const contentSimilarityEvalTool = createTool({
   },
 });
 
-// Answer Relevancy Eval (placeholder, LLM-based in production)
+// Answer Relevancy Eval (using Vertex LLM)
 export const answerRelevancyEvalTool = createTool({
   id: "answer-relevancy-eval",
-  description: "Evaluates if the response addresses the query appropriately.",
+  description: "Evaluates if the response addresses the query appropriately using Vertex LLM.",
   inputSchema: z.object({
     input: z.string().describe("The user query or prompt."),
     output: z.string().describe("The agent's response."),
@@ -125,14 +132,25 @@ export const answerRelevancyEvalTool = createTool({
     const span = sigNoz.createSpan("eval.answerRelevancy", { evalType: "answer-relevancy" });
     const startTime = performance.now();
     try {
-      // Placeholder: score 1 if output contains any input word, else 0
-      const inputWords = context.input.split(/\s+/);
-      const output = context.output;
-      const matched = inputWords.filter(word => output.includes(word));
-      const score = inputWords.length > 0 ? matched.length / inputWords.length : 0;
+      const model = createVertexModel("models/gemini-2.0-pro");
+      const prompt = `Given the following user input and agent response, rate the relevancy of the response to the input on a scale from 0 (not relevant) to 1 (fully relevant). Provide a brief explanation.\n\nUser Input: ${context.input}\nAgent Response: ${context.output}\n\nReturn a JSON object: { \"score\": number (0-1), \"explanation\": string }`;
+      const result = await generateText({
+        model,
+        messages: [
+          { role: "user", content: prompt }
+        ]
+      });
+      let score = 0, explanation = "";
+      try {
+        const parsed = JSON.parse(result.text);
+        score = typeof parsed.score === "number" ? parsed.score : 0;
+        explanation = parsed.explanation || "";
+      } catch {
+        explanation = result.text;
+      }
       sigNoz.recordMetrics(span, { latencyMs: performance.now() - startTime, status: "success" });
       span.end();
-      return { score, explanation: `Matched ${matched.length} of ${inputWords.length} input words.`, success: true };
+      return { score, explanation, success: true };
     } catch (error) {
       sigNoz.recordMetrics(span, { latencyMs: performance.now() - startTime, status: "error", errorMessage: error instanceof Error ? error.message : String(error) });
       span.end();
@@ -141,10 +159,10 @@ export const answerRelevancyEvalTool = createTool({
   },
 });
 
-// Context Precision Eval (placeholder)
+// Refactored contextPrecisionEvalTool with Vertex LLM
 export const contextPrecisionEvalTool = createTool({
   id: "context-precision-eval",
-  description: "Evaluates how precisely the response uses provided context.",
+  description: "Evaluates how precisely the response uses provided context using Vertex LLM.",
   inputSchema: z.object({
     response: z.string(),
     context: z.array(z.string()),
@@ -152,30 +170,53 @@ export const contextPrecisionEvalTool = createTool({
   outputSchema: z.object({
     score: z.number().min(0).max(1),
     explanation: z.string().optional(),
+    latencyMs: z.number().optional(),
+    model: z.string().optional(),
+    tokens: z.number().optional(),
     success: z.boolean(),
     error: z.string().optional(),
   }),
   execute: async ({ context }) => {
     const span = sigNoz.createSpan("eval.contextPrecision", { evalType: "context-precision" });
     const startTime = performance.now();
+    const modelId = getEvalModelId();
     try {
-      const matches = context.context.filter(ctx => context.response.includes(ctx));
-      const score = context.context.length > 0 ? matches.length / context.context.length : 0;
-      sigNoz.recordMetrics(span, { latencyMs: performance.now() - startTime, status: "success" });
+      const model = createVertexModel(modelId);
+      const prompt = `Given the following context items and agent response, rate how precisely the response uses the provided context on a scale from 0 (not precise) to 1 (fully precise). Provide a brief explanation.\n\nContext: ${JSON.stringify(context.context)}\nAgent Response: ${context.response}\n\nReturn only valid JSON: { \"score\": number (0-1), \"explanation\": string }`;
+      const result = await generateText({
+        model,
+        messages: [
+          { role: "user", content: prompt }
+        ]
+      });
+      const latencyMs = performance.now() - startTime;
+      let score = 0, explanation = "", tokens = result.usage?.totalTokens || 0;
+      try {
+        const parsed = JSON.parse(result.text);
+        score = typeof parsed.score === "number" ? parsed.score : 0;
+        explanation = parsed.explanation || "";
+      } catch {
+        // fallback: heuristic
+        const matches = context.context.filter(ctx => context.response.includes(ctx));
+        score = context.context.length > 0 ? matches.length / context.context.length : 0;
+        explanation = `LLM parse failed. Heuristic: Matched ${matches.length} of ${context.context.length} context items.`;
+      }
+      sigNoz.recordMetrics(span, { latencyMs, tokens, status: "success" });
       span.end();
-      return { score, explanation: `Matched ${matches.length} of ${context.context.length} context items.`, success: true };
+      return { score, explanation, latencyMs, model: modelId, tokens, success: true };
     } catch (error) {
-      sigNoz.recordMetrics(span, { latencyMs: performance.now() - startTime, status: "error", errorMessage: error instanceof Error ? error.message : String(error) });
+      const latencyMs = performance.now() - startTime;
+      sigNoz.recordMetrics(span, { latencyMs, status: "error", errorMessage: error instanceof Error ? error.message : String(error) });
       span.end();
-      return { score: 0, success: false, error: error instanceof Error ? error.message : "Unknown error in context precision eval" };
+      return { score: 0, success: false, error: error instanceof Error ? error.message : "Unknown error in context precision eval", latencyMs, model: modelId };
     }
   },
 });
 
-// Context Position Eval (placeholder)
+// Refactored contextPositionEvalTool with Vertex LLM
 export const contextPositionEvalTool = createTool({
   id: "context-position-eval",
-  description: "Evaluates how well the model uses ordered context (earlier positions weighted more).",
+  description: "Evaluates how well the model uses ordered context (earlier positions weighted more) using Vertex LLM.",
   inputSchema: z.object({
     response: z.string(),
     context: z.array(z.string()),
@@ -183,72 +224,117 @@ export const contextPositionEvalTool = createTool({
   outputSchema: z.object({
     score: z.number().min(0).max(1),
     explanation: z.string().optional(),
+    latencyMs: z.number().optional(),
+    model: z.string().optional(),
+    tokens: z.number().optional(),
     success: z.boolean(),
     error: z.string().optional(),
   }),
   execute: async ({ context }) => {
     const span = sigNoz.createSpan("eval.contextPosition", { evalType: "context-position" });
     const startTime = performance.now();
+    const modelId = getEvalModelId();
     try {
-      let weightedSum = 0;
-      let maxSum = 0;
-      for (let i = 0; i < context.context.length; i++) {
-        const weight = 1 / (i + 1);
-        maxSum += weight;
-        if (context.response.includes(context.context[i])) {
-          weightedSum += weight;
+      const model = createVertexModel(modelId);
+      const prompt = `Given the following ordered context items and agent response, rate how well the response uses the most important context items early in the response (earlier positions weighted more) on a scale from 0 (not well) to 1 (very well). Provide a brief explanation.\n\nContext: ${JSON.stringify(context.context)}\nAgent Response: ${context.response}\n\nReturn only valid JSON: { \"score\": number (0-1), \"explanation\": string }`;
+      const result = await generateText({
+        model,
+        messages: [
+          { role: "user", content: prompt }
+        ]
+      });
+      const latencyMs = performance.now() - startTime;
+      let score = 0, explanation = "", tokens = result.usage?.totalTokens || 0;
+      try {
+        const parsed = JSON.parse(result.text);
+        score = typeof parsed.score === "number" ? parsed.score : 0;
+        explanation = parsed.explanation || "";
+      } catch {
+        // fallback: heuristic
+        let weightedSum = 0;
+        let maxSum = 0;
+        for (let i = 0; i < context.context.length; i++) {
+          const weight = 1 / (i + 1);
+          maxSum += weight;
+          if (context.response.includes(context.context[i])) {
+            weightedSum += weight;
+          }
         }
+        score = maxSum > 0 ? weightedSum / maxSum : 0;
+        explanation = `LLM parse failed. Heuristic: Weighted sum: ${weightedSum.toFixed(2)} of ${maxSum.toFixed(2)}.`;
       }
-      const score = maxSum > 0 ? weightedSum / maxSum : 0;
-      sigNoz.recordMetrics(span, { latencyMs: performance.now() - startTime, status: "success" });
+      sigNoz.recordMetrics(span, { latencyMs, tokens, status: "success" });
       span.end();
-      return { score, explanation: `Weighted sum: ${weightedSum.toFixed(2)} of ${maxSum.toFixed(2)}.`, success: true };
+      return { score, explanation, latencyMs, model: modelId, tokens, success: true };
     } catch (error) {
-      sigNoz.recordMetrics(span, { latencyMs: performance.now() - startTime, status: "error", errorMessage: error instanceof Error ? error.message : String(error) });
+      const latencyMs = performance.now() - startTime;
+      sigNoz.recordMetrics(span, { latencyMs, status: "error", errorMessage: error instanceof Error ? error.message : String(error) });
       span.end();
-      return { score: 0, success: false, error: error instanceof Error ? error.message : "Unknown error in context position eval" };
+      return { score: 0, success: false, error: error instanceof Error ? error.message : "Unknown error in context position eval", latencyMs, model: modelId };
     }
   },
 });
 
-// Tone Consistency Eval (placeholder: checks if all sentences have same sentiment)
+// Refactored toneConsistencyEvalTool with Vertex LLM
 export const toneConsistencyEvalTool = createTool({
   id: "tone-consistency-eval",
-  description: "Analyzes sentiment consistency within the response.",
+  description: "Analyzes sentiment/tone consistency within the response using Vertex LLM.",
   inputSchema: z.object({
     response: z.string(),
   }),
   outputSchema: z.object({
     score: z.number().min(0).max(1),
     explanation: z.string().optional(),
+    latencyMs: z.number().optional(),
+    model: z.string().optional(),
+    tokens: z.number().optional(),
     success: z.boolean(),
     error: z.string().optional(),
   }),
   execute: async ({ context }) => {
     const span = sigNoz.createSpan("eval.toneConsistency", { evalType: "tone-consistency" });
     const startTime = performance.now();
+    const modelId = getEvalModelId();
     try {
-      // Placeholder: if all sentences end with '!' or '.', consider consistent
-      const sentences = context.response.split(/[.!?]/).filter(Boolean);
-      const exclam = sentences.filter(s => s.trim().endsWith('!')).length;
-      const period = sentences.filter(s => s.trim().endsWith('.')).length;
-      const max = Math.max(exclam, period);
-      const score = sentences.length > 0 ? max / sentences.length : 1;
-      sigNoz.recordMetrics(span, { latencyMs: performance.now() - startTime, status: "success" });
+      const model = createVertexModel(modelId);
+      const prompt = `Analyze the following agent response for tone and sentiment consistency. Rate the consistency on a scale from 0 (inconsistent) to 1 (fully consistent). Provide a brief explanation.\n\nAgent Response: ${context.response}\n\nReturn only valid JSON: { \"score\": number (0-1), \"explanation\": string }`;
+      const result = await generateText({
+        model,
+        messages: [
+          { role: "user", content: prompt }
+        ]
+      });
+      const latencyMs = performance.now() - startTime;
+      let score = 0, explanation = "", tokens = result.usage?.totalTokens || 0;
+      try {
+        const parsed = JSON.parse(result.text);
+        score = typeof parsed.score === "number" ? parsed.score : 0;
+        explanation = parsed.explanation || "";
+      } catch {
+        // fallback: heuristic
+        const sentences = context.response.split(/[.!?]/).filter(Boolean);
+        const exclam = sentences.filter(s => s.trim().endsWith('!')).length;
+        const period = sentences.filter(s => s.trim().endsWith('.')).length;
+        const max = Math.max(exclam, period);
+        score = sentences.length > 0 ? max / sentences.length : 1;
+        explanation = `LLM parse failed. Heuristic: Most common ending: ${max} of ${sentences.length} sentences.`;
+      }
+      sigNoz.recordMetrics(span, { latencyMs, tokens, status: "success" });
       span.end();
-      return { score, explanation: `Most common ending: ${max} of ${sentences.length} sentences.`, success: true };
+      return { score, explanation, latencyMs, model: modelId, tokens, success: true };
     } catch (error) {
-      sigNoz.recordMetrics(span, { latencyMs: performance.now() - startTime, status: "error", errorMessage: error instanceof Error ? error.message : String(error) });
+      const latencyMs = performance.now() - startTime;
+      sigNoz.recordMetrics(span, { latencyMs, status: "error", errorMessage: error instanceof Error ? error.message : String(error) });
       span.end();
-      return { score: 0, success: false, error: error instanceof Error ? error.message : "Unknown error in tone consistency eval" };
+      return { score: 0, success: false, error: error instanceof Error ? error.message : "Unknown error in tone consistency eval", latencyMs, model: modelId };
     }
   },
 });
 
-// Keyword Coverage Eval (placeholder: ratio of keywords present)
+// Refactored keywordCoverageEvalTool with Vertex LLM
 export const keywordCoverageEvalTool = createTool({
   id: "keyword-coverage-eval",
-  description: "Measures the ratio of required keywords present in the response.",
+  description: "Measures the ratio of required keywords present in the response using Vertex LLM.",
   inputSchema: z.object({
     response: z.string(),
     keywords: z.array(z.string()),
@@ -256,22 +342,45 @@ export const keywordCoverageEvalTool = createTool({
   outputSchema: z.object({
     score: z.number().min(0).max(1),
     explanation: z.string().optional(),
+    latencyMs: z.number().optional(),
+    model: z.string().optional(),
+    tokens: z.number().optional(),
     success: z.boolean(),
     error: z.string().optional(),
   }),
   execute: async ({ context }) => {
     const span = sigNoz.createSpan("eval.keywordCoverage", { evalType: "keyword-coverage" });
     const startTime = performance.now();
+    const modelId = getEvalModelId();
     try {
-      const matches = context.keywords.filter(kw => context.response.includes(kw));
-      const score = context.keywords.length > 0 ? matches.length / context.keywords.length : 0;
-      sigNoz.recordMetrics(span, { latencyMs: performance.now() - startTime, status: "success" });
+      const model = createVertexModel(modelId);
+      const prompt = `Given the following required keywords and agent response, rate the coverage of the keywords in the response on a scale from 0 (none present) to 1 (all present and well integrated). Consider synonyms and related terms. Provide a brief explanation.\n\nKeywords: ${JSON.stringify(context.keywords)}\nAgent Response: ${context.response}\n\nReturn only valid JSON: { \"score\": number (0-1), \"explanation\": string }`;
+      const result = await generateText({
+        model,
+        messages: [
+          { role: "user", content: prompt }
+        ]
+      });
+      const latencyMs = performance.now() - startTime;
+      let score = 0, explanation = "", tokens = result.usage?.totalTokens || 0;
+      try {
+        const parsed = JSON.parse(result.text);
+        score = typeof parsed.score === "number" ? parsed.score : 0;
+        explanation = parsed.explanation || "";
+      } catch {
+        // fallback: heuristic
+        const matches = context.keywords.filter(kw => context.response.includes(kw));
+        score = context.keywords.length > 0 ? matches.length / context.keywords.length : 0;
+        explanation = `LLM parse failed. Heuristic: Matched ${matches.length} of ${context.keywords.length} keywords.`;
+      }
+      sigNoz.recordMetrics(span, { latencyMs, tokens, status: "success" });
       span.end();
-      return { score, explanation: `Matched ${matches.length} of ${context.keywords.length} keywords.`, success: true };
+      return { score, explanation, latencyMs, model: modelId, tokens, success: true };
     } catch (error) {
-      sigNoz.recordMetrics(span, { latencyMs: performance.now() - startTime, status: "error", errorMessage: error instanceof Error ? error.message : String(error) });
+      const latencyMs = performance.now() - startTime;
+      sigNoz.recordMetrics(span, { latencyMs, status: "error", errorMessage: error instanceof Error ? error.message : String(error) });
       span.end();
-      return { score: 0, success: false, error: error instanceof Error ? error.message : "Unknown error in keyword coverage eval" };
+      return { score: 0, success: false, error: error instanceof Error ? error.message : "Unknown error in keyword coverage eval", latencyMs, model: modelId };
     }
   },
 });
@@ -327,10 +436,10 @@ export const textualDifferenceEvalTool = createTool({
   },
 });
 
-// Faithfulness Eval (placeholder: checks if all reference tokens are present)
+// Faithfulness Eval (using Vertex LLM)
 export const faithfulnessEvalTool = createTool({
   id: "faithfulness-eval",
-  description: "Measures if the response faithfully includes all reference facts.",
+  description: "Measures if the response faithfully includes all reference facts using Vertex LLM.",
   inputSchema: z.object({
     response: z.string(),
     reference: z.string(),
@@ -345,13 +454,25 @@ export const faithfulnessEvalTool = createTool({
     const span = sigNoz.createSpan("eval.faithfulness", { evalType: "faithfulness" });
     const startTime = performance.now();
     try {
-      const refTokens = context.reference.split(/\s+/);
-      const respTokens = context.response.split(/\s+/);
-      const missing = refTokens.filter(token => !respTokens.includes(token));
-      const score = refTokens.length > 0 ? 1 - missing.length / refTokens.length : 1;
+      const model = createVertexModel("models/gemini-2.0-pro");
+      const prompt = `Given the following reference facts and agent response, rate the faithfulness of the response to the reference on a scale from 0 (not faithful) to 1 (fully faithful). Provide a brief explanation.\n\nReference: ${context.reference}\nAgent Response: ${context.response}\n\nReturn a JSON object: { \"score\": number (0-1), \"explanation\": string }`;
+      const result = await generateText({
+        model,
+        messages: [
+          { role: "user", content: prompt }
+        ]
+      });
+      let score = 0, explanation = "";
+      try {
+        const parsed = JSON.parse(result.text);
+        score = typeof parsed.score === "number" ? parsed.score : 0;
+        explanation = parsed.explanation || "";
+      } catch {
+        explanation = result.text;
+      }
       sigNoz.recordMetrics(span, { latencyMs: performance.now() - startTime, status: "success" });
       span.end();
-      return { score, explanation: `Missing ${missing.length} of ${refTokens.length} reference tokens.`, success: true };
+      return { score, explanation, success: true };
     } catch (error) {
       sigNoz.recordMetrics(span, { latencyMs: performance.now() - startTime, status: "error", errorMessage: error instanceof Error ? error.message : String(error) });
       span.end();

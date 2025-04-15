@@ -25,7 +25,7 @@ export const analystAgentConfig: BaseAgentConfig = {
   name: "Analyst Agent",
   description:
     "Specialized in interpreting data, identifying patterns, and extracting meaningful insights from information.",
-  modelConfig: DEFAULT_MODELS.GOOGLE_STANDARD,
+  modelConfig: DEFAULT_MODELS.VERTEX_STANDARD,
   responseValidation: defaultResponseValidation,
   instructions: `
     # ANALYTICAL EXPERT ROLE
@@ -98,6 +98,22 @@ export const analystAgentConfig: BaseAgentConfig = {
     "calculator",
     "memory-query",
     "analyze-content", // Added based on role
+    // Evals tools
+    "completeness-eval",
+    "answer-relevancy-eval",
+    "content-similarity-eval",
+    "context-precision-eval",
+    "context-position-eval",
+    "tone-consistency-eval",
+    "keyword-coverage-eval",
+    "textual-difference-eval",
+    "faithfulness-eval",
+    "token-count-eval",
+    // Tracing tools
+    "start-ai-span",
+    "record-llm-metrics",
+    "shutdown-tracing",
+    "init-opentelemetry",
   ],
 };
 

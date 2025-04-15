@@ -59,6 +59,19 @@ import { createMastraGitHubTools } from "./github"; // Import Mastra helper
 import { github } from "../integrations"; // Used for custom getMainBranchRef
 import ExaSearchOutputSchema from "./exasearch";
 import { GitHubUserSchema } from "./github"; // Assuming this is the correct export for GitHub user schema
+import {
+  contextPrecisionEvalTool,
+  contextPositionEvalTool,
+  toneConsistencyEvalTool,
+  keywordCoverageEvalTool,
+  answerRelevancyEvalTool,
+  faithfulnessEvalTool,
+  contentSimilarityEvalTool,
+  completenessEvalTool,
+  textualDifferenceEvalTool,
+  tokenCountEvalTool,
+} from "./evals";
+import { tracingTools } from "./tracingTools";
 
 // === Export all tool modules (Consider if all are needed) ===
 export * from "./e2b";
@@ -82,9 +95,12 @@ export * from "./llmchain";
 export * from "./brave-search";
 export * from "./google-search";
 export * from "./tavily";
+export * from "./tracingTools";
 export { LLMChainOutputSchema, AiSdkPromptOutputSchema };
 export { ExaSearchOutputSchema };
 export { GitHubUserSchema };
+export * from "../services/signoz";
+export * from "../services/tracing";
 
 // === Configure Logger ===
 const logger = createLogger({ name: "tool-initialization", level: "info" });
@@ -276,7 +292,16 @@ const coreTools: Tool<any, any>[] = [
   calculateRewardTool,
   defineRewardFunctionTool,
   optimizePolicyTool,
-  getMainBranchRef, // Added the custom GitHub tool here
+  ensureToolOutputSchema(contextPrecisionEvalTool),
+  ensureToolOutputSchema(contextPositionEvalTool),
+  ensureToolOutputSchema(toneConsistencyEvalTool),
+  ensureToolOutputSchema(keywordCoverageEvalTool),
+  ensureToolOutputSchema(answerRelevancyEvalTool),
+  ensureToolOutputSchema(faithfulnessEvalTool),
+  ensureToolOutputSchema(contentSimilarityEvalTool),
+  ensureToolOutputSchema(completenessEvalTool),
+  ensureToolOutputSchema(textualDifferenceEvalTool),
+  ensureToolOutputSchema(tokenCountEvalTool),
 ];
 
 // === Additional Tools from contentTools and document-tools ===
@@ -431,6 +456,11 @@ try {
     logger.error("Failed to initialize GitHub tools:", { error });
 }
 
+// Add getMainBranchRef to extraTools
+extraTools.push(ensureToolOutputSchema(getMainBranchRef));
+
+// Add tracing tools to extraTools
+extraTools.push(...tracingTools);
 
 // === Filter Optional Search Tools ===
 const optionalTools: Tool<any, any>[] = Object.values(

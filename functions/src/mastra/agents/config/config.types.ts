@@ -13,7 +13,7 @@ import { Tool } from "@mastra/core/tools";
 /**
  * Supported AI model providers
  */
-export type ModelProvider = "google" | "vertex" | "openai";
+export type ModelProvider = "google" | "vertex" | "openai" | "anthropic";
 
 /** Default Maximum Tokens for Model Output */
 export const DEFAULT_MAX_TOKENS = 8192;
@@ -85,7 +85,7 @@ export const DEFAULT_MODELS = {
       audioOutput: false,
       functionCalling: true,
       structuredOutput: true,
-      enhancedThinking: true,
+      enhancedThinking: false,
       grounding: true,
       responseCaching: false,
     },
@@ -141,12 +141,12 @@ export const DEFAULT_MODELS = {
     capabilities: {
       maxContextTokens: 1048576,
       multimodalInput: true,
-      imageGeneration: true,
+      imageGeneration: false,
       audioOutput: false,
       functionCalling: true,
       structuredOutput: true,
       enhancedThinking: true,
-      grounding: true,
+      grounding: false,
       responseCaching: true,
     },
   },
@@ -156,7 +156,7 @@ export const DEFAULT_MODELS = {
   // Vertex AI model - for enterprise features and security
   VERTEX_STANDARD: {
     provider: "vertex" as const,
-    modelId: "gemini-2.0-flash-live-001",
+    modelId: "gemini-2.0-flash-001",
     temperature: 0.6,
     topP: 0.95,
     maxTokens: DEFAULT_MAX_TOKENS,
@@ -164,7 +164,7 @@ export const DEFAULT_MODELS = {
       maxContextTokens: 1048576,
       multimodalInput: true,
       imageGeneration: false,
-      audioOutput: true,
+      audioOutput: false,
       functionCalling: true,
       structuredOutput: true,
       enhancedThinking: false,
