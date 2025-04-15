@@ -635,105 +635,113 @@ Made with ❤️ by the DeanMachines team
 
 ```mermaid
 graph TB
-    User(("External User"))
-    Admin(("Admin User"))
+    User((External User))
+    Admin((Admin User))
 
     subgraph "Frontend Container"
         direction TB
-        NextApp["Next.js App<br>(Next.js 15.x)"]
+        NextApp["Next.js Application<br>(Next.js 15.x)"]
         
-        subgraph "Public Pages"
-            PublicPages["Public Routes<br>(Next.js Pages)"]
-            AboutPage["About Page<br>(React)"]
-            ContactPage["Contact Page<br>(React)"]
-            PricingPage["Pricing Page<br>(React)"]
-            DocsPage["Documentation<br>(React/MDX)"]
-        end
-
-        subgraph "Admin Interface"
-            AdminDashboard["Admin Dashboard<br>(React)"]
-            Analytics["Analytics Panel<br>(React)"]
-            UserManagement["User Management<br>(React)"]
-            Settings["Settings Panel<br>(React)"]
-        end
-
-        subgraph "User Interface"
-            UserDashboard["User Dashboard<br>(React)"]
-            ChatInterface["Chat Interface<br>(React)"]
-            ProjectsPanel["Projects Panel<br>(React)"]
-            DocumentsPanel["Documents Panel<br>(React)"]
-        end
-
-        subgraph "Shared Components"
-            UIComponents["UI Components<br>(shadcn/ui)"]
-            AuthComponents["Auth Components<br>(React)"]
-            Navigation["Navigation<br>(React)"]
-            ThemeSystem["Theme System<br>(next-themes)"]
+        subgraph "Frontend Components"
+            AuthComponents["Authentication Components<br>(NextAuth.js)"]
+            UIComponents["UI Components<br>(React + Shadcn/ui)"]
+            DocComponents["Documentation Components<br>(React MDX)"]
+            LayoutComponents["Layout Components<br>(React)"]
+            StreamChat["Stream Chat<br>(React)"]
+            Visualization["Visualization Components<br>(React)"]
         end
     end
 
     subgraph "Backend Container"
         direction TB
-        APILayer["API Layer<br>(Next.js API Routes)"]
+        FirebaseFunctions["Firebase Functions<br>(Node.js)"]
         
-        subgraph "Authentication"
-            AuthService["Auth Service<br>(NextAuth.js)"]
-            FirebaseAuth["Firebase Auth<br>(Firebase Admin)"]
+        subgraph "Agent Networks"
+            DeanInsights["DeanInsights Network<br>(Mastra)"]
+            DataFlow["DataFlow Network<br>(Mastra)"]
+            ContentCreation["ContentCreation Network<br>(Mastra)"]
+            KnowledgeWorkMoE["Knowledge Work MoE Network<br>(Mastra)"]
         end
 
-        subgraph "Mastra Core"
-            MastraInstance["Mastra Instance<br>(Node.js)"]
-            
-            subgraph "Agent System"
-                AgentNetwork["Agent Network<br>(Mastra Core)"]
-                AgentRegistry["Agent Registry<br>(TypeScript)"]
-                WorkflowEngine["Workflow Engine<br>(Mastra Core)"]
-            end
+        subgraph "Core Agents"
+            ResearchAgent["Research Agent<br>(Mastra)"]
+            AnalystAgent["Analyst Agent<br>(Mastra)"]
+            WriterAgent["Writer Agent<br>(Mastra)"]
+            RLTrainerAgent["RL Trainer Agent<br>(Mastra)"]
+            DataManagerAgent["Data Manager Agent<br>(Mastra)"]
+        end
 
-            subgraph "Tools System"
-                ToolRegistry["Tool Registry<br>(TypeScript)"]
-                SearchTools["Search Tools<br>(Multiple Providers)"]
-                VectorTools["Vector Tools<br>(Mastra Core)"]
-                FileTools["File Tools<br>(Node.js)"]
-            end
-
-            subgraph "Services"
-                Telemetry["Telemetry<br>(OpenTelemetry)"]
-                LangfuseService["Langfuse Service<br>(Langfuse)"]
-                SignozService["Signoz Service<br>(Signoz)"]
-            end
+        subgraph "Tool Components"
+            VectorTools["Vector Query Tools<br>(Mastra)"]
+            SearchTools["Search Tools<br>(Multiple Providers)"]
+            FileTools["File Operation Tools<br>(Mastra)"]
+            MemoryTools["Memory Query Tools<br>(Mastra)"]
+            ContentTools["Content Analysis Tools<br>(Mastra)"]
         end
     end
 
-    subgraph "Data Storage"
-        FirebaseDB[("Firebase DB<br>Firestore")]
-        LibSQLStore[("LibSQL Store<br>SQLite")]
-        VectorStore[("Vector Store<br>LibSQL")]
-        Redis[("Cache<br>Redis")]
+    subgraph "Data Storage Container"
+        LibSQL["LibSQL Storage<br>(SQLite)"]
+        Redis["Redis Cache<br>(Redis)"]
+        VectorStore["Vector Store<br>(LibSQL)"]
     end
 
-    %% Connections
+    subgraph "External Services Container"
+        GoogleAI["Google AI<br>(Gemini)"]
+        Firebase["Firebase<br>(Auth/Storage)"]
+        ExaSearch["Exa Search<br>(API)"]
+        LangSmith["LangSmith<br>(Tracing)"]
+    end
+
+    %% Frontend to Backend Connections
     User --> NextApp
     Admin --> NextApp
-    NextApp --> APILayer
-    APILayer --> AuthService
-    AuthService --> FirebaseAuth
-    FirebaseAuth --> FirebaseDB
+    NextApp --> FirebaseFunctions
     
-    APILayer --> MastraInstance
-    MastraInstance --> AgentNetwork
-    AgentNetwork --> ToolRegistry
-    AgentNetwork --> WorkflowEngine
+    %% Frontend Component Relationships
+    NextApp --> AuthComponents
+    NextApp --> UIComponents
+    NextApp --> DocComponents
+    NextApp --> LayoutComponents
+    NextApp --> StreamChat
+    NextApp --> Visualization
+
+    %% Backend Component Relationships
+    FirebaseFunctions --> DeanInsights
+    FirebaseFunctions --> DataFlow
+    FirebaseFunctions --> ContentCreation
+    FirebaseFunctions --> KnowledgeWorkMoE
+
+    %% Agent Network to Agent Relationships
+    DeanInsights --> ResearchAgent
+    DeanInsights --> AnalystAgent
+    DeanInsights --> WriterAgent
+    DeanInsights --> RLTrainerAgent
+    DeanInsights --> DataManagerAgent
+
+    DataFlow --> AnalystAgent
+    DataFlow --> DataManagerAgent
+    DataFlow --> RLTrainerAgent
+
+    ContentCreation --> ResearchAgent
+    ContentCreation --> WriterAgent
+    ContentCreation --> RLTrainerAgent
+
+    %% Tool Component Relationships
+    ResearchAgent --> VectorTools
+    ResearchAgent --> SearchTools
+    DataManagerAgent --> FileTools
+    AnalystAgent --> MemoryTools
+    WriterAgent --> ContentTools
+
+    %% Data Storage Relationships
+    MemoryTools --> LibSQL
+    MemoryTools --> Redis
+    VectorTools --> VectorStore
     
-    MastraInstance --> LibSQLStore
-    MastraInstance --> VectorStore
-    MastraInstance --> Redis
-    
-    ToolRegistry --> SearchTools
-    ToolRegistry --> VectorTools
-    ToolRegistry --> FileTools
-    
-    MastraInstance --> Telemetry
-    Telemetry --> LangfuseService
-    Telemetry --> SignozService
+    %% External Service Relationships
+    ResearchAgent --> GoogleAI
+    AuthComponents --> Firebase
+    SearchTools --> ExaSearch
+    FirebaseFunctions --> LangSmith
 ```
