@@ -132,8 +132,9 @@ export const copywriterAgentConfig: BaseAgentConfig = {
   toolIds: [
     "read-file",
     "format-content",
-    "tavily-search", // Corrected ID
+    "brave-search", // Corrected ID
     "analyze-content",
+    "write-file",
   ],
 };
 

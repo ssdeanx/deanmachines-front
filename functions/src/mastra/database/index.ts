@@ -3,6 +3,8 @@ import { LibSQLVector } from '@mastra/core/vector/libsql';
 import { Memory } from '@mastra/memory';
 
 import { cacheService, redis, RedisOperation } from './redis';
+import { createAISpan, recordMetrics } from '../services/signoz';
+import { upstashVector, upsertVectors, queryVectors } from './upstashvector';
 
 /**
  * Database configuration for memory persistence using LibSQL.
@@ -14,6 +16,7 @@ import { cacheService, redis, RedisOperation } from './redis';
 import type { MastraStorage, MastraVector } from "@mastra/core";
 // Re-export Redis components
 export { redis, cacheService, RedisOperation };
+export { upstashVector, upsertVectors, queryVectors };
 
 /**
  * Check if Redis connection is available
@@ -93,3 +96,32 @@ export const sharedMemory = createMemory();
 
 // Re-export Memory type for convenience
 export type { Memory };
+
+// --- Tracing wrappers for memory operations ---
+export async function tracedQuery(params: Parameters<Memory["query"]>[0]) {
+  const span = createAISpan("memory.query", { source: "libsql" });
+  try {
+    const result = await sharedMemory.query(params);
+    recordMetrics(span, { status: "success" });
+    return result;
+  } catch (error) {
+    recordMetrics(span, { status: "error", errorMessage: String(error) });
+    throw error;
+  } finally {
+    span.end();
+  }
+}
+
+export async function tracedSaveMessages(params: Parameters<Memory["saveMessages"]>[0]) {
+  const span = createAISpan("memory.saveMessages", { source: "libsql" });
+  try {
+    const result = await sharedMemory.saveMessages(params);
+    recordMetrics(span, { status: "success" });
+    return result;
+  } catch (error) {
+    recordMetrics(span, { status: "error", errorMessage: String(error) });
+    throw error;
+  } finally {
+    span.end();
+  }
+}

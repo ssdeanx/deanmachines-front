@@ -7,6 +7,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [v0.0.7] - 2025-04-15  
+
+- Integrated UpstashVector as a modular vector store alongside LibSQL for hybrid memory and RAG workflows.  
+- Refactored workflowFactory.ts for type safety, tracing, error handling, and modular dynamic workflow creation.  
+- Added and re-exported Upstash vector helpers in database/index.ts for best-practice access.  
+- Implemented tracing wrappers for memory operations in database/index.ts using SigNoz.  
+- Improved type safety and error handling in workflowFactory.ts and related workflow logic.  
+- Ensured all lint/type errors are fixed after every file edit.  
+- Updated README and documentation to reflect new memory, RAG, and workflow patterns.  
+- Date: 2025-04-15  
+- Time: 15:00 UTC
+
+## [v0.0.6] - 2025-04-15
+
+- Dev is testing for working tools and agent configurations.
+  - Only working agents are writer and researcher, all others are failing.
+  - Need to fix the tools for the failing agents, Slowly working through the tools to find the issues.
+  - The tools are not being registered correctly, and the schemas are not being patched correctly.
+  - Identified specific tools that require updates and validation.
+  - None yet
+  - Researcher, is test agent since dont want to mess writer up. So needs tool by tool testing.  also new tools in readwrite.ts are not being registered correctly. (list-files, edit-file, create-file) and couple more also vertex in evals is failing.  Need to investigate the failing tools further and implement fixes.
+  - Continuing to monitor the performance of the working agents and document any anomalies.
+
+### Added
+
+- Enhanced Document Reading Capabilities: 
+  - Added several new dependencies to enable the agent to process and extract text content from a wider variety of document formats. This enhancement allows the agent to understand information contained within local files or documents fetched from URLs (e.g., links retrieved by the arXiv or search tools).
+- Packages Added (pnpm add ...):
+  - pdf-parse: For extracting text content from PDF files.
+  - mammoth: For extracting text from DOCX (Microsoft Word) files.
+  - papaparse: For parsing CSV (Comma Separated Values) data.
+  - js-yaml: For parsing YAML files.
+  - cheerio: For parsing HTML content (from files or web pages).
+  - node-fetch: For reliably fetching documents from URLs.
+- Implementation: These packages should be utilized within a new Mastra AI Tool (e.g., readDocumentContent). This tool will inspect the input file path or URL, determine the likely document type (based on extension or potentially content-type for URLs), and invoke the appropriate parsing library to return the extracted text content for further processing by the agent.
+
+
 ## [v0.0.5] - 2025-04-15
 
 ### Added

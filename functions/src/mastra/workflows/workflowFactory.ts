@@ -1,93 +1,93 @@
 import { Mastra, Step, Workflow } from "@mastra/core";
+import type { Mastra as MastraType } from "@mastra/core";
 import { z } from "zod";
+import { createAISpan, recordMetrics } from "../services/signoz";
 
-const isMastra = (mastra: any): mastra is Mastra => {
-  return mastra && typeof mastra === "object" && mastra instanceof Mastra;
-};
+const dynamicInputSchema = z.object({
+  dynamicInput: z.string(),
+});
+const dynamicOutputSchema = z.object({
+  processedValue: z.string(),
+});
 
-// Step that creates and runs a dynamic workflow
-const createDynamicWorkflow = new Step({
+export function createDynamicWorkflowFactory(mastra: MastraType) {
+  return new Workflow({
+    name: "dynamic-workflow",
+    mastra,
+    triggerSchema: dynamicInputSchema,
+  })
+    .step(
+      new Step({
+        id: "dynamicStep",
+        outputSchema: dynamicOutputSchema,
+        execute: async ({ context }) => {
+          const span = createAISpan("dynamicStep.execute");
+          try {
+            const dynamicInput = context.triggerData.dynamicInput;
+            const processedValue = `Processed: ${dynamicInput}`;
+            recordMetrics(span, { status: "success" });
+            return { processedValue };
+          } catch (error) {
+            recordMetrics(span, { status: "error", errorMessage: String(error) });
+            throw error;
+          } finally {
+            span.end();
+          }
+        },
+      })
+    )
+    .commit();
+}
+
+export const createDynamicWorkflowStep = new Step({
   id: "createDynamicWorkflow",
   outputSchema: z.object({
-    dynamicWorkflowResult: z.any(),
+    dynamicWorkflowResult: dynamicOutputSchema,
   }),
   execute: async ({ context, mastra }) => {
-    if (!mastra) {
-      throw new Error("Mastra instance not available");
-    }
-
-    if (!isMastra(mastra)) {
-      throw new Error("Invalid Mastra instance");
-    }
-
+    const mastraInstance = mastra as MastraType;
+    if (!mastraInstance) throw new Error("Mastra instance not available");
     const inputData = context.triggerData.inputData;
-
-    // Create a new dynamic workflow
-    const dynamicWorkflow = new Workflow({
-      name: "dynamic-workflow",
-      mastra, // Pass the mastra instance to the new workflow
-      triggerSchema: z.object({
-        dynamicInput: z.string(),
-      }),
-    });
-
-    // Define steps for the dynamic workflow
-    const dynamicStep = new Step({
-      id: "dynamicStep",
-      execute: async ({ context }) => {
-        const dynamicInput = context.triggerData.dynamicInput;
+    const span = createAISpan("createDynamicWorkflowStep.execute");
+    try {
+      const dynamicWorkflow = createDynamicWorkflowFactory(mastraInstance);
+      const run = dynamicWorkflow.createRun();
+      const result = await run.start({
+        triggerData: { dynamicInput: inputData },
+      });
+      if (result.results["dynamicStep"]?.status === "success") {
+        recordMetrics(span, { status: "success" });
         return {
-          processedValue: `Processed: ${dynamicInput}`,
+          dynamicWorkflowResult: result.results["dynamicStep"].output,
         };
-      },
-    });
-
-    // Build and commit the dynamic workflow
-    dynamicWorkflow.step(dynamicStep).commit();
-
-    // Create a run and execute the dynamic workflow
-    const run = dynamicWorkflow.createRun();
-    const result = await run.start({
-      triggerData: {
-        dynamicInput: inputData,
-      },
-    });
-
-    let dynamicWorkflowResult;
-
-    if (result.results["dynamicStep"]?.status === "success") {
-      dynamicWorkflowResult =
-        result.results["dynamicStep"]?.output.processedValue;
-    } else {
-      throw new Error("Dynamic workflow failed");
+      } else {
+        recordMetrics(span, { status: "error", errorMessage: "Dynamic workflow failed" });
+        throw new Error("Dynamic workflow failed");
+      }
+    } catch (error) {
+      recordMetrics(span, { status: "error", errorMessage: String(error) });
+      throw error;
+    } finally {
+      span.end();
     }
-
-    // Return the result from the dynamic workflow
-    return {
-      dynamicWorkflowResult,
-    };
   },
 });
 
-// Main workflow that uses the dynamic workflow creator
-const mainWorkflow = new Workflow({
+export const mainWorkflow = new Workflow({
   name: "main-workflow",
   triggerSchema: z.object({
     inputData: z.string(),
   }),
   mastra: new Mastra(),
-});
+})
+  .step(createDynamicWorkflowStep)
+  .commit();
 
-mainWorkflow.step(createDynamicWorkflow).commit();
-
-// Register the workflow with Mastra
 export const mastra = new Mastra({
   workflows: { mainWorkflow },
 });
 
-const run = mainWorkflow.createRun();
-const result = await run.start({
-  triggerData: {
-    inputData: "test",
-  },
-});
+export async function runMainWorkflow(inputData: string) {
+  const run = mainWorkflow.createRun();
+  return await run.start({ triggerData: { inputData } });
+}

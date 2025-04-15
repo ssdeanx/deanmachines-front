@@ -29,7 +29,14 @@ import { createBraveSearchTool } from "./brave-search";
 import { createGoogleSearchTool } from "./google-search";
 import { createTavilySearchTool } from "./tavily";
 import { createMastraExaSearchTools } from "./exasearch";
-import { readFileTool, writeToFileTool } from "./readwrite";
+import { readFileTool, 
+  writeToFileTool, 
+  writeKnowledgeFileTool, 
+  readKnowledgeFileTool, 
+  createFileTool, 
+  editFileTool, 
+  deleteFileTool, 
+  listFilesTool } from "./readwrite";
 import {
   collectFeedbackTool,
   analyzeFeedbackTool,
@@ -285,6 +292,12 @@ const coreTools: Tool<any, any>[] = [
   filteredQueryTool,
   readFileTool,
   writeToFileTool,
+  writeKnowledgeFileTool, 
+  readKnowledgeFileTool, 
+  createFileTool, 
+  editFileTool, 
+  deleteFileTool, 
+  listFilesTool,
   memoryQueryTool,
   collectFeedbackTool,
   analyzeFeedbackTool,

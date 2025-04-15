@@ -5,6 +5,7 @@ Welcome to the **DeanMachines Mastra AI Workspace**! This monorepo contains the 
 ---
 
 ## Table of Contents
+
 - [DeanMachines Mastra AI Workspace](#deanmachines-mastra-ai-workspace)
   - [Table of Contents](#table-of-contents)
   - [Project Overview](#project-overview)
@@ -34,6 +35,7 @@ Welcome to the **DeanMachines Mastra AI Workspace**! This monorepo contains the 
 ## Project Overview
 
 This workspace powers DeanMachines' advanced AI agents, leveraging the [Mastra](https://github.com/agentic-ai/mastra) framework. It is designed for:
+
 - Multi-agent orchestration (research, RL, writing, coding, etc.)
 - Reinforcement learning (RL) and feedback-driven optimization
 - Tool-augmented LLMs (Google, Vertex AI, OpenAI, etc.)
@@ -45,7 +47,8 @@ This workspace powers DeanMachines' advanced AI agents, leveraging the [Mastra](
 
 ## Workspace Structure
 
-```
+```bash
+deanmachines-front/
 functions/
 ├── src/
 │   ├── mastra/
@@ -84,7 +87,7 @@ functions/
 ```mermaid
 flowchart TD
     subgraph Agents
-      A1[Research Agent] 
+      A1[Research Agent]
       A2[RL Trainer Agent]
       A3[Writer Agent]
       A4[Coder Agent]
@@ -120,24 +123,26 @@ flowchart TD
     subgraph Storage
       S1[LibSQL]
       S2[Redis]
+      S3[UpstashVector]
+      S4[Pinecone]
     end
-    A1 -- uses --> ToolRegistry
-    A2 -- uses --> ToolRegistry
-    A3 -- uses --> ToolRegistry
-    A4 -- uses --> ToolRegistry
-    A5 -- uses --> ToolRegistry
-    A6 -- uses --> ToolRegistry
-    A7 -- uses --> ToolRegistry
-    A8 -- uses --> ToolRegistry
-    A9 -- uses --> ToolRegistry
-    A10 -- uses --> ToolRegistry
-    A11 -- uses --> ToolRegistry
-    A12 -- uses --> ToolRegistry
-    ToolRegistry -- calls --> LLMProviders
-    ToolRegistry -- reads/writes --> Storage
-    ToolRegistry -- logs --> Observability
-    Agents -- stores context --> Storage
-    Agents -- emits traces --> Observability
+    A1-->|uses|ToolRegistry
+    A2-->|uses|ToolRegistry
+    A3-->|uses|ToolRegistry
+    A4-->|uses|ToolRegistry
+    A5-->|uses|ToolRegistry
+    A6-->|uses|ToolRegistry
+    A7-->|uses|ToolRegistry
+    A8-->|uses|ToolRegistry
+    A9-->|uses|ToolRegistry
+    A10-->|uses|ToolRegistry
+    A11-->|uses|ToolRegistry
+    A12-->|uses|ToolRegistry
+    ToolRegistry-->|calls|LLMProviders
+    ToolRegistry-->|reads/writes|Storage
+    ToolRegistry-->|logs|Observability
+    Agents-->|stores context|Storage
+    Agents-->|emits traces|Observability
 ```
 
 ---
@@ -166,6 +171,7 @@ sequenceDiagram
 ## Agent Types
 
 Agents are defined in `src/mastra/agents/` and configured via TypeScript config files. Each agent has:
+
 - A unique `id`, `name`, and `description`
 - A `modelConfig` specifying the LLM provider/model (see `config.types.ts`)
 - A set of `toolIds` (referencing tools in the registry)
@@ -243,6 +249,7 @@ Tools are modular, reusable functions that agents can invoke. They are defined i
 - **Text generation:**
   - Use the `generateText` function from the `ai` package (aliased as `import { generateText } from "ai";`).
   - Example usage in a tool:
+
     ```typescript
     const result = await generateText({
       model,
@@ -251,6 +258,7 @@ Tools are modular, reusable functions that agents can invoke. They are defined i
       ]
     });
     ```
+
   - The result contains `.text` (the LLM output) and `.usage` (token counts, etc).
 - **Prompting:**
   - Prompts are constructed with clear instructions and a request for JSON output.
@@ -351,15 +359,28 @@ gantt
     Provider Refactor         :done,   a1, 2025-04-10, 2025-04-15
     Observability Integration :done,   a2, 2025-04-12, 2025-04-15
     Tool Registry Refactor    :done,   a3, 2025-04-13, 2025-04-15
+    Upstash Vector Integration:done,   a4, 2025-04-14, 2025-04-15
+    ClickHouse Adapter        :active, a5, 2025-04-15, 3d
+    Memory Adapter Upgrades   :        a6, 2025-04-18, 5d
 
     section Agent & Tool Expansion
     RL/Eval Tools             :active, b1, 2025-04-15, 5d
     Workflow Orchestration    :        b2, 2025-04-17, 7d
-    Memory Adapter Upgrades   :        b3, 2025-04-20, 5d
+    RAG Workflow Integration  :        b3, 2025-04-18, 5d
+    Document Chunking/Embed   :        b4, 2025-04-19, 4d
+    Hybrid Search (RAG+Memory):        b5, 2025-04-20, 5d
 
     section Documentation & Testing
     README/Changelog Update   :done,   c1, 2025-04-15, 1d
     Test Coverage Expansion   :        c2, 2025-04-18, 5d
+    RAG/VectorStore Examples  :        c3, 2025-04-19, 3d
+    Workflow Examples         :        c4, 2025-04-20, 3d
+    Agent/Tool Tutorials      :        c5, 2025-04-21, 4d
+
+    section Deployment & Ops
+    CI/CD Pipeline            :        d1, 2025-04-18, 3d
+    Production Observability  :        d2, 2025-04-20, 4d
+    Scaling/Performance       :        d3, 2025-04-22, 5d
 ```
 
 ---
@@ -397,5 +418,3 @@ gantt
 If you are a new contributor or AI assistant, please review this README and the codebase structure before making changes. For questions, contact the DeanMachines team or open an issue in the repository.
 
 ---
-
-*Last updated: 2025-04-15*

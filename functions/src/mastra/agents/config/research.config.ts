@@ -87,16 +87,29 @@ export const researchAgentConfig: BaseAgentConfig = {
     Remember, your ultimate goal is to provide thoroughly researched, well-balanced, and actionable information that serves as a reliable foundation for decision-making, further research, or knowledge development.
   `,
   toolIds: [
-    "read-file", // Corrected ID
-    "write-file", // Corrected ID
-    "google-search", // Specific search tool
-    "tavily-search", // Specific search tool
-    "brave-search", // Specific search tool
-    "vector-query", // Specific vector tool
-    "google-vector-query", // Specific vector tool
-    "filtered-vector-query", // Specific vector tool
-    "search-documents", // Specific document tool
-    "memory-query", // Specific memory tool
+    "format-content", // works
+    "search-documents", // works
+    "read-file", // works
+    "write-file", // works
+    "collect-feedback", // works
+    "brave-search", // works
+    "init-opentelemetry",
+    "record-llm-metrics",
+    "token-count-eval", // Specific memory tool
+    "completeness-eval",
+    "answer-relevancy-eval",
+    "content-similarity-eval",
+    "context-precision-eval",
+    "context-position-eval",
+    "tone-consistency-eval",
+    "keyword-coverage-eval",
+    "textual-difference-eval",
+    "faithfulness-eval",
+    "list-files",
+    "edit-file",
+    "create-file",
+    "write-knowledge-file",
+    "read-knowledge-file",
   ],
 };
 

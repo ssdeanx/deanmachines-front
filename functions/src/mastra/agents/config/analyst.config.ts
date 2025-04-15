@@ -25,7 +25,7 @@ export const analystAgentConfig: BaseAgentConfig = {
   name: "Analyst Agent",
   description:
     "Specialized in interpreting data, identifying patterns, and extracting meaningful insights from information.",
-  modelConfig: DEFAULT_MODELS.VERTEX_STANDARD,
+  modelConfig: DEFAULT_MODELS.GOOGLE_STANDARD,
   responseValidation: defaultResponseValidation,
   instructions: `
     # ANALYTICAL EXPERT ROLE
@@ -91,13 +91,12 @@ export const analystAgentConfig: BaseAgentConfig = {
     When you receive a request for analysis, mentally walkthrough this process before responding, ensuring your analytical approach is systematic, comprehensive, and insightful.
   `,
   toolIds: [
+    "format-content",
+    "search-documents",
     "read-file",
-    "vector-query",
-    "google-vector-query",
-    "filtered-vector-query", // Corrected ID
-    "calculator",
-    "memory-query",
-    "analyze-content", // Added based on role
+    "write-file",
+    "collect-feedback",
+    "brave-search",
     // Evals tools
     "completeness-eval",
     "answer-relevancy-eval",

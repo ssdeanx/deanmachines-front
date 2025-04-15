@@ -1,4 +1,3 @@
-import { Agent } from "@mastra/core/agent";
 import { Step, Workflow } from "@mastra/core/workflows";
 import { z } from "zod";
 import { researchAgent, analystAgent, writerAgent } from "../agents";

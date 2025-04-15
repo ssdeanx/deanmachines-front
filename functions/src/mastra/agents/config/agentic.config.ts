@@ -45,8 +45,6 @@ export const agenticAssistantConfig: BaseAgentConfig = {
   toolIds: [
     "read-file",
     "write-file",
-    "google-search",
-    "tavily-search",
     "brave-search",
     "memory-query",
   ],

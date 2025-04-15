@@ -130,6 +130,9 @@ export const writerAgentConfig: BaseAgentConfig = {
     "write-file",
     "collect-feedback",
     "brave-search",
+    "init-opentelemetry",
+    "record-llm-metrics",
+    "token-count-eval",
   ],
 };
 
