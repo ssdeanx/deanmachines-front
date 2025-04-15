@@ -40,6 +40,42 @@ export namespace github {
   }
 }
 
+// --- Zod Output Schema for GitHub User (SCHEMA-GITHUB-USER) ---
+const GitHubUserSchema = z.object({
+  login: z.string(),
+  id: z.number().int(),
+  node_id: z.string(),
+  avatar_url: z.string().url(),
+  gravatar_id: z.string().nullable(),
+  url: z.string().url(),
+  html_url: z.string().url(),
+  followers_url: z.string().url(),
+  following_url: z.string().url(),
+  gists_url: z.string().url(),
+  starred_url: z.string().url(),
+  subscriptions_url: z.string().url(),
+  organizations_url: z.string().url(),
+  repos_url: z.string().url(),
+  events_url: z.string().url(),
+  received_events_url: z.string().url(),
+  type: z.string(),
+  site_admin: z.boolean(),
+  name: z.string().nullable(),
+  company: z.string().nullable(),
+  blog: z.string().nullable(),
+  location: z.string().nullable(),
+  email: z.string().email().nullable(),
+  hireable: z.boolean().nullable(),
+  bio: z.string().nullable(),
+  twitter_username: z.string().nullable().optional(),
+  public_repos: z.number().int(),
+  public_gists: z.number().int(),
+  followers: z.number().int(),
+  following: z.number().int(),
+  created_at: z.string(),
+  updated_at: z.string(),
+}).describe("Schema for GitHub user data based on GitHub REST API v3");
+
 /**
  * Agentic GitHub client.
  */
@@ -123,4 +159,4 @@ export function createMastraGitHubTools(
 }
 
 // Export adapter for convenience
-export { createMastraTools };
+export { createMastraTools, GitHubUserSchema };

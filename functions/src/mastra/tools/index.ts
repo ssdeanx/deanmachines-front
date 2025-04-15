@@ -54,17 +54,15 @@ import { createMastraWikipediaTools } from "./wikibase"; // Import Mastra helper
 import { createMastraAISDKTools } from "./ai-sdk"; // Import Mastra helper
 import { createMastraE2BTools } from "./e2b"; // Import Mastra helper
 import { createGraphRagTool, graphRagQueryTool } from "./graphRag"; // These are Mastra core tools
-import { createMastraLLMChainTools } from "./llmchain"; // Import Mastra helper
+import { createMastraLLMChainTools, LLMChainOutputSchema, AiSdkPromptOutputSchema } from "./llmchain"; // Import Mastra helper
 import { createMastraGitHubTools } from "./github"; // Import Mastra helper
 import { github } from "../integrations"; // Used for custom getMainBranchRef
-import { ExaSearchOutputSchema } from "./exasearch";
+import ExaSearchOutputSchema from "./exasearch";
+import { GitHubUserSchema } from "./github"; // Assuming this is the correct export for GitHub user schema
 
 // === Export all tool modules (Consider if all are needed) ===
 export * from "./e2b";
 export * from "./exasearch";
-export * from "./google-search";
-export * from "./brave-search";
-export * from "./tavily";
 export * from "./readwrite";
 export * from "./vectorquerytool";
 export * from "./rlFeedback";
@@ -81,6 +79,12 @@ export * from "./ai-sdk";
 export * from "./contentTools";
 export * from "./document-tools";
 export * from "./llmchain";
+export * from "./brave-search";
+export * from "./google-search";
+export * from "./tavily";
+export { LLMChainOutputSchema, AiSdkPromptOutputSchema };
+export { ExaSearchOutputSchema };
+export { GitHubUserSchema };
 
 // === Configure Logger ===
 const logger = createLogger({ name: "tool-initialization", level: "info" });
@@ -487,9 +491,7 @@ logger.info(
 );
 // Add specific checks for included tools based on expected IDs from helpers
 logger.info(`GraphRag tools included: ${extraTools.some(t => t.id.startsWith('graphRag') || t.id === 'createGraphRagTool' || t.id === 'graph-rag')}`);
-logger.info(`Wikipedia tools included: ${extraTools.some(t => t.id.startsWith('wikipedia_'))}`); // Assuming helper creates IDs like 'wikipedia_...'
 logger.info(`LLMChain tools included: ${extraTools.some(t => t.id.startsWith('llm-chain_'))}`); // Assuming helper creates IDs like 'llm-chain_...'
-logger.info(`GitHub tools included: ${extraTools.some(t => t.id.startsWith('github_'))}`); // Assuming helper creates IDs like 'github_...'
 logger.info(`E2B tools included: ${extraTools.some(t => t.id.startsWith('e2b_'))}`); // Assuming helper creates IDs like 'e2b_...'
 logger.info(`Arxiv tools included: ${extraTools.some(t => t.id.startsWith('arxiv_'))}`); // Assuming helper creates IDs like 'arxiv_...'
 logger.info(`AI SDK tools included: ${extraTools.some(t => t.id.startsWith('ai-sdk_'))}`); // Assuming helper creates IDs like 'ai-sdk_...'

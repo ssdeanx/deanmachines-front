@@ -5,6 +5,7 @@ import {
 } from "@agentic/core";
 import { createMastraTools } from "@agentic/mastra";
 import { FunctionTool } from "llamaindex";
+import { z } from "zod";
 
 /**
  * Converts a set of Agentic stdlib AI functions to an array of LlamaIndex-
@@ -33,6 +34,15 @@ export function createLlamaIndexTools(
 }
 
 /**
+ * Define a sample output schema for LlamaIndex query tools
+ */
+export const LlamaIndexQueryOutputSchema = z.object({
+  answer: z.string().describe("The answer or summary returned by the LlamaIndex query engine."),
+  sources: z.array(z.string()).optional().describe("List of source document IDs or URIs used in the answer."),
+  metadata: z.record(z.any()).optional().describe("Additional metadata from the query engine."),
+});
+
+/**
  * Helper function to create Mastra-compatible LlamaIndex tools
  *
  * @param aiFunctionLikeTools - Agentic functions to convert and adapt
@@ -42,7 +52,14 @@ export function createMastraLlamaIndexTools(
   ...aiFunctionLikeTools: AIFunctionLike[]
 ) {
   // Adapt the original AIFunctionLike tools directly for Mastra
-  return createMastraTools(...aiFunctionLikeTools);
+  const mastraTools = createMastraTools(...aiFunctionLikeTools);
+  // Patch each tool to ensure outputSchema is set (if possible)
+  Object.values(mastraTools).forEach(tool => {
+    if (!(tool as any).outputSchema) {
+      (tool as any).outputSchema = LlamaIndexQueryOutputSchema;
+    }
+  });
+  return mastraTools;
 }
 
 // Export adapter for convenience

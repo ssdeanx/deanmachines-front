@@ -243,6 +243,33 @@ export class ArXivClient extends AIFunctionsProvider {
   }
 }
 
+// --- Explicit output schema for arxiv_search tool ---
+export const ArxivSearchEntrySchema = z.object({
+  id: z.string(),
+  url: z.string(),
+  title: z.string(),
+  summary: z.string(),
+  published: z.string(),
+  updated: z.string(),
+  authors: z.array(z.object({
+    name: z.string(),
+    affiliation: z.array(z.string()),
+  })),
+  doi: z.string().optional(),
+  comment: z.string().optional(),
+  journalReference: z.string().optional(),
+  primaryCategory: z.string().optional(),
+  categories: z.array(z.string()),
+  links: z.array(z.any()),
+});
+
+export const ArxivSearchOutputSchema = z.object({
+  totalResults: z.number(),
+  startIndex: z.number(),
+  itemsPerPage: z.number(),
+  entries: z.array(ArxivSearchEntrySchema),
+});
+
 /**
  * Creates a configured ArXiv client
  *
@@ -270,7 +297,11 @@ export function createMastraArxivTools(config: {
   ky?: KyInstance;
 } = {}) {
   const arxivClient = createArxivClient(config);
-  return createMastraTools(arxivClient);
+  const mastraTools = createMastraTools(arxivClient);
+  if (mastraTools.arxiv_search) {
+    (mastraTools.arxiv_search as any).outputSchema = ArxivSearchOutputSchema;
+  }
+  return mastraTools;
 }
 
 // Export adapter for convenience

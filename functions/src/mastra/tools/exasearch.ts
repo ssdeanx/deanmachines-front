@@ -73,7 +73,7 @@ export class ExaSearchProvider extends AIFunctionsProvider {
     description:
       "Performs web searches using Exa search API with various filtering options",
     inputSchema: ExaSearchInputSchema,
-    outputSchema: ExaSearchOutputSchema, // <-- Add output schema here
+    // outputSchema removed, patch after createMastraTools
   })
   async search(
     input: ExaSearchInput
@@ -132,12 +132,12 @@ export function createExaSearchProvider(config?: { apiKey?: string }): ExaSearch
  * @returns {ReturnType<typeof createMastraTools>} An array of Mastra-compatible tools
  */
 export function createMastraExaSearchTools(config?: { apiKey?: string }) {
-  // Pass config if needed by the provider in the future, or handle API key logic here/within the provider.
-  // For now, createExaSearchProvider doesn't accept config.
-  const exaSearchProvider = createExaSearchProvider();
-  // If the provider needs the API key, it should be passed during its instantiation.
-  // Example: const exaSearchProvider = createExaSearchProvider(config);
-  return createMastraTools(exaSearchProvider);
+  const exaSearchProvider = createExaSearchProvider(config);
+  const mastraTools = createMastraTools(exaSearchProvider);
+  if (mastraTools.exa_search) {
+    (mastraTools.exa_search as any).outputSchema = ExaSearchOutputSchema;
+  }
+  return mastraTools;
 }
 
 // Export adapter for convenience

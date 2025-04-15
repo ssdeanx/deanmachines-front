@@ -66,7 +66,6 @@ Execute python code in a Jupyter notebook cell and returns any result, stdout, s
 export function createE2BSandboxTool(config: {
   apiKey?: string;
 } = {}) {
-  const apiKey = config.apiKey ?? getEnv("E2B_API_KEY");
   return e2b;
 }
 
@@ -76,11 +75,23 @@ export function createE2BSandboxTool(config: {
  * @param config - Configuration options for the E2B sandbox
  * @returns An array of Mastra-compatible tools
  */
+export const E2BOutputSchema = z.array(
+  z.object({
+    type: z.string(),
+    value: z.any(),
+  })
+);
+
 export function createMastraE2BTools(config: {
   apiKey?: string;
 } = {}) {
   const e2bTool = createE2BSandboxTool(config);
-  return createMastraTools(e2bTool);
+  const mastraTools = createMastraTools(e2bTool);
+  // Patch outputSchema for the tool with type assertion to suppress TS error
+  if (mastraTools.execute_python) {
+    (mastraTools.execute_python as any).outputSchema = E2BOutputSchema;
+  }
+  return mastraTools;
 }
 
 // Export adapter for convenience

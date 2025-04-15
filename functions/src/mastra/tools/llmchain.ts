@@ -10,7 +10,7 @@
  * @module LLMChainTool
  */
 
-import { createAIFunction, type AIFunctionInputSchema } from "@agentic/core";
+import { createAIFunction } from "@agentic/core";
 import { z } from "zod";
 import { openai } from "@ai-sdk/openai";
 import { google } from "@ai-sdk/google";
@@ -53,17 +53,7 @@ export interface LLMChainConfig {
  * @returns A configured AI SDK model instance that supports both completion and chat interfaces
  * @throws {Error} When an unsupported provider is specified or when required API keys are missing
  */
-/**
- * Creates an AI SDK model instance based on provider
- *
- * @param config - Configuration options for the AI SDK model
- * @returns A configured AI SDK model instance that supports both completion and chat interfaces
- * @throws {Error} When an unsupported provider is specified or when required API keys are missing
- */
 function createAiSdkModel(config: LLMChainConfig = {}) {
-  const temperature = config.temperature ?? 0.7;
-  const maxTokens = config.maxTokens;
-
   // Create model based on provider
   switch (config.provider || "google") {
     case "openai": {
@@ -257,6 +247,10 @@ export const llmChainTool = createAIFunction(
     }
   }
 );
+
+// Log the tool for debugging/linting purposes
+console.log("llmChainTool:", llmChainTool);
+logger.info("Registered llmChainTool", { tool: llmChainTool });
 
 /**
  * Input schema for the aiSdkPromptTool.
@@ -610,12 +604,52 @@ export const aiSdkPromptTool = createAIFunction(
 );
 
 /**
+ * Zod Output Schemas for LLMChain Tools
+ */
+export const LLMChainOutputSchema = z.object({
+  result: z.string().describe("The final string output from the LLM chain."),
+  success: z.boolean().describe("Indicates if the chain execution was successful."),
+  metadata: z.object({
+    provider: z.string(),
+    model: z.string(),
+    elapsedTimeMs: z.number(),
+  }).passthrough().describe("Execution metadata."),
+  error: z.string().optional().describe("Error message if execution failed."),
+}).describe("Schema for the output of the llm-chain tool");
+
+export const AiSdkPromptOutputSchema = z.object({
+  text: z.string().describe("The primary text output from the AI SDK call."),
+  structured: z.unknown().optional().describe("Parsed structured output object if a schema was provided."),
+  success: z.boolean().describe("Indicates if the AI SDK call was successful."),
+  metadata: z.object({
+    provider: z.string(),
+    model: z.string(),
+    elapsedTimeMs: z.number(),
+    usage: z.object({
+      promptTokens: z.number().int().optional(),
+      completionTokens: z.number().int().optional(),
+      totalTokens: z.number().int().optional(),
+    }).optional(),
+    finishReason: z.string().optional(),
+    rawResponse: z.any().optional(),
+  }).passthrough().describe("Execution metadata."),
+  error: z.string().optional().describe("Error message if execution failed."),
+}).describe("Schema for the output of the ai-sdk-prompt tool");
+
+/**
  * Creates a Mastra-compatible LLM chain tool
  *
  * @returns An array of Mastra-compatible LLM chain tools
  */
 export function createMastraLLMChainTools() {
-  return createMastraTools(llmChainTool, aiSdkPromptTool);
+  const mastraTools = createMastraTools(llmChainTool, aiSdkPromptTool);
+  if (mastraTools["llm-chain"]) {
+    (mastraTools["llm-chain"] as any).outputSchema = LLMChainOutputSchema;
+  }
+  if (mastraTools["ai-sdk-prompt"]) {
+    (mastraTools["ai-sdk-prompt"] as any).outputSchema = AiSdkPromptOutputSchema;
+  }
+  return mastraTools;
 }
 
 // Export adapter for convenience

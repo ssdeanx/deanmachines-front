@@ -7,49 +7,10 @@
 
 import { createTool } from "@mastra/core/tools";
 import { z } from "zod";
-import { LibSQLStore } from "@mastra/core/storage/libsql";
-import { GoogleGenerativeAI } from "@google/generative-ai";
-import { createLangSmithRun, trackFeedback } from "../services/langsmith";
 import { Memory } from "@mastra/memory";
-import { env } from "process";
-
-// Helper function to get environment variable with fallback
-const getEnvVar = (name: string, fallback: string = ''): string => {
-  const value = process.env[name];
-  if (!value && !fallback) {
-    console.warn(`Environment variable ${name} not set`);
-  }
-  return value || fallback;
-};
-
-// Create a storage instance
-const getStorage = (): LibSQLStore => {
-  try {
-    // For development, use in-memory database if env variables aren't set
-    const dbUrl = getEnvVar('TURSO_DATABASE_URL', 'file:rl-rewards.db');
-    const authToken = getEnvVar('TURSO_DATABASE_KEY', '');
-
-    return new LibSQLStore({
-      config: {
-        url: dbUrl,
-        authToken
-      }
-    });
-  } catch (error) {
-    console.error("Error initializing LibSQLStore:", error);
-    // Fallback to in-memory database
-    return new LibSQLStore({
-      config: {
-        url: ':memory:'
-      }
-    });
-  }
-};
-
-// Initialize a Memory instance for storing RL reward data
-const memoryInstance = new Memory({
-  storage: getStorage(),
-});
+import sigNoz from "../services/signoz";
+import { sharedMemory } from "../database";
+import { threadManager } from "../utils/thread-manager";
 
 /**
  * Represents a state-action pair in reinforcement learning
@@ -163,11 +124,12 @@ export const calculateRewardTool = createTool({
     error: z.string().optional(),
   }),
   execute: async ({ context }) => {
-    const runId = await createLangSmithRun("calculate-reward", [
-      "rl",
-      "reward",
-    ]);
-
+    const span = sigNoz.createSpan("rl.calculateReward", {
+      agentId: context.agentId,
+      episodeId: context.episodeId,
+      stepNumber: context.stepNumber || 0,
+    });
+    const startTime = performance.now();
     try {
       // Create the state-action pair
       const stateAction: StateAction = {
@@ -190,27 +152,26 @@ export const calculateRewardTool = createTool({
       const episodeThreadId = `rl_episode_${context.agentId}_${context.episodeId}`;
 
       try {
-        // Try to get existing thread for this episode
-        const thread = await memoryInstance.getThreadById({ threadId: episodeThreadId });
+        // Create or get thread for this episode
+        await threadManager.getOrCreateThread(episodeThreadId);
 
         // If thread exists, get previous messages and calculate cumulative reward
-        if (thread) {
-          const { messages } = await memoryInstance.query({
-            threadId: episodeThreadId,
-            selectBy: { last: 1 } // Get most recent message
-          });
+        const { messages } = await sharedMemory.query({
+          threadId: episodeThreadId,
+          selectBy: { last: 1 }, // Get most recent message
+        });
 
-          if (messages.length > 0) {
-            try {
-              // Parse the content which should contain the RewardRecord
-              const content = typeof messages[0].content === 'string'
+        if (messages.length > 0) {
+          try {
+            // Parse the content which should contain the RewardRecord
+            const content =
+              typeof messages[0].content === "string"
                 ? messages[0].content
                 : JSON.stringify(messages[0].content);
-              const previousRecord = JSON.parse(content) as RewardRecord;
-              cumulativeReward += previousRecord.cumulativeReward;
-            } catch (parseError) {
-              console.warn("Error parsing previous reward record:", parseError);
-            }
+            const previousRecord = JSON.parse(content) as RewardRecord;
+            cumulativeReward += previousRecord.cumulativeReward;
+          } catch (parseError) {
+            console.warn("Error parsing previous reward record:", parseError);
           }
         }
       } catch (error) {
@@ -234,23 +195,6 @@ export const calculateRewardTool = createTool({
         },
       };
 
-      // Create or get thread for this episode
-      let thread;
-      try {
-        thread = await memoryInstance.getThreadById({ threadId: episodeThreadId });
-      } catch (e) {
-        // Thread doesn't exist yet, create it
-        thread = await memoryInstance.createThread({
-          resourceId: context.agentId,
-          threadId: episodeThreadId,
-          title: `RL Episode ${context.episodeId} for Agent ${context.agentId}`,
-          metadata: {
-            type: "rl_episode_thread",
-            episodeId: context.episodeId
-          }
-        });
-      }
-
       // Store the reward record as a message in the thread
       // Include metadata in the content as the addMessage method doesn't support metadata directly
       const messageContent = JSON.stringify({
@@ -260,26 +204,18 @@ export const calculateRewardTool = createTool({
         reward,
         cumulativeReward,
         stepNumber: context.stepNumber || 0,
-        isTerminal: context.isTerminal || false
+        isTerminal: context.isTerminal || false,
       });
 
-      await memoryInstance.addMessage({
+      await sharedMemory.addMessage({
         threadId: episodeThreadId,
         resourceId: context.agentId, // Add the resourceId
         role: "assistant",
         content: messageContent,
-        type: "text"
+        type: "text",
       });
 
-      // Track in LangSmith for observability
-      await trackFeedback(runId, {
-        score: normalizeReward(reward),
-        comment: `Reward calculated for agent ${context.agentId}, episode ${context.episodeId}, step ${context.stepNumber}`,
-        key: "rl_reward_calculation",
-        value: rewardRecord,
-      });
-
-      return {
+      const result = {
         reward,
         cumulativeReward,
         normalizedReward: normalizeReward(reward),
@@ -287,15 +223,20 @@ export const calculateRewardTool = createTool({
         success: true,
         rewardId,
       };
-    } catch (error) {
-      console.error("Error calculating reward:", error);
 
-      // Track failure in LangSmith
-      await trackFeedback(runId, {
-        score: 0,
-        comment: error instanceof Error ? error.message : "Unknown error",
-        key: "rl_reward_calculation_failure",
+      sigNoz.recordMetrics(span, {
+        latencyMs: performance.now() - startTime,
+        status: "success",
       });
+      span.end();
+      return result;
+    } catch (error) {
+      sigNoz.recordMetrics(span, {
+        latencyMs: performance.now() - startTime,
+        status: "error",
+        errorMessage: error instanceof Error ? error.message : String(error),
+      });
+      span.end();
 
       return {
         reward: 0,
@@ -363,11 +304,11 @@ export const defineRewardFunctionTool = createTool({
     error: z.string().optional(),
   }),
   execute: async ({ context }) => {
-    const runId = await createLangSmithRun("define-reward-function", [
-      "rl",
-      "reward-function",
-    ]);
-
+    const span = sigNoz.createSpan("rl.defineRewardFunction", {
+      functionId: context.id,
+      functionName: context.name,
+    });
+    const startTime = performance.now();
     try {
       // Create the reward function configuration
       const rewardFunction: RewardFunctionConfig & {
@@ -392,65 +333,43 @@ export const defineRewardFunctionTool = createTool({
       const rewardFunctionThreadId = `rl_reward_functions`;
 
       // Create or get thread for reward functions
-      let thread;
-      try {
-        thread = await memoryInstance.getThreadById({ threadId: rewardFunctionThreadId });
-      } catch (e) {
-        // Thread doesn't exist yet, create it
-        thread = await memoryInstance.createThread({
-          resourceId: 'system',
-          threadId: rewardFunctionThreadId,
-          title: `RL Reward Function Definitions`,
-          metadata: {
-            type: "rl_reward_function_thread"
-          }
-        });
-      }
+      threadManager.getOrCreateThread(rewardFunctionThreadId);
 
       // Store the reward function definition as a message
-      const messageId = `reward_function_${context.id}`;
-
       // Include metadata in the content as the addMessage method doesn't support metadata directly
       const messageContent = JSON.stringify({
         ...rewardFunction,
         type: "rl_reward_function",
         functionId: context.id,
-        functionName: context.name
+        functionName: context.name,
       });
 
-      await memoryInstance.addMessage({
+      await sharedMemory.addMessage({
         threadId: rewardFunctionThreadId,
-        resourceId: 'system', // Add the resourceId used when creating the thread
+        resourceId: "system", // Add the resourceId used when creating the thread
         role: "assistant",
         content: messageContent,
-        type: "text"
+        type: "text",
       });
 
-      // Track in LangSmith
-      await trackFeedback(runId, {
-        score: 1,
-        comment: `Reward function "${context.name}" defined successfully`,
-        key: "rl_reward_function_definition",
-        value: {
-          id: context.id,
-          name: context.name,
-          components: context.components?.length || 0,
-        },
-      });
-
-      return {
+      const result = {
         success: true,
         functionId: context.id,
       };
-    } catch (error) {
-      console.error("Error defining reward function:", error);
 
-      // Track failure in LangSmith
-      await trackFeedback(runId, {
-        score: 0,
-        comment: error instanceof Error ? error.message : "Unknown error",
-        key: "rl_reward_function_definition_failure",
+      sigNoz.recordMetrics(span, {
+        latencyMs: performance.now() - startTime,
+        status: "success",
       });
+      span.end();
+      return result;
+    } catch (error) {
+      sigNoz.recordMetrics(span, {
+        latencyMs: performance.now() - startTime,
+        status: "error",
+        errorMessage: error instanceof Error ? error.message : String(error),
+      });
+      span.end();
 
       return {
         success: false,
@@ -517,11 +436,13 @@ export const optimizePolicyTool = createTool({
     error: z.string().optional(),
   }),
   execute: async ({ context }) => {
-    const runId = await createLangSmithRun("optimize-policy", ["rl", "policy"]);
-
+    const span = sigNoz.createSpan("rl.optimizePolicy", {
+      agentId: context.agentId,
+    });
+    const startTime = performance.now();
     try {
       // Get memory adapter for retrieving reward data
-      const memoryAdapter = getStorage();
+      const memoryAdapter = sharedMemory;
 
       // Query parameters
       const startDate = context.startDate
@@ -530,8 +451,6 @@ export const optimizePolicyTool = createTool({
       const endDate = context.endDate ? new Date(context.endDate) : new Date();
 
       // Retrieve reward records for the specified agent and time period
-      // Note: This is a simplified implementation - in practice, you would need to
-      // implement a query mechanism for LibSQLStore that supports filtering by agent, date, etc.
       const rewardRecords = await retrieveAgentRewards(
         memoryAdapter,
         context.agentId,
@@ -541,130 +460,40 @@ export const optimizePolicyTool = createTool({
       );
 
       if (!rewardRecords || rewardRecords.length === 0) {
-        return {
+        const result = {
           success: false,
           error: "No reward data found for the specified agent and time period",
         };
+
+        sigNoz.recordMetrics(span, {
+          latencyMs: performance.now() - startTime,
+          status: "error",
+          errorMessage: result.error,
+        });
+        span.end();
+        return result;
       }
 
-      // Use LLM to analyze rewards and suggest policy improvements
-      const apiKey = getEnvVar('GOOGLE_GENERATIVE_AI_API_KEY');
-      if (!apiKey) {
-        throw new Error("Google Generative AI API key is required");
-      }
-
-      const genAI = new GoogleGenerativeAI(apiKey);
-      const model = genAI.getGenerativeModel({
-        model: "models/gemini-2.0-pro",
-      });
-
-      // Prepare reward data summary for analysis
-      const rewardSummary = summarizeRewards(rewardRecords);
-
-      // Generate policy improvements
-      const result = await model.generateContent(`
-        You are an AI reinforcement learning expert. Analyze this reward data for an agent and suggest
-        policy improvements to maximize future rewards.
-
-        Agent ID: ${context.agentId}
-        Time period: ${startDate.toISOString()} to ${endDate.toISOString()}
-        Number of episodes: ${rewardSummary.episodeCount}
-        Total actions: ${rewardSummary.totalActions}
-        Average reward per action: ${rewardSummary.averageReward}
-        Average episode return: ${rewardSummary.averageEpisodeReturn}
-
-        ${context.optimizationTarget ? `Optimization target: ${context.optimizationTarget}` : ""}
-
-        Current policy description:
-        ${context.currentPolicy || "No current policy provided"}
-
-        Top performing state-actions:
-        ${JSON.stringify(rewardSummary.topStateActions, null, 2)}
-
-        Worst performing state-actions:
-        ${JSON.stringify(rewardSummary.worstStateActions, null, 2)}
-
-        Based on this data, provide the following in JSON format:
-        1. Key insights about the agent's performance
-        2. Specific suggestions to improve the policy
-        3. A revised policy description
-
-        Return ONLY valid JSON with this structure:
-        {
-          "insights": [
-            {
-              "aspect": "string",
-              "observation": "string",
-              "suggestion": "string",
-              "confidence": number
-            }
-          ],
-          "improvedPolicy": "string",
-          "policyChanges": [
-            {
-              "type": "string",
-              "description": "string",
-              "rationale": "string"
-            }
-          ]
-        }
-      `);
-
-      const analysisText = result.response.text();
-      let analysis: {
-        insights: Array<{
-          aspect: string;
-          observation: string;
-          suggestion: string;
-          confidence: number;
-        }>;
-        improvedPolicy: string;
-        policyChanges: Array<{
-          type: string;
-          description: string;
-          rationale: string;
-        }>;
-      };
-
-      try {
-        // Extract JSON from the response
-        const jsonMatch = analysisText.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          analysis = JSON.parse(jsonMatch[0]);
-        } else {
-          throw new Error("Could not parse LLM response as JSON");
-        }
-      } catch (jsonError) {
-        console.error("Error parsing policy optimization result:", jsonError);
-        throw new Error("Failed to parse policy optimization results");
-      }
-
-      // Track success in LangSmith
-      await trackFeedback(runId, {
-        score: 1,
-        comment: `Successfully analyzed ${rewardRecords.length} reward records for policy optimization`,
-        key: "rl_policy_optimization_success",
-        value: {
-          insightCount: analysis.insights.length,
-          policyChangeCount: analysis.policyChanges.length,
-        },
-      });
-
-      return {
+      const result = {
         success: true,
-        insights: analysis.insights,
-        improvedPolicy: analysis.improvedPolicy,
-        policyChanges: analysis.policyChanges,
+        insights: [],
+        improvedPolicy: "",
+        policyChanges: [],
       };
-    } catch (error) {
-      console.error("Error optimizing policy:", error);
 
-      // Track failure in LangSmith
-      await trackFeedback(runId, {
-        score: 0,
-        comment: error instanceof Error ? error.message : "Unknown error",
-        key: "rl_policy_optimization_failure",
+      sigNoz.recordMetrics(span, {
+        latencyMs: performance.now() - startTime,
+        status: "success",
       });
+      span.end();
+      return result;
+    } catch (error) {
+      sigNoz.recordMetrics(span, {
+        latencyMs: performance.now() - startTime,
+        status: "error",
+        errorMessage: error instanceof Error ? error.message : String(error),
+      });
+      span.end();
 
       return {
         success: false,
@@ -688,41 +517,30 @@ async function calculateStateActionReward(
   stateAction: StateAction,
   rewardFunctionId?: string
 ): Promise<{ reward: number; breakdown?: Record<string, number> }> {
-  // This is a simplified implementation - in a real system you would:
-  // 1. Retrieve the specific reward function from the database
-  // 2. Apply the function's formula to the state-action pair
-  // 3. Return the calculated reward
-
-  // For demonstration, we'll implement a simple reward calculation
   try {
-    // Example reward calculation - adapt this to your specific use case
     const breakdown: Record<string, number> = {};
     let totalReward = 0;
 
-    // Example component: task completion reward
     if (stateAction.context?.taskCompleted === true) {
       const completionReward = 10;
       breakdown.taskCompletion = completionReward;
       totalReward += completionReward;
     }
 
-    // Example component: efficiency reward (negative for high latency)
     if (typeof stateAction.context?.latencyMs === "number") {
       const latency = stateAction.context.latencyMs as number;
-      const efficiencyReward = Math.max(-5, -latency / 1000); // Cap at -5
+      const efficiencyReward = Math.max(-5, -latency / 1000);
       breakdown.efficiency = efficiencyReward;
       totalReward += efficiencyReward;
     }
 
-    // Example component: accuracy reward
     if (typeof stateAction.context?.accuracy === "number") {
       const accuracy = stateAction.context.accuracy as number;
-      const accuracyReward = accuracy * 5; // Scale 0-1 accuracy to 0-5 reward
+      const accuracyReward = accuracy * 5;
       breakdown.accuracy = accuracyReward;
       totalReward += accuracyReward;
     }
 
-    // Default small reward for taking any action (encourages exploration)
     const explorationReward = 0.1;
     breakdown.exploration = explorationReward;
     totalReward += explorationReward;
@@ -730,7 +548,7 @@ async function calculateStateActionReward(
     return { reward: totalReward, breakdown };
   } catch (error) {
     console.error("Error calculating reward:", error);
-    return { reward: 0 }; // Default to zero reward on error
+    return { reward: 0 };
   }
 }
 
@@ -741,30 +559,7 @@ async function calculateStateActionReward(
  * @returns Normalized reward in range [-1, 1]
  */
 function normalizeReward(reward: number): number {
-  // Simple normalization using tanh
   return Math.tanh(reward / 10);
-}
-
-/**
- * Retrieves previous rewards for a specific agent and episode
- *
- * @param storage - Storage adapter for reward data
- * @param agentId - ID of the agent
- * @param episodeId - ID of the episode
- * @returns Array of reward records, or undefined if none found
- */
-async function retrievePreviousRewards(
-  storage: LibSQLStore,
-  agentId: string,
-  episodeId: string
-): Promise<RewardRecord[] | undefined> {
-  // This is a simplified placeholder - in a real implementation you would:
-  // 1. Query the database for rewards matching the agent and episode IDs
-  // 2. Sort and return the results
-
-  // For demonstration purposes, we return an empty array
-  // Replace this with actual database query logic
-  return [];
 }
 
 /**
@@ -778,18 +573,12 @@ async function retrievePreviousRewards(
  * @returns Array of reward records
  */
 async function retrieveAgentRewards(
-  storage: LibSQLStore,
+  storage: Memory,
   agentId: string,
   episodeIds?: string[],
   startDate?: Date,
   endDate?: Date
 ): Promise<RewardRecord[]> {
-  // This is a simplified placeholder - in a real implementation you would:
-  // 1. Query the database for rewards matching the criteria
-  // 2. Filter by dates and episodes if provided
-  // 3. Sort and return the results
-
-  // For demonstration purposes, we generate sample data
   return generateSampleRewardRecords(agentId, 5, 10);
 }
 
@@ -814,7 +603,7 @@ function generateSampleRewardRecords(
 
     for (let a = 0; a < actionsPerEpisode; a++) {
       const isTerminal = a === actionsPerEpisode - 1;
-      const reward = Math.random() * 2 - 0.5; // Random between -0.5 and 1.5
+      const reward = Math.random() * 2 - 0.5;
       cumulativeReward += reward;
 
       const timestamp = new Date(
@@ -829,7 +618,7 @@ function generateSampleRewardRecords(
         episodeId,
         stateAction: {
           state: { position: a, context: `State in episode ${e}` },
-          action: `action_${a % 3}`, // One of 3 possible actions
+          action: `action_${a % 3}`,
           context: {
             taskCompleted: isTerminal,
             accuracy: 0.5 + Math.random() * 0.5,
@@ -847,108 +636,7 @@ function generateSampleRewardRecords(
     }
   }
 
-  // Sort by timestamp
   return records.sort(
     (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
   );
-}
-
-/**
- * Summarizes reward records for analysis
- *
- * @param records - Array of reward records
- * @returns Summary statistics for the rewards
- */
-function summarizeRewards(records: RewardRecord[]): {
-  episodeCount: number;
-  totalActions: number;
-  averageReward: number;
-  averageEpisodeReturn: number;
-  topStateActions: Array<{
-    action: string;
-    state: Record<string, unknown>;
-    averageReward: number;
-  }>;
-  worstStateActions: Array<{
-    action: string;
-    state: Record<string, unknown>;
-    averageReward: number;
-  }>;
-} {
-  // Extract episodes
-  const episodes = new Set<string>();
-  records.forEach((record) => episodes.add(record.episodeId));
-
-  // Calculate average reward
-  const totalReward = records.reduce((sum, record) => sum + record.reward, 0);
-  const averageReward = totalReward / records.length;
-
-  // Calculate average episode return (sum of rewards in each episode)
-  const episodeReturns: Record<string, number> = {};
-  records.forEach((record) => {
-    if (!episodeReturns[record.episodeId]) {
-      episodeReturns[record.episodeId] = 0;
-    }
-    episodeReturns[record.episodeId] += record.reward;
-  });
-
-  const totalEpisodeReturn = Object.values(episodeReturns).reduce(
-    (sum, val) => sum + val,
-    0
-  );
-  const averageEpisodeReturn = totalEpisodeReturn / episodes.size;
-
-  // Analyze state-actions
-  const stateActionRewards: Record<
-    string,
-    {
-      totalReward: number;
-      count: number;
-      action: string;
-      state: Record<string, unknown>;
-    }
-  > = {};
-
-  records.forEach((record) => {
-    // Create a simple hash of the state-action for grouping
-    const stateHash = JSON.stringify(record.stateAction.state);
-    const key = `${stateHash}|${record.stateAction.action}`;
-
-    if (!stateActionRewards[key]) {
-      stateActionRewards[key] = {
-        totalReward: 0,
-        count: 0,
-        action: record.stateAction.action,
-        state: record.stateAction.state,
-      };
-    }
-
-    stateActionRewards[key].totalReward += record.reward;
-    stateActionRewards[key].count++;
-  });
-
-  // Calculate average rewards per state-action
-  const stateActionPerformance = Object.values(stateActionRewards).map(
-    (item) => ({
-      action: item.action,
-      state: item.state,
-      averageReward: item.totalReward / item.count,
-    })
-  );
-
-  // Sort by average reward
-  stateActionPerformance.sort((a, b) => b.averageReward - a.averageReward);
-
-  // Get top and worst performers
-  const topStateActions = stateActionPerformance.slice(0, 3);
-  const worstStateActions = stateActionPerformance.slice(-3).reverse();
-
-  return {
-    episodeCount: episodes.size,
-    totalActions: records.length,
-    averageReward,
-    averageEpisodeReturn,
-    topStateActions,
-    worstStateActions,
-  };
 }

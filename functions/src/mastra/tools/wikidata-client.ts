@@ -1,8 +1,10 @@
 import type * as wikibase from 'wikibase-sdk'
 import { AIFunctionsProvider, assert, getEnv, throttleKy } from '@agentic/core'
+import { createMastraTools } from '@agentic/mastra'
 import defaultKy, { type KyInstance } from 'ky'
 import pThrottle from 'p-throttle'
 import wdk from 'wikibase-sdk/wikidata.org'
+import { z } from 'zod'
 
 export namespace wikidata {
   // Allow up to 200 requests per second by default.
@@ -39,6 +41,28 @@ export namespace wikidata {
 }
 
 /**
+ * Output schemas for Wikidata API responses
+ */
+const WikidataClaimSchema = z.object({
+  value: z.string(),
+  qualifiers: z.record(z.union([z.array(z.string()), z.array(z.number())])),
+  references: z.array(z.record(z.array(z.string())))
+});
+
+const WikidataEntitySchema = z.object({
+  id: z.string(),
+  type: z.string(),
+  claims: z.record(z.array(WikidataClaimSchema)),
+  modified: z.string(),
+  labels: z.record(z.string()).optional(),
+  descriptions: z.record(z.string()).optional(),
+  aliases: z.any().optional(),
+  sitelinks: z.record(z.string()).optional()
+});
+
+const WikidataEntityMapSchema = z.record(WikidataEntitySchema);
+
+/**
  * Basic Wikidata client.
  *
  * @see https://github.com/maxlath/wikibase-sdk
@@ -65,7 +89,7 @@ export class WikidataClient extends AIFunctionsProvider {
 
     this.apiUserAgent = apiUserAgent
 
-    const throttledKy = throttle ? throttleKy(ky, wikidata.throttle) : ky
+    const throttledKy = throttle ? (throttleKy(ky, wikidata.throttle) as typeof ky) : ky
 
     this.ky = throttledKy.extend({
       headers: {
@@ -119,3 +143,34 @@ export class WikidataClient extends AIFunctionsProvider {
     return entities as wikidata.SimplifiedEntityMap
   }
 }
+
+/**
+ * Helper function to create a Mastra-compatible Wikidata client
+ *
+ * @param config - Configuration options for the Wikidata client
+ * @returns An array of Mastra-compatible tools
+ */
+export function createMastraWikidataTools(config: {
+  apiBaseUrl?: string;
+  apiUserAgent?: string;
+  throttle?: boolean;
+  ky?: KyInstance;
+} = {}) {
+  const wikidataClient = new WikidataClient(config);
+  const mastraTools = createMastraTools(wikidataClient);
+  
+  // Patch outputSchema for getEntityById
+  if (mastraTools.wikidata_get_entity_by_id) {
+    (mastraTools.wikidata_get_entity_by_id as any).outputSchema = WikidataEntitySchema;
+  }
+  
+  // Patch outputSchema for getEntitiesByIds
+  if (mastraTools.wikidata_get_entities_by_ids) {
+    (mastraTools.wikidata_get_entities_by_ids as any).outputSchema = WikidataEntityMapSchema;
+  }
+  
+  return mastraTools;
+}
+
+// Export adapter and schemas for convenience
+export { createMastraTools, WikidataEntitySchema, WikidataEntityMapSchema };

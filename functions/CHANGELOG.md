@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Comprehensive evals toolset in `tools/evals.ts` with SigNoz tracing: includes completeness, answer relevancy, content similarity, context precision, context position, tone consistency, keyword coverage, textual difference, faithfulness, and token count metrics.
+- All eval tools output normalized scores, explanations, and are ready for agent/workflow integration.
+- LlamaIndex tool output schema and type safety improvements.
+
+### Changed
+
+- Integrated SigNoz tracing into all eval tools and reinforced tracing in agent and tool workflows.
+- Updated RL Trainer agent config and tool registration for robust RL workflows.
+- Updated tool barrel (`tools/index.ts`) to ensure all schemas and tools are exported only once and are available for agent configs.
+
+### Fixed
+
+- Removed all duplicate schema/tool exports in `wikibase.ts`, `wikidata-client.ts`, `github.ts`, `llamaindex.ts`, and `evals.ts`.
+- Fixed throttle type mismatches and replaced unsupported string methods for broader TypeScript compatibility.
+- Lint and type errors resolved across all affected files.
+
+---
+**Date:** 2025-04-14
+
 ## [1.1.0] - 2025-04-14
 
 ### Added

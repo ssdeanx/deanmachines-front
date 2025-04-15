@@ -101,6 +101,69 @@ export namespace wikipedia {
   }
 }
 
+// --- Zod Output Schemas for Wikipedia Tools (SCHEMA-WIKI-SEARCH, SCHEMA-WIKI-SUMMARY) ---
+export const WikipediaThumbnailSchema = z.object({
+  mimetype: z.string().optional(),
+  size: z.number().int().nullable().optional(),
+  width: z.number().int().optional(),
+  height: z.number().int().optional(),
+  duration: z.number().nullable().optional(),
+  url: z.string().url(),
+}).nullable().optional();
+
+export const WikipediaPageResultSchema = z.object({
+  id: z.number().int(),
+  key: z.string(),
+  title: z.string(),
+  excerpt: z.string(),
+  matched_title: z.string().nullable().optional(),
+  description: z.string().nullable().optional(),
+  thumbnail: WikipediaThumbnailSchema,
+});
+
+export const WikipediaSearchSchema = z.array(WikipediaPageResultSchema)
+  .describe("Schema for the array of Wikipedia search results based on MediaWiki REST API");
+
+const WikipediaImageSchema = z.object({
+  source: z.string().url(),
+  width: z.number().int(),
+  height: z.number().int(),
+}).optional();
+
+const WikipediaContentUrlsSchema = z.object({
+  page: z.string().url(),
+  revisions: z.string().url(),
+  edit: z.string().url(),
+  talk: z.string().url(),
+}).optional();
+
+export const WikipediaSummarySchema = z.object({
+  type: z.string().optional(),
+  title: z.string(),
+  displaytitle: z.string().optional(),
+  namespace: z.object({ id: z.number().int(), text: z.string() }).optional(),
+  wikibase_item: z.string().optional(),
+  titles: z.object({ canonical: z.string(), normalized: z.string(), display: z.string() }).optional(),
+  pageid: z.number().int().optional(),
+  thumbnail: WikipediaImageSchema,
+  originalimage: WikipediaImageSchema,
+  lang: z.string().optional(),
+  dir: z.string().optional(),
+  revision: z.string().optional(),
+  tid: z.string().optional(),
+  timestamp: z.string().optional(),
+  description: z.string().optional(),
+  description_source: z.string().optional(),
+  content_urls: z.object({
+    desktop: WikipediaContentUrlsSchema,
+    mobile: WikipediaContentUrlsSchema,
+  }).optional(),
+  extract: z.string(),
+  extract_html: z.string().optional(),
+  normalizedtitle: z.string().optional(),
+  coordinates: z.object({ lat: z.number(), lon: z.number() }).optional(),
+}).describe("Schema for Wikipedia page summary based on MediaWiki REST API");
+
 /**
  * Basic Wikipedia API client for searching wiki pages and resolving page data.
  *
@@ -131,7 +194,7 @@ export class WikipediaClient extends AIFunctionsProvider {
     this.apiBaseUrl = apiBaseUrl;
     this.apiUserAgent = apiUserAgent;
 
-    const throttledKy = throttle ? throttleKy(ky, wikipedia.throttle) : ky;
+    const throttledKy = throttle ? (throttleKy(ky, wikipedia.throttle) as typeof ky) : ky;
 
     this.ky = throttledKy.extend({
       headers: {
@@ -181,7 +244,7 @@ export class WikipediaClient extends AIFunctionsProvider {
     redirect = true,
     ...opts
   }: wikipedia.PageSummaryOptions) {
-    title = title.trim().replaceAll(" ", "_");
+    title = title.trim().replace(/ /g, "_");
 
     // https://en.wikipedia.org/api/rest_v1/
     return this.ky
@@ -227,7 +290,18 @@ export function createMastraWikipediaTools(config: {
   ky?: KyInstance;
 } = {}) {
   const wikipediaClient = createWikipediaClient(config);
-  return createMastraTools(wikipediaClient);
+  const mastraTools = createMastraTools(wikipediaClient);
+  
+  // Patch outputSchema for each tool
+  if (mastraTools.wikipedia_search) {
+    (mastraTools.wikipedia_search as any).outputSchema = WikipediaSearchSchema;
+  }
+  
+  if (mastraTools.wikipedia_get_page_summary) {
+    (mastraTools.wikipedia_get_page_summary as any).outputSchema = WikipediaSummarySchema;
+  }
+  
+  return mastraTools;
 }
 
 // Export adapter for convenience
