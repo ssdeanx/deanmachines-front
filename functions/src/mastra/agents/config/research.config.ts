@@ -111,6 +111,8 @@ export const researchAgentConfig: BaseAgentConfig = {
     "write-knowledge-file",
     "read-knowledge-file",
     "arxiv_search", // works
+    "github_get_user_by_username", //  works only returns user info so needs ability to search repos
+    "exa_search", // works great for searching
   ],
 };
 

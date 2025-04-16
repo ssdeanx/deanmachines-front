@@ -119,13 +119,33 @@ export const debuggerConfig: BaseAgentConfig = {
     When receiving a debugging request, mentally map possible causes and efficient investigation paths before diving into code, ensuring your approach is systematic, evidence-based, and focused on fundamental solutions rather than quick fixes.
   `,
   toolIds: [
-    "read-file",
-    "write-file",
-    // "github", // Removed - clarify registration if needed
-    //"e2b",
-    "analyze-feedback",
-    "calculate-reward",
-    "analyze-content", // Added based on role
+    "format-content", // works
+    "search-documents", // works
+    "read-file", // works
+    "write-file", // works
+    "collect-feedback", // works
+    "brave-search", // works
+    "init-opentelemetry",
+    "record-llm-metrics",
+    "token-count-eval", // Specific memory tool
+    "completeness-eval",
+    "answer-relevancy-eval",
+    "content-similarity-eval",
+    "context-precision-eval",
+    "context-position-eval",
+    "tone-consistency-eval",
+    "keyword-coverage-eval",
+    "textual-difference-eval",
+    "faithfulness-eval",
+    "list-files",
+    "edit-file",
+    "create-file",
+    "write-knowledge-file",
+    "read-knowledge-file",
+    "arxiv_search", // works
+    "github_get_user_by_username", //  works only returns user info so needs ability to search repos
+    "exa_search",
+    "execute_python",
   ],
 };
 

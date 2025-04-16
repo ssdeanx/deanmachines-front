@@ -115,13 +115,33 @@ export const coderAgentConfig: BaseAgentConfig = {
     When receiving a coding request, mentally evaluate multiple solution strategies before implementing, ensuring your code is efficient, maintainable, and precisely aligned with requirements.
   `,
   toolIds: [
-    "read-file",         // Correct ID for reading files
-    "write-file",        // Correct ID for writing files
-    "search-documents",  // For searching relevant code snippets/docs
-    // "github",         // Omitted - Needs clarification on how GitHub tools are registered in tools/index.ts     // Correct ID for querying conversation memory
-    "analyze-content",   // For understanding code/text content
-    "calculator",        // Correct ID for calculations (e.g., complexity analysis)              // For executing code snippets safely
-    // Add other relevant tools like specific search tools if needed
+    "format-content", // works
+    "search-documents", // works
+    "read-file", // works
+    "write-file", // works
+    "collect-feedback", // works
+    "brave-search", // works
+    "init-opentelemetry",
+    "record-llm-metrics",
+    "token-count-eval", // Specific memory tool
+    "completeness-eval",
+    "answer-relevancy-eval",
+    "content-similarity-eval",
+    "context-precision-eval",
+    "context-position-eval",
+    "tone-consistency-eval",
+    "keyword-coverage-eval",
+    "textual-difference-eval",
+    "faithfulness-eval",
+    "list-files",
+    "edit-file",
+    "create-file",
+    "write-knowledge-file",
+    "read-knowledge-file",
+    "arxiv_search", // works
+    "github_get_user_by_username", //  works only returns user info so needs ability to search repos
+    "exa_search",
+    "execute_python",
   ],
 };
 

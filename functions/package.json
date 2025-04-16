@@ -57,6 +57,7 @@
     "@ai-sdk/provider-utils": "^2.2.7",
     "@e2b/code-interpreter": "^1.1.1",
     "@hyperbrowser/sdk": "^0.43.0",
+    "@inquirer/prompts": "^7.4.1",
     "@langchain/anthropic": "^0.3.17",
     "@langchain/community": "^0.3.40",
     "@langchain/core": "^0.3.44",

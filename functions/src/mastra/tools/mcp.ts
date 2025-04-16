@@ -29,4 +29,6 @@ async function main() {
   console.log(result.toolResults[0]);
 }
 
-await main();
+(async () => {
+  await main();
+})();
