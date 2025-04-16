@@ -12,6 +12,8 @@ import { createLogger } from '@mastra/core/logger';
 import agents from './agents';
 import { ragWorkflow } from './workflows';
 import { networks } from './workflows/Networks/agentNetwork';
+import { mainWorkflow } from "./workflows/workflowFactory";
+
 
 // Import observability services initialization function
 import { initObservability } from './services';
@@ -120,7 +122,7 @@ logger.info("Observability services initialized:", {
 logger.info("Initializing Mastra instance...");
 export const mastra = new Mastra({
   agents: agents,
-  workflows: { ragWorkflow },
+  workflows: { ragWorkflow, mainWorkflow },
   networks: networks,
   logger: logger, // Use logger defined above
   telemetry: telemetry, // Use telemetry defined above

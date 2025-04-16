@@ -9,7 +9,10 @@
 
 import { google } from "@ai-sdk/google";
 import { vertex } from "@ai-sdk/google-vertex";
-import { OpenAIProviderConfig, AnthropicProviderConfig } from "./provider.utils";
+import { openai } from "@ai-sdk/openai";
+import { anthropic } from "@ai-sdk/anthropic";
+import { ollama } from "ollama-ai-provider";
+import { OpenAIProviderConfig, AnthropicProviderConfig, OllamaProviderConfig, getProviderConfig } from "./provider.utils";
 import { ModelConfig } from "./config.types";
 
 /**
@@ -41,29 +44,42 @@ export function createModelFromConfig(
   try {
     const { provider, modelId, providerOptions } = modelConfig;
     switch (provider) {
-      case "google":
-        return google(modelId);
-      case "vertex":
-        return vertex(modelId);
+      case "google": {
+        // Use googleApiKey from options if provided
+        const googleOptions: Record<string, unknown> = {};
+        if (options.googleApiKey) googleOptions["apiKey"] = options.googleApiKey;
+        return google(modelId, googleOptions);
+      }
+      case "vertex": {
+        // Use vertexProjectId and vertexLocation from options if provided
+        const vertexOptions: Record<string, unknown> = {};
+        if (options.vertexProjectId) vertexOptions["project"] = options.vertexProjectId;
+        if (options.vertexLocation) vertexOptions["location"] = options.vertexLocation;
+        return vertex(modelId, vertexOptions);
+      }
       case "openai": {
+        const settings: Record<string, unknown> = { ...options };
         if (providerOptions && (providerOptions as OpenAIProviderConfig).apiKey) {
-          const openai = require("@ai-sdk/openai").openai({
-            apiKey: (providerOptions as OpenAIProviderConfig).apiKey,
-            baseUrl: (providerOptions as OpenAIProviderConfig).baseUrl,
-          });
-          return openai.chat(modelId as any);
+          settings["apiKey"] = (providerOptions as OpenAIProviderConfig).apiKey;
         }
-        return require("@ai-sdk/openai").openai.chat(modelId as any);
+        if (providerOptions && (providerOptions as OpenAIProviderConfig).baseUrl) {
+          settings["baseUrl"] = (providerOptions as OpenAIProviderConfig).baseUrl;
+        }
+        return openai(modelId as any, settings);
       }
       case "anthropic": {
+        const settings: Record<string, unknown> = { ...options };
         if (providerOptions && (providerOptions as AnthropicProviderConfig).apiKey) {
-          const anthropic = require("@ai-sdk/anthropic").anthropic({
-            apiKey: (providerOptions as AnthropicProviderConfig).apiKey,
-            baseUrl: (providerOptions as AnthropicProviderConfig).baseUrl,
-          });
-          return anthropic.messages(modelId as any);
+          settings["apiKey"] = (providerOptions as AnthropicProviderConfig).apiKey;
         }
-        return require("@ai-sdk/anthropic").anthropic.messages(modelId as any);
+        if (providerOptions && (providerOptions as AnthropicProviderConfig).baseUrl) {
+          settings["baseUrl"] = (providerOptions as AnthropicProviderConfig).baseUrl;
+        }
+        return anthropic(modelId as any, settings);
+      }
+      case "ollama": {
+        const { modelName } = (providerOptions as OllamaProviderConfig) || getProviderConfig("ollama", providerOptions);
+        return ollama(modelName || modelId);
       }
       default:
         throw new Error(`Unsupported model provider: ${provider}`);
@@ -126,6 +142,61 @@ export function createVertexModel(
       vertexLocation: location
     }
   ) as ReturnType<typeof vertex>;
+}
+
+/**
+ * Creates an OpenAI model instance with default settings
+ *
+ * @param modelId - Model ID to use
+ * @param config - OpenAI provider config (apiKey, baseUrl)
+ * @param options - Additional model options
+ * @returns An OpenAI model instance
+ */
+export function createOpenAIModel(
+  modelId: string,
+  config?: OpenAIProviderConfig,
+  options?: Record<string, unknown>
+): any {
+  // Merge config and options for settings
+  const settings = { ...options };
+  if (config?.apiKey) settings["apiKey"] = config.apiKey;
+  if (config?.baseUrl) settings["baseUrl"] = config.baseUrl;
+  return openai(modelId as any, settings);
+}
+
+/**
+ * Creates an Anthropic model instance with default settings
+ *
+ * @param modelId - Model ID to use
+ * @param config - Anthropic provider config (apiKey, baseUrl)
+ * @param options - Additional model options
+ * @returns An Anthropic model instance
+ */
+export function createAnthropicModel(
+  modelId: string,
+  config?: AnthropicProviderConfig,
+  options?: Record<string, unknown>
+): any {
+  // Merge config and options for settings
+  const settings = { ...options };
+  if (config?.apiKey) settings["apiKey"] = config.apiKey;
+  if (config?.baseUrl) settings["baseUrl"] = config.baseUrl;
+  return anthropic(modelId as any, settings);
+}
+
+/**
+ * Creates an Ollama model instance with default settings
+ *
+ * @param modelId - Model ID to use (or modelName)
+ * @param config - Ollama provider config (baseUrl, modelName)
+ * @returns An Ollama model instance
+ */
+export function createOllamaModel(
+  modelId: string,
+  config?: OllamaProviderConfig
+): any {
+  // Only pass modelName; baseUrl is set via env var
+  return ollama((config?.modelName || modelId));
 }
 
 /**

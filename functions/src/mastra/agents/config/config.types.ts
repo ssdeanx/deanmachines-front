@@ -13,7 +13,7 @@ import { Tool } from "@mastra/core/tools";
 /**
  * Supported AI model providers
  */
-export type ModelProvider = "google" | "vertex" | "openai" | "anthropic";
+export type ModelProvider = "google" | "vertex" | "openai" | "anthropic" | "ollama";
 
 /** Default Maximum Tokens for Model Output */
 export const DEFAULT_MAX_TOKENS = 8192;
@@ -54,6 +54,7 @@ export const DEFAULT_MODELS = {
   // GOOGLE PROVIDER MODELS
 
   // Standard Google model - fast, versatile
+  // Works
   GOOGLE_STANDARD: {
     provider: "google" as const,
     modelId: "gemini-2.0-flash",
@@ -132,6 +133,7 @@ export const DEFAULT_MODELS = {
   },
 
   // Enhanced thinking experimental model - special capabilities
+  // Not working
   GOOGLE_THINKING: {
     provider: "google" as const,
     modelId: "gemini-2.0-flash-thinking-exp-01-21",
@@ -154,9 +156,10 @@ export const DEFAULT_MODELS = {
   // VERTEX AI PROVIDER MODELS
 
   // Vertex AI model - for enterprise features and security
+  // Works!!
   VERTEX_STANDARD: {
     provider: "vertex" as const,
-    modelId: "gemini-2.0-flash-001",
+    modelId: "models/gemini-2.0-flash",
     temperature: 0.6,
     topP: 0.95,
     maxTokens: DEFAULT_MAX_TOKENS,
@@ -218,6 +221,66 @@ export const DEFAULT_MODELS = {
       enhancedThinking: true,
       grounding: true,
       responseCaching: true,
+    },
+  },
+
+  // OPENAI PROVIDER MODELS
+  OPENAI_STANDARD: {
+    provider: "openai" as const,
+    modelId: "gpt-4o",
+    temperature: 0.7,
+    topP: 0.95,
+    maxTokens: DEFAULT_MAX_TOKENS,
+    capabilities: {
+      maxContextTokens: 128000,
+      multimodalInput: true,
+      imageGeneration: true,
+      audioOutput: true,
+      functionCalling: true,
+      structuredOutput: true,
+      enhancedThinking: true,
+      grounding: true,
+      responseCaching: true,
+    },
+  },
+
+  // ANTHROPIC PROVIDER MODELS
+  ANTHROPIC_STANDARD: {
+    provider: "anthropic" as const,
+    modelId: "claude-3.5-sonnet-2024-04-08",
+    temperature: 0.7,
+    topP: 0.95,
+    maxTokens: DEFAULT_MAX_TOKENS,
+    capabilities: {
+      maxContextTokens: 200000,
+      multimodalInput: true,
+      imageGeneration: false,
+      audioOutput: false,
+      functionCalling: true,
+      structuredOutput: true,
+      enhancedThinking: true,
+      grounding: true,
+      responseCaching: true,
+    },
+  },
+
+  // OLLAMA PROVIDER MODELS
+  OLLAMA_STANDARD: {
+    provider: "ollama" as const,
+    modelId: "gemma3:4b",
+    temperature: 0.7,
+    topP: 0.95,
+    maxTokens: DEFAULT_MAX_TOKENS,
+    capabilities: {
+      maxContextTokens: 8192,
+      multimodalInput: false,
+      imageGeneration: false,
+      audioOutput: false,
+      functionCalling: false,
+      structuredOutput: false,
+      enhancedThinking: false,
+      grounding: false,
+      responseCaching: false,
     },
   },
 };

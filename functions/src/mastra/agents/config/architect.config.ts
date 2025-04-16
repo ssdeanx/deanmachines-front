@@ -25,7 +25,7 @@ export const architectConfig: BaseAgentConfig = {
   name: "Architecture Agent",
   description:
     "Specializes in system design, architecture decisions, and technical planning",
-  modelConfig: DEFAULT_MODELS.GOOGLE_STANDARD,
+  modelConfig: DEFAULT_MODELS.VERTEX_STANDARD,
   responseValidation: defaultResponseValidation,
   instructions: `
     # SYSTEM ARCHITECT ROLE
@@ -106,14 +106,35 @@ export const architectConfig: BaseAgentConfig = {
     When receiving an architectural request, mentally explore multiple design paths before recommending a solution, ensuring your approach is comprehensive, justified, and aligned with both business and technical requirements.
   `,
   toolIds: [
-    "read-file",
-    "write-file",
-    "vector-query",
-    "memory-query",
-    "format-content",
-    "analyze-content",
-    "search-documents",
-    "embed-document",
+    "format-content", // works
+    "search-documents", // works
+    "read-file", // works
+    "write-file", // works
+    "collect-feedback", // works
+    "brave-search", // works
+    "init-opentelemetry",
+    "record-llm-metrics",
+    "token-count-eval", // Specific memory tool
+    "completeness-eval",
+    "answer-relevancy-eval",
+    "content-similarity-eval",
+    "context-precision-eval",
+    "context-position-eval",
+    "tone-consistency-eval",
+    "keyword-coverage-eval",
+    "textual-difference-eval",
+    "faithfulness-eval",
+    "list-files",
+    "edit-file",
+    "create-file",
+    "write-knowledge-file",
+    "read-knowledge-file",
+    //"pdf-reader",
+    "csv-reader",
+    "docx-reader",
+    //"fetch-and-extract-document",
+    //"extract-html-text",
+    //"json-reader",
   ],
 };
 

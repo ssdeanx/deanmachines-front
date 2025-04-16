@@ -25,7 +25,7 @@ export const analystAgentConfig: BaseAgentConfig = {
   name: "Analyst Agent",
   description:
     "Specialized in interpreting data, identifying patterns, and extracting meaningful insights from information.",
-  modelConfig: DEFAULT_MODELS.GOOGLE_STANDARD,
+  modelConfig: DEFAULT_MODELS.GOOGLE_THINKING,
   responseValidation: defaultResponseValidation,
   instructions: `
     # ANALYTICAL EXPERT ROLE
@@ -91,13 +91,15 @@ export const analystAgentConfig: BaseAgentConfig = {
     When you receive a request for analysis, mentally walkthrough this process before responding, ensuring your analytical approach is systematic, comprehensive, and insightful.
   `,
   toolIds: [
-    "format-content",
-    "search-documents",
-    "read-file",
-    "write-file",
-    "collect-feedback",
-    "brave-search",
-    // Evals tools
+    "format-content", // works
+    "search-documents", // works
+    "read-file", // works
+    "write-file", // works
+    "collect-feedback", // works
+    "brave-search", // works
+    "init-opentelemetry",
+    "record-llm-metrics",
+    "token-count-eval", // Specific memory tool
     "completeness-eval",
     "answer-relevancy-eval",
     "content-similarity-eval",
@@ -107,12 +109,17 @@ export const analystAgentConfig: BaseAgentConfig = {
     "keyword-coverage-eval",
     "textual-difference-eval",
     "faithfulness-eval",
-    "token-count-eval",
-    // Tracing tools
-    "start-ai-span",
-    "record-llm-metrics",
-    "shutdown-tracing",
-    "init-opentelemetry",
+    "list-files",
+    "edit-file",
+    "create-file",
+    "write-knowledge-file",
+    "read-knowledge-file",
+    //"pdf-reader",
+    "csv-reader",
+    "docx-reader",
+    //"fetch-and-extract-document",
+    //"extract-html-text",
+    //"json-reader",
   ],
 };
 

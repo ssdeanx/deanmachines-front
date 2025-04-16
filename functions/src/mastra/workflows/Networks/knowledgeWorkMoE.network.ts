@@ -20,7 +20,6 @@ import {
   DEFAULT_MODELS,
 } from "../../agents/config";
 
-
 // Define the type for the agents map more explicitly
 type AgentRegistry = typeof allAgents;
 // Define a type for valid agent IDs based on the registry keys
@@ -29,7 +28,7 @@ type AgentId = keyof AgentRegistry;
 const logger = createLogger({ name: "KnowledgeWorkMoENetwork" });
 
 // --- Constants ---
-const DEFAULT_FALLBACK_AGENT_ID: AgentId = "agenticAssistant"; // Use type safety
+const DEFAULT_FALLBACK_AGENT_ID: AgentId = "researchAgent"; // Use type safety
 
 /**
  * Represents a Mixture of Experts (MoE) network built on Mastra's AgentNetwork.
@@ -653,6 +652,11 @@ export class KnowledgeWorkMoENetwork extends AgentNetwork {
         `Initial execution failed (${failureReason}), and fallback agent "${this.fallbackAgentId}" also failed: ${fallbackError.message}`
       );
     }
+  }
+
+  /** Returns the full agent registry (for debugging or dynamic access) */
+  public getAgentRegistry(): AgentRegistry {
+    return this.agentRegistry;
   }
 }
 

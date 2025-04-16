@@ -18,6 +18,10 @@ interface ElevenLabsConfig {
   speaker?: string;
   /** Model name to use for speech synthesis */
   modelName?: string;
+  /** Additional options for speech synthesis */
+  speechOptions?: Record<string, unknown>;
+  /** Options for listening/stt capabilities */
+  listeningOptions?: Record<string, unknown>;
 }
 
 /**
@@ -38,14 +42,17 @@ export function createElevenLabsVoice(
     );
   }
 
-
-
   const voiceName = config.speaker || "9BWtsMINqrJLrRacOk9x";
   return new ElevenLabsVoice({
     speechModel: {
       apiKey,
+      name: (config.speechOptions as any)?.name, // <-- use 'name' not 'modelName'
+      ...(config.speechOptions as any),
     },
-    speaker: voiceName, // Use the defined voiceName variable
-
+    speaker: voiceName,
+    listeningModel: config.listeningOptions ? {
+      apiKey,
+      ...(config.listeningOptions)
+    } : undefined,
   });
 }

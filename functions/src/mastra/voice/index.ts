@@ -52,7 +52,8 @@ export function createVoice(config: VoiceConfig): MastraVoice {
       return createElevenLabsVoice({
         apiKey: config.apiKey,
         speaker: config.speaker,
-        modelName: (config.options as any)?.modelName,
+        name: (config.options as any)?.name, // use 'name' instead of 'modelName'
+        ...(config.options as any),
       });
 
     default:

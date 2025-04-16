@@ -9,11 +9,14 @@
 
 import { google } from "@ai-sdk/google";
 import { createVertex } from "@ai-sdk/google-vertex";
+import { openai } from "@ai-sdk/openai";
+import { anthropic } from "@ai-sdk/anthropic";
 import { env } from "process";
 import { z } from "zod";
+import { ollama } from "ollama-ai-provider";
 
 /** Supported model providers */
-export type ModelProvider = "google" | "vertex" | "openai" | "anthropic";
+export type ModelProvider = "google" | "vertex" | "openai" | "anthropic" | "ollama";
 
 /** Options for configuring the Google AI provider setup */
 export type GoogleOptions = Partial<Pick<GoogleProviderConfig, 'apiKey'>>;
@@ -55,9 +58,14 @@ export type OpenAIProviderConfig = z.infer<typeof OpenAIProviderConfigSchema>;
 export type AnthropicProviderConfig = z.infer<typeof AnthropicProviderConfigSchema>;
 
 /**
+ * Configuration for Ollama provider
+ */
+export type OllamaProviderConfig = z.infer<typeof OllamaProviderConfigSchema>;
+
+/**
  * Generic provider configuration type
  */
-export type ProviderConfig = GoogleProviderConfig | VertexProviderConfig | OpenAIProviderConfig | AnthropicProviderConfig;
+export type ProviderConfig = GoogleProviderConfig | VertexProviderConfig | OpenAIProviderConfig | AnthropicProviderConfig | OllamaProviderConfig;
 
 // --- Zod Schemas for Provider Configs ---
 export const GoogleProviderConfigSchema = z.object({
@@ -78,6 +86,11 @@ export const OpenAIProviderConfigSchema = z.object({
 export const AnthropicProviderConfigSchema = z.object({
   apiKey: z.string().min(1, "Anthropic API key is required"),
   baseUrl: z.string().url().optional(),
+});
+
+export const OllamaProviderConfigSchema = z.object({
+  baseUrl: z.string().url().optional(),
+  modelName: z.string().min(1, "Ollama model name is required"),
 });
 
 /**
@@ -139,11 +152,21 @@ export function setupVertexProvider(
   // Get location from options or environment
   const location = options?.location || env.GOOGLE_VERTEX_LOCATION || "us-central1";
 
-  // Use service account credentials from environment if available
-  const credentials: Record<string, unknown> = {
-    client_email: env.GOOGLE_CLIENT_EMAIL,
-    private_key: env.GOOGLE_PRIVATE_KEY,
-  };
+  // If GOOGLE_APPLICATION_CREDENTIALS is set, let the SDK handle credentials
+  if (env.GOOGLE_APPLICATION_CREDENTIALS) {
+    return {
+      projectId,
+      location,
+      credentials: {}, // Let SDK pick up credentials from file
+    };
+  }
+
+  // Fallback: Use inline credentials if present (not recommended)
+  const credentials: Record<string, unknown> = {};
+  if (env.GOOGLE_CLIENT_EMAIL && env.GOOGLE_PRIVATE_KEY) {
+    credentials.client_email = env.GOOGLE_CLIENT_EMAIL;
+    credentials.private_key = env.GOOGLE_PRIVATE_KEY;
+  }
 
   return {
     projectId,
@@ -191,7 +214,9 @@ export function setupOpenAIProvider(
  * @returns OpenAI client configuration
  */
 export function createOpenAIClientConfig(config: OpenAIProviderConfig) {
-  return { apiKey: config.apiKey, baseUrl: config.baseUrl };
+  // Returns a function to create OpenAI models with injected config
+  return (modelId: string, settings?: any) =>
+    openai(modelId as any, { ...settings, apiKey: config.apiKey, baseUrl: config.baseUrl });
 }
 
 /**
@@ -218,7 +243,37 @@ export function setupAnthropicProvider(
  * @returns Anthropic client configuration
  */
 export function createAnthropicClientConfig(config: AnthropicProviderConfig) {
-  return { apiKey: config.apiKey, baseUrl: config.baseUrl };
+  // Returns a function to create Anthropic models with injected config
+  return (modelId: string, settings?: any) =>
+    anthropic(modelId as any, { ...settings, apiKey: config.apiKey, baseUrl: config.baseUrl });
+}
+
+/**
+ * Sets up the Ollama provider configuration
+ *
+ * @param options - Ollama specific options
+ * @returns Ollama provider configuration
+ * @throws {Error} If required environment variables are not available
+ */
+export function setupOllamaProvider(
+  options?: Partial<OllamaProviderConfig>
+): OllamaProviderConfig {
+  const baseUrl = options?.baseUrl || process.env.OLLAMA_BASE_URL;
+  const modelName = options?.modelName || process.env.OLLAMA_MODEL_NAME;
+  const parsed = OllamaProviderConfigSchema.safeParse({ baseUrl, modelName });
+  if (!parsed.success) throw new Error(parsed.error.message);
+  return parsed.data;
+}
+
+/**
+ * Creates an Ollama client configuration
+ *
+ * @param config - Ollama provider configuration
+ * @returns Ollama client configuration
+ */
+export function createOllamaClientConfig(config: OllamaProviderConfig) {
+  // Only pass modelName; baseUrl is set via environment variable OLLAMA_BASE_URL
+  return ollama(config.modelName);
 }
 
 /**
@@ -242,6 +297,8 @@ export function getProviderConfig(
       return setupOpenAIProvider(options as Partial<OpenAIProviderConfig>);
     case "anthropic":
       return setupAnthropicProvider(options as Partial<AnthropicProviderConfig>);
+    case "ollama":
+      return setupOllamaProvider(options as Partial<OllamaProviderConfig>);
     default:
       throw new Error(`Unsupported model provider: ${provider}`);
   }

@@ -5,3 +5,4 @@
  */
 
 export { threadManager, ThreadManager } from "./thread-manager";
+export { runMemoryDiagnostics } from "./memory-diagnostics";

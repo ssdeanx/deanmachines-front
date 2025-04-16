@@ -49,9 +49,11 @@ export function createGoogleVoice(config: GoogleVoiceConfig = {}): MastraVoice {
   return new GoogleVoiceProvider({
     speechModel: {
       apiKey,
+      ...(config.speechOptions || {}),
     },
     listeningModel: {
       apiKey,
+      ...(config.listeningOptions || {}),
     },
     speaker: config.speaker || 'en-US-Casual-K',
   });

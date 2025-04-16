@@ -24,7 +24,7 @@ Welcome to the **DeanMachines Mastra AI Workspace**! This monorepo contains the 
   - [Changelog](#changelog)
   - [Notes for AI Assistants](#notes-for-ai-assistants)
   - [Additional AI Assistant Guidance (2025-04-15)](#additional-ai-assistant-guidance-2025-04-15)
-  - [Current Progress (as of 2025-04-15)](#current-progress-as-of-2025-04-15)
+  - [Current Progress (as of 2025-04-16)](#current-progress-as-of-2025-04-16)
   - [Project Roadmap (Gantt Diagram)](#project-roadmap-gantt-diagram)
   - [Current Benchmarks (2025-04-15)](#current-benchmarks-2025-04-15)
   - [Final Notes](#final-notes)
@@ -309,6 +309,16 @@ See [CHANGELOG.md](./CHANGELOG.md) for a detailed history of changes, releases, 
   - Prefer semantic search for codebase exploration.
   - Never assume tool registration—verify in `tools/index.ts`.
   - Document all new patterns and integrations here for future reference.
+- **Always follow user instructions exactly.** If you are unsure, ask for clarification before making changes.
+- **Never overwrite or remove code unless explicitly instructed.** Use semantic search and context gathering to understand the impact of your edits.
+- **Before editing, check for dependencies and cross-references.** Many files are interconnected (e.g., tool registration, agent configs).
+- **After editing, always run lint/type checks and validate there are no errors.**
+- **If you are adding or changing a tool, validate its registration and schema.**
+- **Document all changes in the changelog and update the README if the project structure or workflow changes.**
+- **If you are unsure about a file or function, review the codebase and ask for more context.**
+- **Be careful with batch edits.** Make incremental changes and validate after each step.
+- **Never assume a tool or agent is registered—verify in the appropriate index/config file.**
+- **If you break something, revert your change and notify the user immediately.**
 
 ---
 
@@ -337,11 +347,13 @@ See [CHANGELOG.md](./CHANGELOG.md) for a detailed history of changes, releases, 
 
 ---
 
-## Current Progress (as of 2025-04-15)
+## Current Progress (as of 2025-04-16)
 
-- ✅ Full support for Google, Vertex, OpenAI, and Anthropic providers (type-safe, Zod-validated)
+- ✅ Full, type-safe support for Google, Vertex, OpenAI, Anthropic, and Ollama providers (Zod-validated, modular, future-proofed)
 - ✅ All agent and tool configs refactored for modularity and type safety
 - ✅ Observability (SigNoz, OpenTelemetry) fully integrated
+- ✅ Standard/default models defined for all major providers (see config.types.ts)
+- 🟡 Ongoing: Combing through tools—~20 tools are fully working, others are being validated and fixed
 - 🟡 Ongoing: Expanding eval and RL tool coverage, improving workflow orchestration
 - 🟡 Ongoing: Benchmarking LLM latency, token usage, and tracing accuracy
 - 🔜 Next: Add advanced memory adapters, enhance agent self-improvement, expand documentation/testing
@@ -351,36 +363,39 @@ See [CHANGELOG.md](./CHANGELOG.md) for a detailed history of changes, releases, 
 ## Project Roadmap (Gantt Diagram)
 
 ```mermaid
+%% GitHub supports Mermaid Gantt, but only with valid syntax and no unsupported features
+%% See https://mermaid.js.org/syntax/gantt.html for reference
+
 gantt
-    dateFormat  YYYY-MM-DD
-    title DeanMachines Mastra AI Project Roadmap
+dateFormat  YYYY-MM-DD
+title DeanMachines Mastra AI Project Roadmap
 
-    section Core Infrastructure
-    Provider Refactor         :done,   a1, 2025-04-10, 2025-04-15
-    Observability Integration :done,   a2, 2025-04-12, 2025-04-15
-    Tool Registry Refactor    :done,   a3, 2025-04-13, 2025-04-15
-    Upstash Vector Integration:done,   a4, 2025-04-14, 2025-04-15
-    ClickHouse Adapter        :active, a5, 2025-04-15, 3d
-    Memory Adapter Upgrades   :        a6, 2025-04-18, 5d
+section Core Infrastructure
+Provider Refactor         :done,   a1, 2025-04-10, 2025-04-15
+Observability Integration :done,   a2, 2025-04-12, 2025-04-15
+Tool Registry Refactor    :done,   a3, 2025-04-13, 2025-04-15
+Upstash Vector Integration:done,   a4, 2025-04-14, 2025-04-15
+ClickHouse Adapter        :active, a5, 2025-04-15, 3d
+Memory Adapter Upgrades   :        a6, 2025-04-18, 5d
 
-    section Agent & Tool Expansion
-    RL/Eval Tools             :active, b1, 2025-04-15, 5d
-    Workflow Orchestration    :        b2, 2025-04-17, 7d
-    RAG Workflow Integration  :        b3, 2025-04-18, 5d
-    Document Chunking/Embed   :        b4, 2025-04-19, 4d
-    Hybrid Search (RAG+Memory):        b5, 2025-04-20, 5d
+section Agent & Tool Expansion
+RL/Eval Tools             :active, b1, 2025-04-15, 5d
+Workflow Orchestration    :        b2, 2025-04-17, 7d
+RAG Workflow Integration  :        b3, 2025-04-18, 5d
+Document Chunking/Embed   :        b4, 2025-04-19, 4d
+Hybrid Search (RAG+Memory):        b5, 2025-04-20, 5d
 
-    section Documentation & Testing
-    README/Changelog Update   :done,   c1, 2025-04-15, 1d
-    Test Coverage Expansion   :        c2, 2025-04-18, 5d
-    RAG/VectorStore Examples  :        c3, 2025-04-19, 3d
-    Workflow Examples         :        c4, 2025-04-20, 3d
-    Agent/Tool Tutorials      :        c5, 2025-04-21, 4d
+section Documentation & Testing
+README/Changelog Update   :done,   c1, 2025-04-15, 1d
+Test Coverage Expansion   :        c2, 2025-04-18, 5d
+RAG/VectorStore Examples  :        c3, 2025-04-19, 3d
+Workflow Examples         :        c4, 2025-04-20, 3d
+Agent/Tool Tutorials      :        c5, 2025-04-21, 4d
 
-    section Deployment & Ops
-    CI/CD Pipeline            :        d1, 2025-04-18, 3d
-    Production Observability  :        d2, 2025-04-20, 4d
-    Scaling/Performance       :        d3, 2025-04-22, 5d
+section Deployment & Ops
+CI/CD Pipeline            :        d1, 2025-04-18, 3d
+Production Observability  :        d2, 2025-04-20, 4d
+Scaling/Performance       :        d3, 2025-04-22, 5d
 ```
 
 ---
@@ -409,7 +424,7 @@ gantt
 
 ---
 
-*Last updated: 2025-04-15*
+*Last updated: 2025-04-16*
 
 ---
 

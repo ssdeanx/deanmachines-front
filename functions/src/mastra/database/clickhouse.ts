@@ -1,5 +1,5 @@
 // ClickHouse Vector Adapter for Mastra
-import { ClickHouse } from '@mastra/clickhouse';
+import ClickHouse from '@mastra/clickhouse';
 import { createAISpan, recordMetrics } from '../services/signoz';
 import { createLogger } from '@mastra/core/logger';
 

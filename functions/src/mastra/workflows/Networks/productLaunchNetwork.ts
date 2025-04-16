@@ -12,44 +12,11 @@ import { AgentNetwork, type AgentNetworkConfig } from "@mastra/core/network";
 import { createLogger } from "@mastra/core/logger";
 import { coderAgent, copywriterAgent } from "../../agents";
 import { createResponseHook } from "../../hooks";
+import type * as MastraTypes from '../../types';
+import type { AgentResponse, ResponseHookConfig, StreamResult } from '../../types';
 
 // Configure logger for the network
 const logger = createLogger({ name: "product-launch-network", level: "info" });
-
-/**
- * Hooks for the ProductLaunchNetwork
- */
-const productLaunchHooks = {
-  onError: async (error: Error) => {
-    logger.error("ProductLaunchNetwork error:", error);
-    return {
-      text: "The product launch network encountered an error. Please try again or contact support.",
-      error: error.message,
-    };
-  },
-  onGenerateResponse: async (response: any) => {
-    const baseHook = createResponseHook({
-      minResponseLength: 50,
-      maxAttempts: 3,
-      validateResponse: (res) => {
-        if (res.object) {
-          return Object.keys(res.object).length > 0;
-        }
-        return res.text ? res.text.length >= 50 : false;
-      },
-    });
-    const validatedResponse = await baseHook(response);
-    return {
-      ...validatedResponse,
-      metadata: {
-        ...(validatedResponse as any).metadata,
-        network: "productLaunch",
-        timestamp: new Date().toISOString(),
-        agentCount: 2,
-      },
-    };
-  },
-};
 
 /**
  * ProductLaunchNetwork
@@ -62,7 +29,7 @@ const productLaunchHooks = {
  * the task requirements. This enables dynamic collaboration between development
  * and marketing teams.
  */
-export const productLaunchNetwork = new AgentNetwork({
+const productLaunchNetwork = new AgentNetwork({
   name: "Product Launch Network",
   model: google("models/gemini-2.0-flash"),
   agents: [coderAgent, copywriterAgent],
@@ -90,6 +57,25 @@ export const productLaunchNetwork = new AgentNetwork({
 });
 
 /**
+ * ProductLaunchNetwork hooks for error handling and response processing
+ */
+const productLaunchHooks: ResponseHookConfig = {
+  minResponseLength: 20,
+  maxAttempts: 2,
+  validateResponse: (response: AgentResponse) => {
+    if (response && typeof response === 'object') {
+      if (typeof response.text === 'string' && response.text.length >= 20) return true;
+      if (response.object && typeof response.object === 'object') return true;
+    }
+    return false;
+  },
+};
+
+// Example usage of StreamResult type for future streaming support
+// (This is a placeholder for where you would use StreamResult in your network logic)
+// type ProductLaunchStream = StreamResult<AgentResponse>;
+
+/**
  * Initialize the ProductLaunchNetwork
  *
  * @returns The initialized network instance
@@ -99,5 +85,8 @@ export function initializeProductLaunchNetwork(): AgentNetwork {
   return productLaunchNetwork;
 }
 
-// Export the initialized network
-export default productLaunchNetwork;
+// Export the initialized network and hooks
+const productLaunchNetworkConst = productLaunchNetwork;
+
+export default productLaunchNetworkConst;
+export { productLaunchNetworkConst as productLaunchNetwork, productLaunchHooks };

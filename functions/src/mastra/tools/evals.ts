@@ -1,12 +1,12 @@
 import { createTool } from "@mastra/core/tools";
 import { z } from "zod";
 import sigNoz from "../services/signoz";
-import { createVertexModel } from "../agents/config/model.utils";
+import { createGoogleModel } from "../agents/config/index";
 import { generateText } from "ai";
 
 // Helper to get modelId from env/config or use default
 function getEvalModelId() {
-  return process.env.EVAL_MODEL_ID || "models/gemini-2.0-flash-001";
+  return process.env.EVAL_MODEL_ID || "gemini-2.0-flash-001";
 }
 
 // Utility: Token count (simple whitespace split)
@@ -113,10 +113,10 @@ export const contentSimilarityEvalTool = createTool({
   },
 });
 
-// Answer Relevancy Eval (using Vertex LLM)
+// Answer Relevancy Eval (using Google LLM)
 export const answerRelevancyEvalTool = createTool({
   id: "answer-relevancy-eval",
-  description: "Evaluates if the response addresses the query appropriately using Vertex LLM.",
+  description: "Evaluates if the response addresses the query appropriately using Google LLM.",
   inputSchema: z.object({
     input: z.string().describe("The user query or prompt."),
     output: z.string().describe("The agent's response."),
@@ -132,7 +132,7 @@ export const answerRelevancyEvalTool = createTool({
     const span = sigNoz.createSpan("eval.answerRelevancy", { evalType: "answer-relevancy" });
     const startTime = performance.now();
     try {
-      const model = createVertexModel("models/gemini-2.0-pro");
+      const model = createGoogleModel("gemini-2.0-pro");
       const prompt = `Given the following user input and agent response, rate the relevancy of the response to the input on a scale from 0 (not relevant) to 1 (fully relevant). Provide a brief explanation.\n\nUser Input: ${context.input}\nAgent Response: ${context.output}\n\nReturn a JSON object: { \"score\": number (0-1), \"explanation\": string }`;
       const result = await generateText({
         model,
@@ -159,10 +159,10 @@ export const answerRelevancyEvalTool = createTool({
   },
 });
 
-// Refactored contextPrecisionEvalTool with Vertex LLM
+// Refactored contextPrecisionEvalTool with Google LLM
 export const contextPrecisionEvalTool = createTool({
   id: "context-precision-eval",
-  description: "Evaluates how precisely the response uses provided context using Vertex LLM.",
+  description: "Evaluates how precisely the response uses provided context using Google LLM.",
   inputSchema: z.object({
     response: z.string(),
     context: z.array(z.string()),
@@ -181,7 +181,7 @@ export const contextPrecisionEvalTool = createTool({
     const startTime = performance.now();
     const modelId = getEvalModelId();
     try {
-      const model = createVertexModel(modelId);
+      const model = createGoogleModel(modelId);
       const prompt = `Given the following context items and agent response, rate how precisely the response uses the provided context on a scale from 0 (not precise) to 1 (fully precise). Provide a brief explanation.\n\nContext: ${JSON.stringify(context.context)}\nAgent Response: ${context.response}\n\nReturn only valid JSON: { \"score\": number (0-1), \"explanation\": string }`;
       const result = await generateText({
         model,
@@ -213,10 +213,10 @@ export const contextPrecisionEvalTool = createTool({
   },
 });
 
-// Refactored contextPositionEvalTool with Vertex LLM
+// Refactored contextPositionEvalTool with Google LLM
 export const contextPositionEvalTool = createTool({
   id: "context-position-eval",
-  description: "Evaluates how well the model uses ordered context (earlier positions weighted more) using Vertex LLM.",
+  description: "Evaluates how well the model uses ordered context (earlier positions weighted more) using Google LLM.",
   inputSchema: z.object({
     response: z.string(),
     context: z.array(z.string()),
@@ -235,7 +235,7 @@ export const contextPositionEvalTool = createTool({
     const startTime = performance.now();
     const modelId = getEvalModelId();
     try {
-      const model = createVertexModel(modelId);
+      const model = createGoogleModel(modelId);
       const prompt = `Given the following ordered context items and agent response, rate how well the response uses the most important context items early in the response (earlier positions weighted more) on a scale from 0 (not well) to 1 (very well). Provide a brief explanation.\n\nContext: ${JSON.stringify(context.context)}\nAgent Response: ${context.response}\n\nReturn only valid JSON: { \"score\": number (0-1), \"explanation\": string }`;
       const result = await generateText({
         model,
@@ -275,10 +275,10 @@ export const contextPositionEvalTool = createTool({
   },
 });
 
-// Refactored toneConsistencyEvalTool with Vertex LLM
+// Refactored toneConsistencyEvalTool with Google LLM
 export const toneConsistencyEvalTool = createTool({
   id: "tone-consistency-eval",
-  description: "Analyzes sentiment/tone consistency within the response using Vertex LLM.",
+  description: "Analyzes sentiment/tone consistency within the response using Google LLM.",
   inputSchema: z.object({
     response: z.string(),
   }),
@@ -296,7 +296,7 @@ export const toneConsistencyEvalTool = createTool({
     const startTime = performance.now();
     const modelId = getEvalModelId();
     try {
-      const model = createVertexModel(modelId);
+      const model = createGoogleModel(modelId);
       const prompt = `Analyze the following agent response for tone and sentiment consistency. Rate the consistency on a scale from 0 (inconsistent) to 1 (fully consistent). Provide a brief explanation.\n\nAgent Response: ${context.response}\n\nReturn only valid JSON: { \"score\": number (0-1), \"explanation\": string }`;
       const result = await generateText({
         model,
@@ -331,10 +331,10 @@ export const toneConsistencyEvalTool = createTool({
   },
 });
 
-// Refactored keywordCoverageEvalTool with Vertex LLM
+// Refactored keywordCoverageEvalTool with Google LLM
 export const keywordCoverageEvalTool = createTool({
   id: "keyword-coverage-eval",
-  description: "Measures the ratio of required keywords present in the response using Vertex LLM.",
+  description: "Measures the ratio of required keywords present in the response using Google LLM.",
   inputSchema: z.object({
     response: z.string(),
     keywords: z.array(z.string()),
@@ -353,7 +353,7 @@ export const keywordCoverageEvalTool = createTool({
     const startTime = performance.now();
     const modelId = getEvalModelId();
     try {
-      const model = createVertexModel(modelId);
+      const model = createGoogleModel(modelId);
       const prompt = `Given the following required keywords and agent response, rate the coverage of the keywords in the response on a scale from 0 (none present) to 1 (all present and well integrated). Consider synonyms and related terms. Provide a brief explanation.\n\nKeywords: ${JSON.stringify(context.keywords)}\nAgent Response: ${context.response}\n\nReturn only valid JSON: { \"score\": number (0-1), \"explanation\": string }`;
       const result = await generateText({
         model,
@@ -436,10 +436,10 @@ export const textualDifferenceEvalTool = createTool({
   },
 });
 
-// Faithfulness Eval (using Vertex LLM)
+// Faithfulness Eval (using Google LLM)
 export const faithfulnessEvalTool = createTool({
   id: "faithfulness-eval",
-  description: "Measures if the response faithfully includes all reference facts using Vertex LLM.",
+  description: "Measures if the response faithfully includes all reference facts using Google LLM.",
   inputSchema: z.object({
     response: z.string(),
     reference: z.string(),
@@ -454,7 +454,7 @@ export const faithfulnessEvalTool = createTool({
     const span = sigNoz.createSpan("eval.faithfulness", { evalType: "faithfulness" });
     const startTime = performance.now();
     try {
-      const model = createVertexModel("models/gemini-2.0-pro");
+      const model = createGoogleModel("gemini-2.0-pro");
       const prompt = `Given the following reference facts and agent response, rate the faithfulness of the response to the reference on a scale from 0 (not faithful) to 1 (fully faithful). Provide a brief explanation.\n\nReference: ${context.reference}\nAgent Response: ${context.response}\n\nReturn a JSON object: { \"score\": number (0-1), \"explanation\": string }`;
       const result = await generateText({
         model,
