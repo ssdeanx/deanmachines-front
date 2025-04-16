@@ -551,3 +551,5 @@ export { allToolsMap as toolMap };
 export { toolGroups as groups };
 
 export default allToolsMap;
+
+export type toolIds = keyof typeof allTools; // Type for tool IDs
