@@ -114,7 +114,6 @@ export const dataManagerAgentConfig: BaseAgentConfig = {
     "filtered-vector-query", // Corrected ID
     "embed-document",
     "search-documents",
-    "memory-query",
     "graph-rag", // Alias exists
   ],
 };

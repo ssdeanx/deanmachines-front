@@ -46,7 +46,6 @@ export const agenticAssistantConfig: BaseAgentConfig = {
     "read-file",
     "write-file",
     "brave-search",
-    "memory-query",
   ],
 };
 

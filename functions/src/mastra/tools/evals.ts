@@ -6,7 +6,7 @@ import { generateText } from "ai";
 
 // Helper to get modelId from env/config or use default
 function getEvalModelId() {
-  return process.env.EVAL_MODEL_ID || "gemini-2.0-flash-001";
+  return process.env.EVAL_MODEL_ID || "models/gemini-2.0-flash-001";
 }
 
 // Utility: Token count (simple whitespace split)

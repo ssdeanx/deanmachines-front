@@ -132,7 +132,22 @@ export const writerAgentConfig: BaseAgentConfig = {
     "brave-search",
     "init-opentelemetry",
     "record-llm-metrics",
-    "token-count-eval",
+    "token-count-eval", // Specific memory tool
+    "completeness-eval",
+    "answer-relevancy-eval",
+    "content-similarity-eval",
+    "context-precision-eval",
+    "context-position-eval",
+    "tone-consistency-eval",
+    "keyword-coverage-eval",
+    "textual-difference-eval",
+    "faithfulness-eval",
+    "list-files",
+    "edit-file",
+    "create-file",
+    "write-knowledge-file",
+    "read-knowledge-file",
+    "arxiv_search", // works
   ],
 };
 

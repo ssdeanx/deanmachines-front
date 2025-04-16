@@ -138,7 +138,6 @@ export const codeDocumenterConfig: BaseAgentConfig = {
   toolIds: [
     "read-file",
     "write-file",
-    "memory-query",
     //"github",
     "format-content",
     "analyze-content",

@@ -70,7 +70,7 @@
     "@upstash/vector": "^1.2.1",
     "@visx/visx": "^3.12.0",
     "ai": "^4.3.6",
-"class-variance-authority": "^0.7.1",
+    "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "commander": "^13.1.0",

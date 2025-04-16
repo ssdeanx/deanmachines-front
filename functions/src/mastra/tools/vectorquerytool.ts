@@ -163,7 +163,7 @@ export function createMastraVectorQueryTool(config: VectorQueryConfig = {}) {
 
     // Create reranker
     const reranker = {
-      model: google("models/gemini-2.0-flash-exp"),
+      model: google("models/gemini-2.0-flash"),
       options: {
         weights: {
           semantic: 0.5,

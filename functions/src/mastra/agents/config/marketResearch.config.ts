@@ -116,7 +116,6 @@ export const marketResearchAgentConfig: BaseAgentConfig = {
   toolIds: [
     "read-file",
     "write-file",
-    "memory-query",
     "google-search", // Corrected ID
     "tavily-search", // Corrected ID
     "brave-search", // Correct ID for Exa search

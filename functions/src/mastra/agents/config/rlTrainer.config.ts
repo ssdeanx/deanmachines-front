@@ -206,7 +206,6 @@ export const rlTrainerAgentConfig: BaseAgentConfig = {
     "calculate-reward",
     "define-reward-function",
     "optimize-policy",
-    "memory-query",
     "search-documents",
     "read-file",
     "write-file",

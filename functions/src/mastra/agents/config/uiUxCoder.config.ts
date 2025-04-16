@@ -125,7 +125,6 @@ export const uiUxCoderConfig: BaseAgentConfig = {
   toolIds: [
     "read-file",
     "write-file",
-    "memory-query",
     //"github",
     //"e2b", // For previewing UI components
     "format-content",

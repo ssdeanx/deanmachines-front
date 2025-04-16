@@ -121,7 +121,6 @@ export const socialMediaAgentConfig: BaseAgentConfig = {
   toolIds: [
     "read-file",
     "write-file",
-    "memory-query",
     "google-search", // Corrected ID
     "tavily-search", // Corrected ID
     "brave-search", // Corrected ID
