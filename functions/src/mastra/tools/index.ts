@@ -48,13 +48,14 @@ import {
   optimizePolicyTool,
 } from "./rlReward";
 import { memoryQueryTool } from "./memoryQueryTool";
+import { mermaidWriterTool } from "./mermaid-writer";
 
 // --- Additional Tools ---
 import { analyzeContentTool, formatContentTool } from "./contentTools";
 import { searchDocumentsTool, embedDocumentTool, docxReaderTool, csvReaderTool, jsonReaderTool, extractHtmlTextTool} from "./document-tools";
 
 // --- Extra Tools (Import Helper Functions & Direct Tools) ---
-import { createCalculatorTool } from "./calculator";
+import { calculator } from "./calculator";
 import { createLlamaIndexTools } from "./llamaindex";
 import { createMastraArxivTools } from "./arxiv"; // Import Mastra helper
 import { createMastraWikipediaTools } from "./wikibase"; // Import Mastra helper
@@ -79,6 +80,8 @@ import {
   tokenCountEvalTool,
 } from "./evals";
 import { tracingTools } from "./tracingTools";
+import { GoogleDocsClient, createMastraGoogleDocsTools } from "./google-docs-client";
+import { google } from "googleapis";
 
 // === Export all tool modules (Consider if all are needed) ===
 export * from "./e2b";
@@ -108,6 +111,11 @@ export { ExaSearchOutputSchema };
 export { GitHubUserSchema };
 export * from "../services/signoz";
 export * from "../services/tracing";
+export * from "./google-search";
+export * from "./google-docs-client";
+export * from "./google-drive-client";
+export * from "./calculator";
+
 
 // === Configure Logger ===
 const logger = createLogger({ name: "tool-initialization", level: "info" });
@@ -299,10 +307,12 @@ const coreTools: Tool<any, any>[] = [
   deleteFileTool, 
   listFilesTool,
   //pdfReaderTool, 
-  docxReaderTool, 
+  docxReaderTool,
   csvReaderTool,
   jsonReaderTool,
-  extractHtmlTextTool, 
+  extractHtmlTextTool,
+  mermaidWriterTool,
+  createGoogleSearchTool({ apiKey: config.GOOGLE_CSE_KEY, searchEngineId: config.GOOGLE_CSE_ID }), // Google Search tool
   //fetchAndExtractDocumentTool,
   memoryQueryTool,
   collectFeedbackTool,
@@ -422,8 +432,7 @@ try {
 
 // --- Calculator Tool (needs schema check) ---
 try {
-    const calculatorToolInstance = createCalculatorTool();
-    extraTools.push(ensureToolOutputSchema(calculatorToolInstance)); // Schema check needed
+    extraTools.push(ensureToolOutputSchema(calculator)); // Schema check needed
     logger.info("Added Calculator tool.");
 } catch (error) {
     logger.error("Failed to initialize Calculator tool:", { error });
@@ -480,6 +489,23 @@ extraTools.push(ensureToolOutputSchema(getMainBranchRef));
 
 // Add tracing tools to extraTools
 extraTools.push(...tracingTools);
+
+// --- Google Docs Tools ---
+try {
+  // NOTE: This is a placeholder. In production, you must authenticate properly.
+  // For now, this will throw if GOOGLE_CREDENTIALS_PATH is not set up.
+  const auth = undefined; // TODO: Replace with real auth (see google-docs-client.ts for example)
+  const docs = google.docs({ version: "v1", auth });
+  const googleDocsClient = new GoogleDocsClient({ docs });
+  const googleDocsTools = createMastraGoogleDocsTools(googleDocsClient);
+  const googleDocsToolsArray = Object.values(googleDocsTools);
+  extraTools.push(...googleDocsToolsArray.map(tool => tool as Tool<any, any>));
+  logger.info(`Added ${googleDocsToolsArray.length} Google Docs tools.`);
+} catch (error) {
+  logger.error("Failed to initialize Google Docs tools:", { error });
+}
+
+// E2B tools are already added via createMastraE2BTools above; no need to add them again here.
 
 // === Filter Optional Search Tools ===
 const optionalTools: Tool<any, any>[] = Object.values(

@@ -76,6 +76,123 @@ const GitHubUserSchema = z.object({
   updated_at: z.string(),
 }).describe("Schema for GitHub user data based on GitHub REST API v3");
 
+// --- Zod Output Schemas for GitHub Tools ---
+const GitHubRepoSchema = z.object({
+  id: z.number().int(),
+  name: z.string(),
+  full_name: z.string(),
+  private: z.boolean(),
+  owner: GitHubUserSchema,
+  html_url: z.string().url(),
+  description: z.string().nullable(),
+  fork: z.boolean(),
+  url: z.string().url(),
+  forks_count: z.number().int(),
+  stargazers_count: z.number().int(),
+  watchers_count: z.number().int(),
+  language: z.string().nullable(),
+  open_issues_count: z.number().int(),
+  default_branch: z.string(),
+  created_at: z.string(),
+  updated_at: z.string(),
+  pushed_at: z.string(),
+});
+
+const GitHubReposListSchema = z.object({
+  repositories: z.array(GitHubRepoSchema),
+});
+
+const GitHubIssueSchema = z.object({
+  id: z.number().int(),
+  number: z.number().int(),
+  title: z.string(),
+  user: GitHubUserSchema,
+  state: z.string(),
+  comments: z.number().int(),
+  created_at: z.string(),
+  updated_at: z.string(),
+  closed_at: z.string().nullable(),
+  body: z.string().nullable(),
+});
+
+const GitHubIssuesListSchema = z.object({
+  issues: z.array(GitHubIssueSchema),
+});
+
+const GitHubPullSchema = z.object({
+  id: z.number().int(),
+  number: z.number().int(),
+  title: z.string(),
+  user: GitHubUserSchema,
+  state: z.string(),
+  created_at: z.string(),
+  updated_at: z.string(),
+  closed_at: z.string().nullable(),
+  merged_at: z.string().nullable(),
+  body: z.string().nullable(),
+});
+
+const GitHubPullsListSchema = z.object({
+  pulls: z.array(GitHubPullSchema),
+});
+
+const GitHubBranchSchema = z.object({
+  name: z.string(),
+  protected: z.boolean().optional(),
+});
+
+const GitHubBranchesListSchema = z.object({
+  branches: z.array(GitHubBranchSchema),
+});
+
+const GitHubCommitSchema = z.object({
+  sha: z.string(),
+  commit: z.object({
+    message: z.string(),
+    author: z.object({
+      name: z.string(),
+      email: z.string(),
+      date: z.string(),
+    }),
+  }),
+  author: GitHubUserSchema.nullable(),
+  committer: GitHubUserSchema.nullable(),
+  html_url: z.string().url(),
+});
+
+const GitHubCommitsListSchema = z.object({
+  commits: z.array(GitHubCommitSchema),
+});
+
+const GitHubReleaseSchema = z.object({
+  id: z.number().int(),
+  tag_name: z.string(),
+  name: z.string().nullable(),
+  draft: z.boolean(),
+  prerelease: z.boolean(),
+  created_at: z.string(),
+  published_at: z.string(),
+  body: z.string().nullable(),
+  html_url: z.string().url(),
+});
+
+const GitHubReleasesListSchema = z.object({
+  releases: z.array(GitHubReleaseSchema),
+});
+
+const GitHubCodeSearchItemSchema = z.object({
+  name: z.string(),
+  path: z.string(),
+  sha: z.string(),
+  url: z.string().url(),
+  html_url: z.string().url(),
+  repository: GitHubRepoSchema,
+});
+
+const GitHubCodeSearchResultsSchema = z.object({
+  items: z.array(GitHubCodeSearchItemSchema),
+});
+
 /**
  * Agentic GitHub client.
  */
@@ -124,6 +241,158 @@ export class GitHubClient extends AIFunctionsProvider {
 
     return res.data;
   }
+
+  /**
+   * Search repositories by keyword, language, etc.
+   */
+  @aiFunction({
+    name: "github_search_repositories",
+    description: "Search public repositories on GitHub by keyword, language, etc.",
+    inputSchema: z.object({
+      q: z.string().describe("Search query (e.g. 'topic:ai language:typescript')"),
+      sort: z.enum(["stars", "forks", "updated", "help-wanted-issues"]).optional().describe("Sort field (stars, forks, updated, help-wanted-issues)"),
+      order: z.enum(["asc", "desc"]).optional().describe("Order (asc or desc)"),
+      per_page: z.number().int().optional().default(10),
+    }),
+  })
+  async searchRepositories(opts: { q: string; sort?: "stars"|"forks"|"updated"|"help-wanted-issues"; order?: "asc"|"desc"; per_page?: number }) {
+    const res = await this.octokit.request('GET /search/repositories', opts);
+    return { repositories: res.data.items };
+  }
+
+  /**
+   * List repositories for a user.
+   */
+  @aiFunction({
+    name: "github_list_user_repos",
+    description: "List public repositories for a user.",
+    inputSchema: z.object({
+      username: z.string().describe("GitHub username"),
+      per_page: z.number().int().optional().default(10),
+    }),
+  })
+  async listUserRepos(opts: { username: string; per_page?: number }) {
+    const res = await this.octokit.request('GET /users/{username}/repos', opts);
+    return { repositories: res.data };
+  }
+
+  /**
+   * Get repository details.
+   */
+  @aiFunction({
+    name: "github_get_repo",
+    description: "Get details for a specific repository.",
+    inputSchema: z.object({
+      owner: z.string(),
+      repo: z.string(),
+    }),
+  })
+  async getRepo(opts: { owner: string; repo: string }) {
+    const res = await this.octokit.request('GET /repos/{owner}/{repo}', opts);
+    return res.data;
+  }
+
+  /**
+   * List issues for a repository.
+   */
+  @aiFunction({
+    name: "github_list_repo_issues",
+    description: "List issues for a repository.",
+    inputSchema: z.object({
+      owner: z.string(),
+      repo: z.string(),
+      state: z.enum(["open", "closed", "all"]).optional().default('open'),
+      per_page: z.number().int().optional().default(10),
+    }),
+  })
+  async listRepoIssues(opts: { owner: string; repo: string; state?: "open"|"closed"|"all"; per_page?: number }) {
+    const res = await this.octokit.request('GET /repos/{owner}/{repo}/issues', opts);
+    return { issues: res.data };
+  }
+
+  /**
+   * List pull requests for a repository.
+   */
+  @aiFunction({
+    name: "github_list_repo_pulls",
+    description: "List pull requests for a repository.",
+    inputSchema: z.object({
+      owner: z.string(),
+      repo: z.string(),
+      state: z.enum(["open", "closed", "all"]).optional().default('open'),
+      per_page: z.number().int().optional().default(10),
+    }),
+  })
+  async listRepoPulls(opts: { owner: string; repo: string; state?: "open"|"closed"|"all"; per_page?: number }) {
+    const res = await this.octokit.request('GET /repos/{owner}/{repo}/pulls', opts);
+    return { pulls: res.data };
+  }
+
+  /**
+   * List branches for a repository.
+   */
+  @aiFunction({
+    name: "github_list_repo_branches",
+    description: "List branches for a repository.",
+    inputSchema: z.object({
+      owner: z.string(),
+      repo: z.string(),
+    }),
+  })
+  async listRepoBranches(opts: { owner: string; repo: string }) {
+    const res = await this.octokit.request('GET /repos/{owner}/{repo}/branches', opts);
+    return { branches: res.data };
+  }
+
+  /**
+   * List commits for a repository.
+   */
+  @aiFunction({
+    name: "github_list_repo_commits",
+    description: "List commits for a repository.",
+    inputSchema: z.object({
+      owner: z.string(),
+      repo: z.string(),
+      per_page: z.number().int().optional().default(10),
+    }),
+  })
+  async listRepoCommits(opts: { owner: string; repo: string; per_page?: number }) {
+    const res = await this.octokit.request('GET /repos/{owner}/{repo}/commits', opts);
+    return { commits: res.data };
+  }
+
+  /**
+   * List releases for a repository.
+   */
+  @aiFunction({
+    name: "github_list_repo_releases",
+    description: "List releases for a repository.",
+    inputSchema: z.object({
+      owner: z.string(),
+      repo: z.string(),
+      per_page: z.number().int().optional().default(10),
+    }),
+  })
+  async listRepoReleases(opts: { owner: string; repo: string; per_page?: number }) {
+    const res = await this.octokit.request('GET /repos/{owner}/{repo}/releases', opts);
+    return { releases: res.data };
+  }
+
+  /**
+   * Search code in public repositories.
+   */
+  @aiFunction({
+    name: "github_search_code",
+    description: "Search code in public repositories.",
+    inputSchema: z.object({
+      q: z.string().describe("Search query (e.g. 'repo:owner/repo filename:main.js')"),
+      per_page: z.number().int().optional().default(10),
+    }),
+  })
+  async searchCode(opts: { q: string; per_page?: number }) {
+    const res = await this.octokit.request('GET /search/code', opts);
+    return { items: res.data.items };
+  }
 }
 
 /**
@@ -147,7 +416,7 @@ export function createGitHubClient(
  * Helper function to create a Mastra-compatible GitHub client
  *
  * @param config - Configuration options for the GitHub client
- * @returns An array of Mastra-compatible tools
+ * @returns An object map of Mastra-compatible tools with output schemas patched
  */
 export function createMastraGitHubTools(
   config: {
@@ -155,8 +424,40 @@ export function createMastraGitHubTools(
   } = {}
 ) {
   const gitHubClient = createGitHubClient(config);
-  return createMastraTools(gitHubClient);
+  const mastraTools = createMastraTools(gitHubClient);
+  // Patch outputSchema for each tool for Mastra compatibility
+  if (mastraTools.github_get_user_by_username) {
+    (mastraTools.github_get_user_by_username as any).outputSchema = GitHubUserSchema;
+  }
+  if (mastraTools.github_search_repositories) {
+    (mastraTools.github_search_repositories as any).outputSchema = GitHubReposListSchema;
+  }
+  if (mastraTools.github_list_user_repos) {
+    (mastraTools.github_list_user_repos as any).outputSchema = GitHubReposListSchema;
+  }
+  if (mastraTools.github_get_repo) {
+    (mastraTools.github_get_repo as any).outputSchema = GitHubRepoSchema;
+  }
+  if (mastraTools.github_list_repo_issues) {
+    (mastraTools.github_list_repo_issues as any).outputSchema = GitHubIssuesListSchema;
+  }
+  if (mastraTools.github_list_repo_pulls) {
+    (mastraTools.github_list_repo_pulls as any).outputSchema = GitHubPullsListSchema;
+  }
+  if (mastraTools.github_list_repo_branches) {
+    (mastraTools.github_list_repo_branches as any).outputSchema = GitHubBranchesListSchema;
+  }
+  if (mastraTools.github_list_repo_commits) {
+    (mastraTools.github_list_repo_commits as any).outputSchema = GitHubCommitsListSchema;
+  }
+  if (mastraTools.github_list_repo_releases) {
+    (mastraTools.github_list_repo_releases as any).outputSchema = GitHubReleasesListSchema;
+  }
+  if (mastraTools.github_search_code) {
+    (mastraTools.github_search_code as any).outputSchema = GitHubCodeSearchResultsSchema;
+  }
+  return mastraTools;
 }
 
 // Export adapter for convenience
-export { createMastraTools, GitHubUserSchema };
+export { createMastraTools, GitHubUserSchema, GitHubRepoSchema, GitHubReposListSchema, GitHubIssueSchema, GitHubIssuesListSchema, GitHubPullSchema, GitHubPullsListSchema, GitHubBranchSchema, GitHubBranchesListSchema, GitHubCommitSchema, GitHubCommitsListSchema, GitHubReleaseSchema, GitHubReleasesListSchema, GitHubCodeSearchItemSchema, GitHubCodeSearchResultsSchema };

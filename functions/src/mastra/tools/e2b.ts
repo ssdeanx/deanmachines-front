@@ -3,96 +3,134 @@ import { createMastraTools } from "@agentic/mastra";
 import { Sandbox } from "@e2b/code-interpreter";
 import { z } from "zod";
 
-/**
- * E2B Python code interpreter sandbox.
- *
- * @see https://e2b.dev
- */
-export const e2b = createAIFunction(
+// --- Execute Code ---
+const e2bExecuteCode = createAIFunction(
   {
-    name: "execute_python",
+    name: "e2b-execute-code",
     description: `
-Execute python code in a Jupyter notebook cell and returns any result, stdout, stderr, display_data, and error.
-
-- code has access to the internet and can make api requests
-- code has access to the filesystem and can read/write files
-- coce can install any pip package (if it exists) if you need to, but the usual packages for data analysis are already preinstalled
-- code uses python3
-- code is executed in a secure sandbox environment, so you don't need to worry about safety
-      `.trim(),
+Execute code in a secure E2B sandbox (Python or TypeScript). Supports internet, filesystem, and package install. Returns result, stdout, stderr, display_data, and error.
+- language: 'python' or 'typescript'
+- code: code to execute
+- Can install packages (pip/npm) and access files.
+    `.trim(),
     inputSchema: z.object({
-      code: z
-        .string()
-        .describe("Python code to execute in a single notebook cell."),
+      code: z.string().describe("Code to execute in a single cell."),
+      language: z.enum(["python", "typescript"]).default("python").describe("Programming language to use."),
+      apiKey: z.string().optional().describe("Override E2B API key (optional)")
     }),
   },
-  async ({ code }) => {
-    const sandbox = await Sandbox.create({
-      apiKey: getEnv("E2B_API_KEY"),
-    });
-
+  async ({ code, language, apiKey }) => {
+    const sandbox = await Sandbox.create(language, { apiKey: apiKey || getEnv("E2B_API_KEY") });
     try {
       const exec = await sandbox.runCode(code, {
-        onStderr: (msg) => {
-          console.warn("[Code Interpreter stderr]", msg);
-        },
-
-        onStdout: (stdout) => {
-          console.log("[Code Interpreter stdout]", stdout);
-        },
+        onStderr: (output: any) => console.warn(`[E2B stderr][${language}]`, output?.message ?? output),
+        onStdout: (output: any) => console.log(`[E2B stdout][${language}]`, output?.message ?? output),
       });
-
-      if (exec.error) {
-        console.error("[Code Interpreter error]", exec.error);
-        throw new Error(exec.error.value);
-      }
-
-      return exec.results.map((result) => result.toJSON());
+      if (exec.error) throw new Error(exec.error.value);
+      return exec.results.map((result: any) => result.toJSON());
     } finally {
       await sandbox.kill();
     }
   }
 );
 
-/**
- * Creates a configured E2B sandbox tool
- *
- * Note: This function returns a standard AIFunction that should be wrapped
- * with `createMastraTools` from @agentic/mastra when added to extraTools in index.ts.
- *
- * @param config - Configuration options for the E2B sandbox
- * @returns An E2B sandbox tool
- */
-export function createE2BSandboxTool(config: {
-  apiKey?: string;
-} = {}) {
-  return e2b;
-}
-
-/**
- * Helper function to create a Mastra-compatible E2B sandbox tool
- *
- * @param config - Configuration options for the E2B sandbox
- * @returns An array of Mastra-compatible tools
- */
-export const E2BOutputSchema = z.array(
-  z.object({
-    type: z.string(),
-    value: z.any(),
-  })
+const e2bReadFile = createAIFunction(
+  {
+    name: "e2b-read-file",
+    description: "Read a file from the E2B sandbox filesystem.",
+    inputSchema: z.object({
+      path: z.string().describe("Path to the file to read."),
+      language: z.enum(["python", "typescript"]).default("python").describe("Sandbox language context."),
+      apiKey: z.string().optional().describe("Override E2B API key (optional)")
+    }),
+  },
+  async ({ path, language, apiKey }) => {
+    const sandbox = await Sandbox.create(language, { apiKey: apiKey || getEnv("E2B_API_KEY") });
+    try {
+      const content = await sandbox.files.read(path);
+      return { path, content };
+    } finally {
+      await sandbox.kill();
+    }
+  }
 );
 
-export function createMastraE2BTools(config: {
-  apiKey?: string;
-} = {}) {
-  const e2bTool = createE2BSandboxTool(config);
-  const mastraTools = createMastraTools(e2bTool);
-  // Patch outputSchema for the tool with type assertion to suppress TS error
-  if (mastraTools.execute_python) {
-    (mastraTools.execute_python as any).outputSchema = E2BOutputSchema;
+const e2bWriteFile = createAIFunction(
+  {
+    name: "e2b-write-file",
+    description: "Write content to a file in the E2B sandbox filesystem.",
+    inputSchema: z.object({
+      path: z.string().describe("Path to the file to write."),
+      content: z.string().describe("Content to write to the file."),
+      language: z.enum(["python", "typescript"]).default("python").describe("Sandbox language context."),
+      apiKey: z.string().optional().describe("Override E2B API key (optional)")
+    }),
+  },
+  async ({ path, content, language, apiKey }) => {
+    const sandbox = await Sandbox.create(language, { apiKey: apiKey || getEnv("E2B_API_KEY") });
+    try {
+      await sandbox.files.write(path, content);
+      return { path, success: true };
+    } finally {
+      await sandbox.kill();
+    }
   }
-  return mastraTools;
+);
+
+const e2bInstallPackage = createAIFunction(
+  {
+    name: "e2b-install-package",
+    description: "Install a package in the E2B sandbox (pip for Python, npm for TypeScript).",
+    inputSchema: z.object({
+      package: z.string().describe("Name of the package to install."),
+      language: z.enum(["python", "typescript"]).default("python").describe("Sandbox language context."),
+      apiKey: z.string().optional().describe("Override E2B API key (optional)")
+    }),
+  },
+  async ({ package: pkg, language, apiKey }) => {
+    const sandbox = await Sandbox.create(language, { apiKey: apiKey || getEnv("E2B_API_KEY") });
+    try {
+      if (language === "python") {
+        await sandbox.runCode(`!pip install ${pkg}`);
+      } else {
+        await sandbox.runCode(`!npm install ${pkg}`);
+      }
+      return { package: pkg, success: true };
+    } finally {
+      await sandbox.kill();
+    }
+  }
+);
+
+const e2bListFiles = createAIFunction(
+  {
+    name: "e2b-list-files",
+    description: "List files in a directory in the E2B sandbox filesystem.",
+    inputSchema: z.object({
+      path: z.string().default(".").describe("Directory path to list."),
+      language: z.enum(["python", "typescript"]).default("python").describe("Sandbox language context."),
+      apiKey: z.string().optional().describe("Override E2B API key (optional)")
+    }),
+  },
+  async ({ path, language, apiKey }) => {
+    const sandbox = await Sandbox.create(language, { apiKey: apiKey || getEnv("E2B_API_KEY") });
+    try {
+      const files = await sandbox.files.list(path);
+      return { path, files };
+    } finally {
+      await sandbox.kill();
+    }
+  }
+);
+
+export function createMastraE2BTools(config: { apiKey?: string } = {}) {
+  return createMastraTools(
+    e2bExecuteCode,
+    e2bReadFile,
+    e2bWriteFile,
+    e2bInstallPackage,
+    e2bListFiles
+  );
 }
 
-// Export adapter for convenience
-export { createMastraTools };
+export { e2bExecuteCode, e2bReadFile, e2bWriteFile, e2bInstallPackage, e2bListFiles };

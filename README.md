@@ -634,114 +634,64 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 Made with ❤️ by the DeanMachines team
 
 ```mermaid
-graph TB
-    User((External User))
-    Admin((Admin User))
+graph TD
 
-    subgraph "Frontend Container"
-        direction TB
-        NextApp["Next.js Application<br>(Next.js 15.x)"]
-        
-        subgraph "Frontend Components"
-            AuthComponents["Authentication Components<br>(NextAuth.js)"]
-            UIComponents["UI Components<br>(React + Shadcn/ui)"]
-            DocComponents["Documentation Components<br>(React MDX)"]
-            LayoutComponents["Layout Components<br>(React)"]
-            StreamChat["Stream Chat<br>(React)"]
-            Visualization["Visualization Components<br>(React)"]
-        end
+    19935["User<br>External Actor"]
+    subgraph 19929["External Systems"]
+        19955["External Auth Providers<br>Google/GitHub"]
+        19956["Vertex AI Service<br>Google Cloud / Genkit"]
+        19957["Observability Platform<br>Signoz/Langfuse/Langsmith"]
     end
-
-    subgraph "Backend Container"
-        direction TB
-        FirebaseFunctions["Firebase Functions<br>(Node.js)"]
-        
-        subgraph "Agent Networks"
-            DeanInsights["DeanInsights Network<br>(Mastra)"]
-            DataFlow["DataFlow Network<br>(Mastra)"]
-            ContentCreation["ContentCreation Network<br>(Mastra)"]
-            KnowledgeWorkMoE["Knowledge Work MoE Network<br>(Mastra)"]
+    subgraph 19930["DeanMachines System"]
+        subgraph 19931["Firebase Services Container"]
+            19952["Firebase Authentication Service<br>Firebase Auth"]
+            19953["Firestore Database<br>Firebase Firestore"]
+            19954["NextAuth Firebase Adapter<br>@auth/firebase-adapter"]
+            %% Edges at this level (grouped by source)
+            19954["NextAuth Firebase Adapter<br>@auth/firebase-adapter"] -->|reads/writes auth state to| 19953["Firestore Database<br>Firebase Firestore"]
         end
-
-        subgraph "Core Agents"
-            ResearchAgent["Research Agent<br>(Mastra)"]
-            AnalystAgent["Analyst Agent<br>(Mastra)"]
-            WriterAgent["Writer Agent<br>(Mastra)"]
-            RLTrainerAgent["RL Trainer Agent<br>(Mastra)"]
-            DataManagerAgent["Data Manager Agent<br>(Mastra)"]
+        subgraph 19932["Mastra Library (Conceptual)"]
+            19949["Core Logic<br>TypeScript"]
+            19950["Client Library<br>TypeScript"]
+            19951["Observability Integration<br>OpenTelemetry"]
         end
-
-        subgraph "Tool Components"
-            VectorTools["Vector Query Tools<br>(Mastra)"]
-            SearchTools["Search Tools<br>(Multiple Providers)"]
-            FileTools["File Operation Tools<br>(Mastra)"]
-            MemoryTools["Memory Query Tools<br>(Mastra)"]
-            ContentTools["Content Analysis Tools<br>(Mastra)"]
+        subgraph 19933["Backend Service Container"]
+            19944["Cloud Function Router<br>Firebase Functions"]
+            19945["AI Flows<br>Genkit"]
+            19946["Mastra Backend Logic<br>@mastra/core"]
+            19947["Firebase Admin Interface<br>Firebase Admin SDK"]
+            19948["Observability Setup<br>OpenTelemetry"]
+            %% Edges at this level (grouped by source)
+            19946["Mastra Backend Logic<br>@mastra/core"] -->|initializes| 19948["Observability Setup<br>OpenTelemetry"]
         end
+        subgraph 19934["Frontend Web Application Container"]
+            19936["Web Application<br>Next.js"]
+            19937["Routing Middleware<br>Next.js Middleware"]
+            19938["Auth Configuration<br>NextAuth.js"]
+            19939["UI Components<br>React (Shadcn UI)"]
+            19940["Application Logic &amp; Features<br>React"]
+            19941["Core Libraries &amp; Utils<br>TypeScript"]
+            19942["Mastra Client Component<br>@mastra/client-js"]
+            19943["Firebase Auth Client Component<br>Firebase JS SDK"]
+            %% Edges at this level (grouped by source)
+            19936["Web Application<br>Next.js"] -->|processed by| 19937["Routing Middleware<br>Next.js Middleware"]
+            19937["Routing Middleware<br>Next.js Middleware"] -->|checks auth via| 19938["Auth Configuration<br>NextAuth.js"]
+            19940["Application Logic &amp; Features<br>React"] -->|displays| 19939["UI Components<br>React (Shadcn UI)"]
+            19941["Core Libraries &amp; Utils<br>TypeScript"] -->|uses| 19942["Mastra Client Component<br>@mastra/client-js"]
+            19941["Core Libraries &amp; Utils<br>TypeScript"] -->|uses| 19943["Firebase Auth Client Component<br>Firebase JS SDK"]
+        end
+        %% Edges at this level (grouped by source)
+        19946["Mastra Backend Logic<br>@mastra/core"] -->|implements| 19949["Core Logic<br>TypeScript"]
+        19948["Observability Setup<br>OpenTelemetry"] -->|configures| 19951["Observability Integration<br>OpenTelemetry"]
+        19947["Firebase Admin Interface<br>Firebase Admin SDK"] -->|manages users in| 19952["Firebase Authentication Service<br>Firebase Auth"]
+        19947["Firebase Admin Interface<br>Firebase Admin SDK"] -->|accesses data in| 19953["Firestore Database<br>Firebase Firestore"]
+        19942["Mastra Client Component<br>@mastra/client-js"] -->|is instance of| 19950["Client Library<br>TypeScript"]
+        19943["Firebase Auth Client Component<br>Firebase JS SDK"] -->|authenticates against| 19952["Firebase Authentication Service<br>Firebase Auth"]
+        19938["Auth Configuration<br>NextAuth.js"] -->|uses adapter| 19954["NextAuth Firebase Adapter<br>@auth/firebase-adapter"]
     end
-
-    subgraph "Data Storage Container"
-        LibSQL["LibSQL Storage<br>(SQLite)"]
-        Redis["Redis Cache<br>(Redis)"]
-        VectorStore["Vector Store<br>(LibSQL)"]
-    end
-
-    subgraph "External Services Container"
-        GoogleAI["Google AI<br>(Gemini)"]
-        Firebase["Firebase<br>(Auth/Storage)"]
-        ExaSearch["Exa Search<br>(API)"]
-        LangSmith["LangSmith<br>(Tracing)"]
-    end
-
-    %% Frontend to Backend Connections
-    User --> NextApp
-    Admin --> NextApp
-    NextApp --> FirebaseFunctions
-    
-    %% Frontend Component Relationships
-    NextApp --> AuthComponents
-    NextApp --> UIComponents
-    NextApp --> DocComponents
-    NextApp --> LayoutComponents
-    NextApp --> StreamChat
-    NextApp --> Visualization
-
-    %% Backend Component Relationships
-    FirebaseFunctions --> DeanInsights
-    FirebaseFunctions --> DataFlow
-    FirebaseFunctions --> ContentCreation
-    FirebaseFunctions --> KnowledgeWorkMoE
-
-    %% Agent Network to Agent Relationships
-    DeanInsights --> ResearchAgent
-    DeanInsights --> AnalystAgent
-    DeanInsights --> WriterAgent
-    DeanInsights --> RLTrainerAgent
-    DeanInsights --> DataManagerAgent
-
-    DataFlow --> AnalystAgent
-    DataFlow --> DataManagerAgent
-    DataFlow --> RLTrainerAgent
-
-    ContentCreation --> ResearchAgent
-    ContentCreation --> WriterAgent
-    ContentCreation --> RLTrainerAgent
-
-    %% Tool Component Relationships
-    ResearchAgent --> VectorTools
-    ResearchAgent --> SearchTools
-    DataManagerAgent --> FileTools
-    AnalystAgent --> MemoryTools
-    WriterAgent --> ContentTools
-
-    %% Data Storage Relationships
-    MemoryTools --> LibSQL
-    MemoryTools --> Redis
-    VectorTools --> VectorStore
-    
-    %% External Service Relationships
-    ResearchAgent --> GoogleAI
-    AuthComponents --> Firebase
-    SearchTools --> ExaSearch
-    FirebaseFunctions --> LangSmith
+    %% Edges at this level (grouped by source)
+    19945["AI Flows<br>Genkit"] -->|utilizes| 19956["Vertex AI Service<br>Google Cloud / Genkit"]
+    19948["Observability Setup<br>OpenTelemetry"] -->|sends telemetry to| 19957["Observability Platform<br>Signoz/Langfuse/Langsmith"]
+    19935["User<br>External Actor"] -->|uses| 19936["Web Application<br>Next.js"]
+    19938["Auth Configuration<br>NextAuth.js"] -->|delegates authentication to| 19955["External Auth Providers<br>Google/GitHub"]
 ```

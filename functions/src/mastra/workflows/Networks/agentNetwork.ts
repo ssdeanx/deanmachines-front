@@ -8,19 +8,42 @@
 import { google } from "@ai-sdk/google";
 import { AgentNetwork, type AgentNetworkConfig } from "@mastra/core/network";
 import { createResponseHook } from "../../hooks"; // Assuming this path is correct
+// Import the default export (agents object) for MoE configuration
+import allAgents from "../../agents";
+// import { env } from "process";
+import { DEFAULT_MODELS } from "../../agents/config"; // Import for MoE config
+import { KnowledgeWorkMoENetwork } from "./knowledgeWorkMoE.network"; // Import the MoE network class
+// import { sharedMemory } from "../../database"; // Import shared memory for network config
 import {
   researchAgent,
   analystAgent,
   writerAgent,
   rlTrainerAgent,
-  dataManagerAgent,
+  dataManagerAgent
 } from "../../agents";
-// Import the default export (agents object) for MoE configuration
-import allAgents from "../../agents";
-import { env } from "process";
-import { DEFAULT_MODELS } from "../../agents/config"; // Import for MoE config
-import { KnowledgeWorkMoENetwork } from "./knowledgeWorkMoE.network"; // Import the MoE network class
-import { sharedMemory } from "../../database"; // Import shared memory for network config
+import signoz from "../../services/signoz";
+import * as tracing from "../../services/tracing";
+import { createLogger } from "@mastra/core/logger";
+
+// Initialize SigNoz tracing at startup (only once)
+signoz.init({ serviceName: "deanmachines-ai", enabled: true });
+// Initialize OpenTelemetry SDK (auto-instrumentation)
+tracing.initializeDefaultTracing();
+
+// Graceful shutdown for both tracing systems
+if (typeof process !== 'undefined' && process.on) {
+  process.on('SIGTERM', async () => {
+    try {
+      await signoz.shutdown();
+      const sdk = tracing.getOpenTelemetrySdk();
+      if (sdk) await sdk.shutdown();
+    } catch (err) {
+      // Log shutdown errors if needed
+    } finally {
+      process.exit(0);
+    }
+  });
+}
 
 // Base configuration for all networks to match agent configuration
 // Core properties shared by all networks
@@ -30,16 +53,22 @@ const baseNetworkConfig: Partial<AgentNetworkConfig> = {
   // memory is handled separately as it may not be part of AgentNetworkConfig
 };
 
-// --- Original Hook Definitions (Unchanged) ---
+const logger = createLogger({ name: "agent-network", level: "info" });
+
+// --- Hook Definitions ---
 const deanInsightsHooks = {
   onError: async (error: Error) => {
-    console.error("Network error:", error);
+    logger.error("DeanInsights Network error", { error });
+    const span = signoz.createSpan("DeanInsightsNetworkError", { error: error.message });
+    signoz.recordMetrics(span, { status: "error", errorMessage: error.message });
+    span.end();
     return {
       text: "The agent network encountered an error. Please try again or contact support.",
       error: error.message,
     };
   },
   onGenerateResponse: async (response: any) => {
+    const span = signoz.createSpan("DeanInsightsNetworkGenerateResponse");
     // Using 'any' temporarily, replace with actual response type
     // Apply base response validation logic if needed (extracted from createResponseHook)
     const baseHook = createResponseHook({
@@ -53,7 +82,7 @@ const deanInsightsHooks = {
       },
     });
     const validatedResponse = await baseHook(response);
-
+    span.end();
     // Add network-specific metadata
     return {
       ...validatedResponse,
@@ -69,13 +98,17 @@ const deanInsightsHooks = {
 
 const dataFlowHooks = {
   onError: async (error: Error) => {
-    console.error("Network error:", error);
+    logger.error("DataFlow Network error", { error });
+    const span = signoz.createSpan("DataFlowNetworkError", { error: error.message });
+    signoz.recordMetrics(span, { status: "error", errorMessage: error.message });
+    span.end();
     return {
       text: "The agent network encountered an error. Please try again or contact support.",
       error: error.message,
     };
   },
   onGenerateResponse: async (response: any) => {
+    const span = signoz.createSpan("DataFlowNetworkGenerateResponse");
     const baseHook = createResponseHook({
       minResponseLength: 50,
       maxAttempts: 3,
@@ -87,6 +120,7 @@ const dataFlowHooks = {
       },
     });
     const validatedResponse = await baseHook(response);
+    span.end();
     return {
       ...validatedResponse,
       metadata: {
@@ -99,18 +133,7 @@ const dataFlowHooks = {
   },
 };
 
-const contentCreationHooks = {
-  // Assuming similar structure if needed
-  onError: async (error: Error) => {
-    console.error("Content Creation Network error:", error); /* ... */
-  },
-  onGenerateResponse: async (response: any) => {
-    /* ... validation and metadata ... */ return response;
-  },
-};
-// --- End Original Hook Definitions ---
-
-// --- Original Network Instantiations (Unchanged except adding ID and ensuring memory) ---
+// --- Network Instantiations ---
 
 /**
  * DeanInsights Network
@@ -130,11 +153,8 @@ export const deanInsightsNetwork = new AgentNetwork({
     rlTrainerAgent,
     dataManagerAgent,
   ],
-  // Apply hooks directly in the configuration
-  hooks: {
-    onError: deanInsightsHooks.onError,
-    onResponse: deanInsightsHooks.onGenerateResponse,
-  },
+  // If your AgentNetwork supports a hooks or similar property, pass deanInsightsHooks here:
+  // hooks: deanInsightsHooks,
   instructions: `
     You are a coordination system that routes queries to the appropriate specialized agents
     to deliver comprehensive and accurate insights.
@@ -172,8 +192,12 @@ export const deanInsightsNetwork = new AgentNetwork({
 
     You should maintain a neutral, objective tone and prioritize accuracy and clarity.
   `,
-  // hooks: { ... } // Removed hooks from constructor - apply post-instantiation if needed
 });
+(deanInsightsNetwork as any).hooks = deanInsightsHooks;
+logger.info("DeanInsights Network initialized");
+const deanInsightsSpan = signoz.createSpan("DeanInsightsNetworkInit");
+signoz.recordMetrics(deanInsightsSpan, { status: "success" });
+deanInsightsSpan.end();
 
 /**
  * DataFlow Network
@@ -187,10 +211,6 @@ export const dataFlowNetwork = new AgentNetwork({
   name: "DataFlow Network",
   agents: [dataManagerAgent, analystAgent, rlTrainerAgent],
   // Apply hooks directly in the configuration
-  hooks: {
-    onError: dataFlowHooks.onError,
-    onResponse: dataFlowHooks.onGenerateResponse,
-  },
   instructions: `
     You are a data processing coordination system that orchestrates specialized agents
     to handle data operations, analysis, and optimization tasks.
@@ -224,6 +244,11 @@ export const dataFlowNetwork = new AgentNetwork({
   `,
   // hooks: { ... } // Removed hooks from constructor - apply post-instantiation if needed
 });
+(dataFlowNetwork as any).hooks = dataFlowHooks;
+logger.info("DataFlow Network initialized");
+const dataFlowSpan = signoz.createSpan("DataFlowNetworkInit");
+signoz.recordMetrics(dataFlowSpan, { status: "success" });
+dataFlowSpan.end();
 
 /**
  * ContentCreation Network
@@ -268,6 +293,29 @@ export const contentCreationNetwork = new AgentNetwork({
   `,
   // hooks: { ... } // Removed hooks from constructor - apply post-instantiation if needed
 });
+logger.info("ContentCreation Network initialized");
+const contentCreationSpan = signoz.createSpan("ContentCreationNetworkInit");
+signoz.recordMetrics(contentCreationSpan, { status: "success" });
+contentCreationSpan.end();
+
+/**
+ * Research-Analysis-Writing Network
+ *
+ * A focused network for research, analysis, and writing tasks.
+ */
+export const researchAnalysisWritingNetwork = new AgentNetwork({
+  ...baseNetworkConfig,
+  model: baseNetworkConfig.model!,
+  name: "Research-Analysis-Writing Network",
+  agents: [researchAgent, analystAgent, writerAgent],
+  instructions: `
+    You are a collaborative network for research, analysis, and writing. Use the Research Agent to gather information, the Analyst Agent to extract insights, and the Writer Agent to synthesize findings into clear, structured content.
+  `,
+});
+logger.info("ResearchAnalysisWriting Network initialized");
+const researchAnalysisWritingSpan = signoz.createSpan("ResearchAnalysisWritingNetworkInit");
+signoz.recordMetrics(researchAnalysisWritingSpan, { status: "success" });
+researchAnalysisWritingSpan.end();
 
 // --- MoE Network Instantiation (Added) ---
 
@@ -351,4 +399,5 @@ export const networks = {
   "data-flow": dataFlowNetwork,
   "content-creation": contentCreationNetwork,
   "knowledge-work-moe-v1": knowledgeWorkMoENetwork, // Add the MoE network using its ID
+  "research-analysis-writing": researchAnalysisWritingNetwork,
 };

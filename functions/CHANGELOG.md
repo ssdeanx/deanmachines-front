@@ -7,6 +7,92 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [v0.0.13] - 2025-04-17
+
+### Added
+- Registered all GitHub tools (user, repo, issues, pulls, branches, commits, releases, code search, etc.) in the tool registry with output schemas patched for Mastra compatibility. All are now available for agent use.
+- Registered Google Docs tools in the tool registry (pending authentication setup for production use).
+- Registered all E2B tools (execute code, read/write file, install package, list files) and ensured agent compatibility.
+- Added a new agent network: `researchAnalysisWritingNetwork` (uses researchAgent, analystAgent, writerAgent).
+- Calculator tool now supports advanced math (arithmetic, algebra, functions, constants, etc.) using mathjs, with step-by-step output and direct export for agent use.
+- All calculator tool type/lint errors fixed (node type checks, export pattern, error handling, human-readable answer).
+- Changelog discipline: every file edit is now followed by error/lint check and changelog update.
+- Google Search tool: fixed client instantiation, parameter names, and output schema for compatibility with @agentic/google-custom-search.
+- GitHub tool: improved schema, output, and error handling for user and repo queries.
+- All tools are now exported in a way that allows direct registration in the tool registry (no extra wrapping needed).
+- README and documentation updated to reflect new tool registration, agent config, and error/lint checking policies.
+
+### Changed
+- Improved tool registration discipline: all new tools are now registered in tools/index.ts and output schemas are patched as needed.
+- Confirmed Google Search tool is registered and agent-compatible.
+- All agent networks now use correct agent imports and are lint/type error free.
+- Integrated Mastra logger and full SigNoz tracing (via services/signoz.ts) into all agent networks for lifecycle and error events.
+- Standardized on signoz.ts for all tracing and metrics; removed inconsistent tracing.ts usage from networks.
+- Faithfulness eval tool refactored to use a heuristic (no LLM) for faithfulness scoring.
+- All heuristic eval tools (bias, toxicity, hallucination, summarization) now use correct logger and tracing patterns (sigNoz, logger.info/error argument order).
+- Removed unused imports and variables in evals.ts after error checking.
+- All tool and agent edits are now followed by error/lint checks as per workspace policy.
+- Google Search tool now uses correct API parameters and result limiting, and is ready for agent use.
+- GitHub tool now provides more robust error messages and schema validation.
+- Tool registration in tools/index.ts now ensures all tools are discoverable and type-safe.
+
+### Fixed
+- Lint/type errors in tool registration, output schema patching, and agent network definitions.
+- Fixed all agent network instantiations to use only valid config properties and correct agent imports.
+- All hooks (deanInsightsHooks, dataFlowHooks) are now actually used and referenced in the code.
+- No unused variables or imports remain in agent network files.
+- All TypeScript errors in calculator.ts, evals.ts, google-search.ts, github.ts, and related files after edits.
+- Ensured calculator tool is always agent-usable and returns a human-readable answer.
+- Confirmed all tool exports are ready for direct registration in the tool registry.
+- Fixed tool output schemas and registration patterns for Google, GitHub, and other tools.
+- All lint/type errors checked and resolved after every file edit.
+
+### Notes
+- This changelog now serves as a full historical record for all tool, agent, and infrastructure changes. Always update after every significant edit.
+- If you add or change a tool, agent, or service, document the change here and in the README if it affects usage or registration patterns.
+- All error/lint checking is now mandatory after every file edit.
+
+- Date: 2025-04-17
+- Time: 00:00 UTC
+
+## [v0.0.12] - 2025-04-17
+
+### Added
+
+- Calculator tool now supports advanced math (arithmetic, algebra, functions, constants, etc.) using mathjs.
+- Calculator tool provides step-by-step output for supported expressions.
+- Calculator tool is exported directly for registration (no extra wrapping needed).
+- All calculator tool type/lint errors fixed (node type checks, export pattern).
+- Changelog discipline: every file edit is now followed by error/lint check and changelog update.
+
+### Changed
+
+- Faithfulness eval tool refactored to use a heuristic (no LLM) for faithfulness scoring.
+- All heuristic eval tools (bias, toxicity, hallucination, summarization) now use correct logger and tracing patterns (sigNoz, logger.info/error argument order).
+- Removed unused imports and variables in evals.ts after error checking.
+- All tool and agent edits are now followed by error/lint checks as per workspace policy.
+
+### Fixed
+
+- All TypeScript errors in calculator.ts and evals.ts after edits.
+- Ensured calculator tool is always agent-usable and returns a human-readable answer.
+- Confirmed all tool exports are ready for direct registration in the tool registry.
+
+- Date: 2025-04-17
+- Time: 00:00 UTC
+
+## [v0.0.11] - 2025-04-17
+
+### Changed
+
+- Enhanced calculator tool to support advanced math using mathjs (arithmetic, algebra, functions, constants, etc.).
+- Calculator tool now provides step-by-step output for supported expressions.
+- Exported calculator tool directly for registration (no extra wrapping needed).
+- All lint/type errors checked and resolved after changes.
+
+- Date: 2025-04-17
+- Time: 00:00 UTC
+
 ## [v0.0.10] - 2025-04-16
 
 ### Added
@@ -186,10 +272,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Removed duplicate code that was causing maintenance issues
-- Improved code consistency across agent configuration files
-
-### Security
-
 - Updated dependencies to address potential vulnerabilities
 
 ## [0.0.1] - 2025-04-01

@@ -15,6 +15,27 @@ export namespace googleDocs {
 }
 
 /**
+ * Output schema for Google Docs document
+ */
+export const GoogleDocsDocumentSchema = z.object({
+  documentId: z.string(),
+  title: z.string().optional(),
+  body: z.any().optional(),
+  // Add more fields as needed for your use case
+}).passthrough();
+
+/**
+ * Helper to create Mastra-compatible Google Docs tools with outputSchema patched
+ */
+export function createMastraGoogleDocsTools(client: GoogleDocsClient) {
+  const mastraTools = require('@agentic/mastra').createMastraTools(client);
+  if (mastraTools.google_docs_get_document) {
+    (mastraTools.google_docs_get_document as any).outputSchema = GoogleDocsDocumentSchema;
+  }
+  return mastraTools;
+}
+
+/**
  * Simplified Google Docs API client.
  *
  * @see https://developers.google.com/workspace/drive/api

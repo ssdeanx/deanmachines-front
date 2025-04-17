@@ -85,64 +85,58 @@ functions/
 ## Architecture Overview (Mermaid)
 
 ```mermaid
-flowchart TD
-    subgraph Agents
-      A1[Research Agent]
-      A2[RL Trainer Agent]
-      A3[Writer Agent]
-      A4[Coder Agent]
-      A5[Analyst Agent]
-      A6[MarketResearch Agent]
-      A7[Copywriter Agent]
-      A8[SocialMedia Agent]
-      A9[UiUxCoder Agent]
-      A10[CodeDocumenter Agent]
-      A11[DataManager Agent]
-      A12[SeoAgent]
+graph TD
+
+    224858["User<br>External Actor"]
+    subgraph 224850["External Systems"]
+        224871["External AI Services<br>Google Vertex AI, OpenAI, Anthropic"]
+        224872["External Tool Services<br>Google APIs, Search APIs, GitHub, E2B, Hyperbrowser, etc."]
+        224873["Observability Platform<br>Signoz, LangSmith, Langfuse"]
+        224874["Vector Database<br>Pinecone, Upstash Vector, ClickHouse"]
+        224875["Cache Service<br>Redis (Upstash)"]
+        224876["Primary Data Store<br>LibSQL / SQL DB"]
     end
-    subgraph ToolRegistry
-      T1[Search Tools (Brave, Google, Tavily, Exa)]
-      T2[RL Feedback Tools]
-      T3[Eval Tools (Vertex LLM, heuristics)]
-      T4[Memory Query Tool]
-      T5[Calculator]
-      T6[Content Tools]
-      T7[Document Tools]
-      T8[GitHub Tools]
-      T9[GraphRag Tools]
+    subgraph 224851["Mastra Agent System"]
+        subgraph 224852["Mastra Playground UI Container"]
+            224869["Mastra Playground UI<br>JavaScript, HTML/CSS"]
+            224870["Playground Frontend<br>JavaScript"]
+            %% Edges at this level (grouped by source)
+            224870["Playground Frontend<br>JavaScript"] -->|Renders| 224869["Mastra Playground UI<br>JavaScript, HTML/CSS"]
+        end
+        subgraph 224853["Genkit Flows Container"]
+            224854["Genkit Flow Components"]
+            224866["Genkit Flows<br>Genkit, Node.js"]
+            %% Edges at this level (grouped by source)
+            224854["Genkit Flow Components"] -->|Executes within| 224866["Genkit Flows<br>Genkit, Node.js"]
+        end
+        subgraph 224855["Mastra Core Engine Container"]
+            224860["Mastra Core Engine<br>Node.js, Mastra Framework"]
+            subgraph 224856["Mastra Core Components"]
+                224861["Mastra Instance<br>Node.js"]
+                224862["Agent &amp; Workflow Engine<br>Node.js"]
+                224863["Tool Executor<br>Node.js"]
+                224864["Service Connectors<br>Node.js"]
+                224865["Core Types &amp; Config<br>TypeScript"]
+            end
+        end
+        subgraph 224857["Firebase Functions API Container"]
+            224859["Firebase Functions API<br>Firebase Functions, Node.js"]
+        end
     end
-    subgraph LLMProviders
-      L1[Google]
-      L2[Vertex AI]
-      L3[OpenAI]
-    end
-    subgraph Observability
-      O1[SigNoz]
-      O2[OpenTelemetry]
-    end
-    subgraph Storage
-      S1[LibSQL]
-      S2[Redis]
-      S3[UpstashVector]
-      S4[Pinecone]
-    end
-    A1-->|uses|ToolRegistry
-    A2-->|uses|ToolRegistry
-    A3-->|uses|ToolRegistry
-    A4-->|uses|ToolRegistry
-    A5-->|uses|ToolRegistry
-    A6-->|uses|ToolRegistry
-    A7-->|uses|ToolRegistry
-    A8-->|uses|ToolRegistry
-    A9-->|uses|ToolRegistry
-    A10-->|uses|ToolRegistry
-    A11-->|uses|ToolRegistry
-    A12-->|uses|ToolRegistry
-    ToolRegistry-->|calls|LLMProviders
-    ToolRegistry-->|reads/writes|Storage
-    ToolRegistry-->|logs|Observability
-    Agents-->|stores context|Storage
-    Agents-->|emits traces|Observability
+    %% Edges at this level (grouped by source)
+    224858["User<br>External Actor"] -->|Uses API / Interacts via UI| 224859["Firebase Functions API<br>Firebase Functions, Node.js"]
+    224858["User<br>External Actor"] -->|Uses UI| 224869["Mastra Playground UI<br>JavaScript, HTML/CSS"]
+    224862["Agent &amp; Workflow Engine<br>Node.js"] -->|Calls| 224871["External AI Services<br>Google Vertex AI, OpenAI, Anthropic"]
+    224863["Tool Executor<br>Node.js"] -->|Calls| 224871["External AI Services<br>Google Vertex AI, OpenAI, Anthropic"]
+    224863["Tool Executor<br>Node.js"] -->|Calls| 224872["External Tool Services<br>Google APIs, Search APIs, GitHub, E2B, Hyperbrowser, etc."]
+    224864["Service Connectors<br>Node.js"] -->|Connects to| 224871["External AI Services<br>Google Vertex AI, OpenAI, Anthropic"]
+    224864["Service Connectors<br>Node.js"] -->|Connects to| 224872["External Tool Services<br>Google APIs, Search APIs, GitHub, E2B, Hyperbrowser, etc."]
+    224864["Service Connectors<br>Node.js"] -->|Sends telemetry to| 224873["Observability Platform<br>Signoz, LangSmith, Langfuse"]
+    224864["Service Connectors<br>Node.js"] -->|Connects to| 224874["Vector Database<br>Pinecone, Upstash Vector, ClickHouse"]
+    224864["Service Connectors<br>Node.js"] -->|Connects to| 224875["Cache Service<br>Redis (Upstash)"]
+    224864["Service Connectors<br>Node.js"] -->|Connects to| 224876["Primary Data Store<br>LibSQL / SQL DB"]
+    224866["Genkit Flows<br>Genkit, Node.js"] -->|Calls| 224871["External AI Services<br>Google Vertex AI, OpenAI, Anthropic"]
+    224866["Genkit Flows<br>Genkit, Node.js"] -->|Calls| 224872["External Tool Services<br>Google APIs, Search APIs, GitHub, E2B, Hyperbrowser, etc."]
 ```
 
 ---

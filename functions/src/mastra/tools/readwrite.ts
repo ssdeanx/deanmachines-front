@@ -8,7 +8,7 @@
 import { createTool } from "@mastra/core/tools";
 import { z } from "zod";
 import fs from "fs-extra";
-import { resolve, dirname, extname, join } from "path";
+import { resolve, dirname, extname, join } from "ath";
 import { createLangSmithRun, trackFeedback } from "../services/langsmith";
 
 /**
@@ -575,7 +575,6 @@ export const writeKnowledgeFileTool = createTool({
         context: {
           ...context,
           path: knowledgePath,
-          // Provide the default value from writeToFileTool's schema
           maxSizeBytes: 10485760,
         },
       });

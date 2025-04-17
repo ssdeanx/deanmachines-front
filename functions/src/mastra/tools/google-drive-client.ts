@@ -56,6 +56,26 @@ export namespace googleDrive {
     pageSize: z.number().optional(),
     pageToken: z.string().optional()
   })
+
+  /**
+   * Output schema for Google Drive File
+   */
+  export const GoogleDriveFileSchema = z.object({
+    id: z.string(),
+    name: z.string(),
+    mimeType: z.string(),
+    webViewLink: z.string().optional(),
+    webContentLink: z.string().optional(),
+    size: z.string().optional(),
+    createdTime: z.string().optional(),
+    modifiedTime: z.string().optional(),
+    parents: z.array(z.string()).optional(),
+  }).passthrough();
+
+  export const GoogleDriveListFilesResponseSchema = z.object({
+    files: z.array(GoogleDriveFileSchema),
+    nextPageToken: z.string().optional(),
+  });
 }
 
 /**
@@ -198,4 +218,22 @@ function convertFile(data: google.drive_v3.Schema$File): googleDrive.File {
   return pruneNullOrUndefinedDeep(
     pick(data, ...googleDrive.fileFields)
   ) as googleDrive.File
+}
+
+/**
+ * Helper to create Mastra-compatible Google Drive tools with outputSchema patched
+ */
+export function createMastraGoogleDriveTools(client: GoogleDriveClient) {
+  const mastraTools = require('@agentic/mastra').createMastraTools(client);
+  if (mastraTools.google_drive_list_files) {
+    (mastraTools.google_drive_list_files as any).outputSchema = googleDrive.GoogleDriveListFilesResponseSchema;
+  }
+  if (mastraTools.google_drive_get_file) {
+    (mastraTools.google_drive_get_file as any).outputSchema = googleDrive.GoogleDriveFileSchema;
+  }
+  if (mastraTools.google_drive_create_folder) {
+    (mastraTools.google_drive_create_folder as any).outputSchema = googleDrive.GoogleDriveFileSchema;
+  }
+  // For export, output is unknown, so skip unless you want to define a schema
+  return mastraTools;
 }
