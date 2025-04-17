@@ -348,3 +348,4 @@ export * from "./Networks/agentNetwork";
 
 // TODO: Add and export additional workflow definitions here as they are developed
 // export * from "./researchWorkflow";
+export * from "./workflowFactory";

@@ -63,6 +63,7 @@ import {
 } from "./socialMedia.config";
 import { uiUxCoderConfig, uiUxCoderResponseSchema } from "./uiUxCoder.config";
 import { writerAgentConfig, writerResponseSchema } from "./writer.config";
+import { masterAgentConfig } from "./master.config";
 
 // Re-export specific configurations
 export {
@@ -95,5 +96,6 @@ export {
   uiUxCoderResponseSchema,
   writerAgentConfig,
   writerResponseSchema,
+  masterAgentConfig,
 };
 // All agent configurations are now exported here

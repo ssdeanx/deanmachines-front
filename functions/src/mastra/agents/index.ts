@@ -15,6 +15,7 @@ import { dataManagerAgent } from "./dataManager.agent";
 import { agenticAssistant } from "./agentic.agent";
 import { coderAgent } from "./coder.agent";
 import { copywriterAgent } from "./copywriter.agent";
+import { masterAgent } from "./master.agent";
 
 // Import coding team agents
 import { architectAgent } from "./architect.agent";
@@ -37,6 +38,7 @@ export {
   agenticAssistant,
   coderAgent,
   copywriterAgent,
+  masterAgent,
 
   // Coding team agents
   architectAgent,
@@ -72,6 +74,7 @@ const agents = {
   marketResearchAgent,
   socialMediaAgent,
   seoAgent,
+  masterAgent,
 };
 
 // Export agents object for Mastra configuration
