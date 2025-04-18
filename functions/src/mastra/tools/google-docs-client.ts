@@ -7,6 +7,7 @@ import {
   type SetRequired
 } from '@agentic/core'
 import { z } from 'zod'
+import { createMastraTools } from '@agentic/mastra';
 
 export namespace googleDocs {
   export type Document = Simplify<
@@ -28,7 +29,7 @@ export const GoogleDocsDocumentSchema = z.object({
  * Helper to create Mastra-compatible Google Docs tools with outputSchema patched
  */
 export function createMastraGoogleDocsTools(client: GoogleDocsClient) {
-  const mastraTools = require('@agentic/mastra').createMastraTools(client);
+  const mastraTools = createMastraTools(client);
   if (mastraTools.google_docs_get_document) {
     (mastraTools.google_docs_get_document as any).outputSchema = GoogleDocsDocumentSchema;
   }

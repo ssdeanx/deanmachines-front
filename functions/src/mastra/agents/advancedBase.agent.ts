@@ -82,17 +82,34 @@ export function createAdvancedAgentFromConfig({
       let done = false;
       let contextObj = options.context || [];
       let result: any = {};
+      // Attach the current context to the span for distributed tracing
+      const parentContext = context.active();
       while (!done && step < (options.maxSteps || 8)) {
-        // --- ADVANCED: Delegate agent support ---
-        if (options.delegateAgentId && delegateAgents[options.delegateAgentId]) {
-          streamLogger.debug(`Delegating step ${step} to agent: ${options.delegateAgentId}`);
-          result = await delegateAgents[options.delegateAgentId].generate(messages, { ...options, context: contextObj });
-        } else {
-          result = await model.generate(messages, { ...options, context: contextObj });
+        // Start a span for each step, propagating context
+        const stepSpan = trace.getTracer('advanced-agent').startSpan(`step-${step}`, {
+          attributes: {
+            agentId: config.id,
+            step,
+            delegate: !!options.delegateAgentId,
+          }
+        }, parentContext);
+        try {
+          if (options.delegateAgentId && delegateAgents[options.delegateAgentId]) {
+            streamLogger.debug(`Delegating step ${step} to agent: ${options.delegateAgentId}`);
+            result = await delegateAgents[options.delegateAgentId].generate(messages, { ...options, context: contextObj });
+          } else {
+            result = await model.generate(messages, { ...options, context: contextObj });
+          }
+          if ((result as any).text || (result as any).object) done = true;
+          step++;
+          if (options.onStepFinish) await options.onStepFinish({ step, result });
+          stepSpan.setStatus({ code: 1 }); // OK
+        } catch (err) {
+          stepSpan.setStatus({ code: 2, message: err instanceof Error ? err.message : String(err) });
+          throw err;
+        } finally {
+          stepSpan.end();
         }
-        if ((result as any).text || (result as any).object) done = true;
-        step++;
-        if (options.onStepFinish) await options.onStepFinish({ step, result });
       }
       return result;
     }

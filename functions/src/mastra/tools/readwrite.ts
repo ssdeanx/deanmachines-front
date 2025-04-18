@@ -8,7 +8,7 @@
 import { createTool } from "@mastra/core/tools";
 import { z } from "zod";
 import fs from "fs-extra";
-import { resolve, dirname, extname, join } from "ath";
+import { resolve, dirname, extname, join } from "path";
 import { createLangSmithRun, trackFeedback } from "../services/langsmith";
 
 /**
@@ -21,6 +21,8 @@ export enum FileEncoding {
   ASCII = "ascii",
   /** UTF-16 Little Endian encoding */
   UTF16LE = "utf16le",
+  /** UTF-16 Big Endian encoding */
+  UTF16BE = "utf16be",
   /** Latin1 encoding */
   LATIN1 = "latin1",
   /** Base64 encoding */

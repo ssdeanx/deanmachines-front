@@ -52,7 +52,7 @@ import { mermaidWriterTool } from "./mermaid-writer";
 
 // --- Additional Tools ---
 import { analyzeContentTool, formatContentTool } from "./contentTools";
-import { searchDocumentsTool, embedDocumentTool, docxReaderTool, csvReaderTool, jsonReaderTool, extractHtmlTextTool} from "./document-tools";
+import { searchDocumentsTool, embedDocumentTool, jsonReaderTool, extractHtmlTextTool} from "./document-tools";
 
 // --- Extra Tools (Import Helper Functions & Direct Tools) ---
 import { calculator } from "./calculator";
@@ -306,12 +306,11 @@ const coreTools: Tool<any, any>[] = [
   editFileTool, 
   deleteFileTool, 
   listFilesTool,
-  //pdfReaderTool, 
-  docxReaderTool,
-  csvReaderTool,
   jsonReaderTool,
   extractHtmlTextTool,
   mermaidWriterTool,
+  docxReaderTool,
+  csvReaderTool,
   createGoogleSearchTool({ apiKey: config.GOOGLE_CSE_KEY, searchEngineId: config.GOOGLE_CSE_ID }), // Google Search tool
   //fetchAndExtractDocumentTool,
   memoryQueryTool,

@@ -2,6 +2,7 @@ import { createTool } from "@mastra/core/tools";
 import { z } from "zod";
 import { GoogleCustomSearchClient } from "@agentic/google-custom-search"; // Fixed: correct client name
 import { env } from "process";
+import { createMastraTools } from '@agentic/mastra';
 
 /**
  * Configuration for Google Custom Search

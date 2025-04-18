@@ -8,6 +8,7 @@ import {
   pruneNullOrUndefinedDeep
 } from '@agentic/core'
 import { z } from 'zod'
+import { createMastraTools } from '@agentic/mastra';
 
 export namespace googleDrive {
   export type File = Simplify<
@@ -224,7 +225,7 @@ function convertFile(data: google.drive_v3.Schema$File): googleDrive.File {
  * Helper to create Mastra-compatible Google Drive tools with outputSchema patched
  */
 export function createMastraGoogleDriveTools(client: GoogleDriveClient) {
-  const mastraTools = require('@agentic/mastra').createMastraTools(client);
+  const mastraTools = createMastraTools(client);
   if (mastraTools.google_drive_list_files) {
     (mastraTools.google_drive_list_files as any).outputSchema = googleDrive.GoogleDriveListFilesResponseSchema;
   }
