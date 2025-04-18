@@ -31,4 +31,3 @@ export const dataManagerAgent = createAgentFromConfig({
 });
 
 export default dataManagerAgent;
-export type DataManagerAgent = typeof dataManagerAgent;

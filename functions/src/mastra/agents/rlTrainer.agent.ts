@@ -37,6 +37,5 @@ export const rlTrainerAgent = createAgentFromConfig({
  * This agent specializes in collecting user feedback, analyzing agent performance,
  * and implementing reinforcement learning techniques to improve agent behaviors.
  */
-export type RLTrainerAgent = typeof rlTrainerAgent;
 export default rlTrainerAgent;
 

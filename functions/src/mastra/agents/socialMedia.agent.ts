@@ -32,4 +32,4 @@ export const socialMediaAgent = createAgentFromConfig({
 });
 
 export default socialMediaAgent;
-export type SocialMediaAgent = typeof socialMediaAgent;
+

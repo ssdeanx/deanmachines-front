@@ -32,4 +32,4 @@ export const marketResearchAgent = createAgentFromConfig({
 });
 
 export default marketResearchAgent;
-export type MarketResearchAgent = typeof marketResearchAgent;
+

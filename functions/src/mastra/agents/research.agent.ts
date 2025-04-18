@@ -30,6 +30,6 @@ export const researchAgent = createAgentFromConfig({
   },
 });
 
-export type ResearchAgent = typeof researchAgent;
+
 export default researchAgent;
 

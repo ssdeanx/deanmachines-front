@@ -10,7 +10,7 @@ import {
   BaseAgentConfig,
   DEFAULT_MODELS,
   defaultResponseValidation,
-} from "./config.types";
+} from "./config.types"; // Make sure config.types.ts exists in this directory, or update the path accordingly
 
 /**
  * Configuration for the Research Agent.

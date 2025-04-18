@@ -37,5 +37,5 @@ export const copywriterAgent = createAgentFromConfig({
 // Export the agent instance as default and named export
 export default copywriterAgent;
 // Export the type for use elsewhere
-export type CopywriterAgent = typeof copywriterAgent;
+
 

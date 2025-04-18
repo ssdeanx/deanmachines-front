@@ -33,4 +33,4 @@ export const codeDocumenterAgent = createAgentFromConfig({
 });
 
 export default codeDocumenterAgent;
-export type CodeDocumenterAgent = typeof codeDocumenterAgent;
+

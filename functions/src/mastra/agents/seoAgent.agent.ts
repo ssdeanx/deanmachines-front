@@ -32,5 +32,5 @@ export const seoAgent = createAgentFromConfig({
 });
 
 export default seoAgent;
-export type SEOAgent = typeof seoAgent;
+
 

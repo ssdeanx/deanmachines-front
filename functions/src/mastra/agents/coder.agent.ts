@@ -34,5 +34,5 @@ export const coderAgent = createAgentFromConfig({
 });
 
 export default coderAgent;
-export type CoderAgent = typeof coderAgent;
+
 

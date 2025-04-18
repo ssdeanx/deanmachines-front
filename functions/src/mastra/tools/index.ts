@@ -47,8 +47,8 @@ import {
   defineRewardFunctionTool,
   optimizePolicyTool,
 } from "./rlReward";
-import { memoryQueryTool } from "./memoryQueryTool";
-import { mermaidWriterTool } from "./mermaid-writer";
+
+
 
 // --- Additional Tools ---
 import { analyzeContentTool, formatContentTool } from "./contentTools";
@@ -86,8 +86,7 @@ import {
   tokenCountEvalTool,
 } from "./evals";
 import { tracingTools } from "./tracingTools";
-import { GoogleDocsClient, createMastraGoogleDocsTools } from "./google-docs-client";
-import { google } from "googleapis";
+
 
 // === Export all tool modules (Consider if all are needed) ===
 export * from "./e2b";
@@ -117,10 +116,6 @@ export { ExaSearchOutputSchema };
 export { GitHubUserSchema };
 export * from "../services/signoz";
 export * from "../services/tracing";
-export * from "./google-search";
-export * from "./google-docs-client";
-export * from "./google-drive-client";
-export * from "./calculator";
 
 
 // === Configure Logger ===
@@ -314,12 +309,9 @@ const coreTools: Tool<any, any>[] = [
   listFilesTool,
   jsonReaderTool,
   extractHtmlTextTool,
-  mermaidWriterTool,
   docxReaderTool,
   csvReaderTool,
-  createGoogleSearchTool({ apiKey: config.GOOGLE_CSE_KEY, searchEngineId: config.GOOGLE_CSE_ID }), // Google Search tool
   //fetchAndExtractDocumentTool,
-  memoryQueryTool,
   collectFeedbackTool,
   analyzeFeedbackTool,
   applyRLInsightsTool,
@@ -496,19 +488,19 @@ extraTools.push(ensureToolOutputSchema(getMainBranchRef));
 extraTools.push(...tracingTools);
 
 // --- Google Docs Tools ---
-try {
+//try {
   // NOTE: This is a placeholder. In production, you must authenticate properly.
   // For now, this will throw if GOOGLE_CREDENTIALS_PATH is not set up.
-  const auth = undefined; // TODO: Replace with real auth (see google-docs-client.ts for example)
-  const docs = google.docs({ version: "v1", auth });
-  const googleDocsClient = new GoogleDocsClient({ docs });
-  const googleDocsTools = createMastraGoogleDocsTools(googleDocsClient);
-  const googleDocsToolsArray = Object.values(googleDocsTools);
-  extraTools.push(...googleDocsToolsArray.map(tool => tool as Tool<any, any>));
-  logger.info(`Added ${googleDocsToolsArray.length} Google Docs tools.`);
-} catch (error) {
-  logger.error("Failed to initialize Google Docs tools:", { error });
-}
+//  const auth = undefined; // TODO: Replace with real auth (see google-docs-client.ts for example)
+//  const docs = google.docs({ version: "v1", auth });
+//  const googleDocsClient = new GoogleDocsClient({ docs });
+//  const googleDocsTools = createMastraGoogleDocsTools(googleDocsClient);
+//  const googleDocsToolsArray = Object.values(googleDocsTools);
+//  extraTools.push(...googleDocsToolsArray.map(tool => tool as Tool<any, any>));
+//  logger.info(`Added ${googleDocsToolsArray.length} Google Docs tools.`);
+//} catch (error) {
+//  logger.error("Failed to initialize Google Docs tools:", { error });
+//}
 
 // E2B tools are already added via createMastraE2BTools above; no need to add them again here.
 
@@ -547,7 +539,6 @@ export const toolGroups = {
   search: optionalTools,
   vector: [vectorQueryTool, googleVectorQueryTool, filteredQueryTool],
   file: [readFileTool, writeToFileTool],
-  memory: [memoryQueryTool],
   rl: [
     collectFeedbackTool,
     analyzeFeedbackTool,
@@ -583,4 +574,3 @@ export { toolGroups as groups };
 
 export default allToolsMap;
 
-export type toolIds = keyof typeof allTools; // Type for tool IDs

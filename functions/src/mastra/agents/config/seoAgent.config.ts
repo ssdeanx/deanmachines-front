@@ -213,13 +213,3 @@ export const seoResponseSchema = z.object({
     .optional()
     .describe("Competitor SEO insights"),
 });
-
-/**
- * Type for structured responses from the SEO agent
- */
-export type SeoResponse = z.infer<typeof seoResponseSchema>;
-
-/**
- * Type for the SEO Agent configuration
- */
-export type SeoAgentConfig = typeof seoAgentConfig;

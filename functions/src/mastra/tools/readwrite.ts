@@ -482,8 +482,10 @@ export const readKnowledgeFileTool = createTool({
       }
 
       // Modify context to use knowledge path and provide default startLine
+      // You must provide a valid container; here we use an empty object as a placeholder.
       return readFileTool.execute({
         context: { ...context, path: knowledgePath, startLine: 0 },
+        container: {} as any,
       });
     } catch (error) {
       console.error("Error reading knowledge file:", error);
@@ -572,13 +574,14 @@ export const writeKnowledgeFileTool = createTool({
         throw new Error("writeToFileTool.execute is not defined");
       }
 
-      // Modify context to use knowledge path and include default maxSizeBytes
+      // You must provide a valid container; here we use an empty object as a placeholder.
       return writeToFileTool.execute({
         context: {
           ...context,
           path: knowledgePath,
           maxSizeBytes: 10485760,
         },
+        container: {} as any,
       });
     } catch (error) {
       console.error("Error writing to knowledge file:", error);

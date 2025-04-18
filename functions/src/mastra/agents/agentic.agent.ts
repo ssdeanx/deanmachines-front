@@ -35,7 +35,7 @@ export const agenticAssistant = createAgentFromConfig({
 });
 
 export default agenticAssistant;
-export type AgenticAgent = typeof agenticAssistant;
+
 
 /**
  * Example usage:

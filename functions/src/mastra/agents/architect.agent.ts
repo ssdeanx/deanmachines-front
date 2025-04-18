@@ -32,5 +32,5 @@ export const architectAgent = createAgentFromConfig({
 });
 
 export default architectAgent;
-export type ArchitectAgent = typeof architectAgent;
+
 

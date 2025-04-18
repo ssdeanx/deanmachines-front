@@ -32,4 +32,4 @@ export const debuggerAgent = createAgentFromConfig({
 });
 
 export default debuggerAgent;
-export type DebuggerAgent = typeof debuggerAgent;
+

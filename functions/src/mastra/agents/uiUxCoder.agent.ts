@@ -32,4 +32,4 @@ export const uiUxCoderAgent = createAgentFromConfig({
 });
 
 export default uiUxCoderAgent;
-export type UiUxCoderAgent = typeof uiUxCoderAgent;
+

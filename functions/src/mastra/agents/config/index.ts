@@ -28,7 +28,7 @@ export {
 // Export specific agent configurations without the common utility functions
 // This prevents name conflicts from multiple exports of getToolsFromIds
 import { analystAgentConfig, analystResponseSchema } from "./analyst.config";
-import { architectConfig } from "./architect.config";
+import { architectConfig, architectResponseSchema } from "./architect.config";
 import {
   agenticAssistantConfig,
   agenticResponseSchema,
@@ -63,7 +63,6 @@ import {
 } from "./socialMedia.config";
 import { uiUxCoderConfig, uiUxCoderResponseSchema } from "./uiUxCoder.config";
 import { writerAgentConfig, writerResponseSchema } from "./writer.config";
-import { masterAgentConfig } from "./master.config";
 
 // Re-export specific configurations
 export {
@@ -73,6 +72,7 @@ export {
   analystAgentConfig,
   analystResponseSchema,
   architectConfig,
+  architectResponseSchema,
   coderAgentConfig,
   coderResponseSchema,
   codeDocumenterConfig,
@@ -96,6 +96,5 @@ export {
   uiUxCoderResponseSchema,
   writerAgentConfig,
   writerResponseSchema,
-  masterAgentConfig,
 };
 // All agent configurations are now exported here

@@ -14,6 +14,42 @@ import {
 } from "./config.types";
 
 /**
+ * Schema for structured analyst responses
+ */
+export const analystResponseSchema = z.object({
+  analysis: z.string().describe("Primary analysis of the data or information"),
+  findings: z
+    .array(
+      z.object({
+        insight: z
+          .string()
+          .describe("A specific insight or pattern identified"),
+        confidence: z
+          .number()
+          .min(0)
+          .max(1)
+          .describe("Confidence level in this finding (0-1)"),
+        evidence: z
+          .string()
+          .describe("Supporting evidence or data for this insight"),
+      })
+    )
+    .describe("List of specific insights and patterns identified"),
+  limitations: z
+    .string()
+    .optional()
+    .describe("Limitations of the analysis or data"),
+  recommendations: z
+    .array(z.string())
+    .optional()
+    .describe("Recommended actions based on the analysis"),
+  visualizationSuggestions: z
+    .array(z.string())
+    .optional()
+    .describe("Suggestions for data visualization"),
+});
+
+/**
  * Configuration for the Analyst Agent
  *
  * @remarks
@@ -27,6 +63,7 @@ export const analystAgentConfig: BaseAgentConfig = {
     "Specialized in interpreting data, identifying patterns, and extracting meaningful insights from information.",
   modelConfig: DEFAULT_MODELS.GOOGLE_THINKING,
   responseValidation: defaultResponseValidation,
+  responseSchema: analystResponseSchema,
   instructions: `
     # ANALYTICAL EXPERT ROLE
     You are an elite data analyst with expertise in pattern recognition, statistical inference, and insight extraction. Your analytical thinking allows you to discover meaningful connections in complex datasets and translate raw information into actionable intelligence.
@@ -122,42 +159,6 @@ export const analystAgentConfig: BaseAgentConfig = {
     //"json-reader",
   ],
 };
-
-/**
- * Schema for structured analyst responses
- */
-export const analystResponseSchema = z.object({
-  analysis: z.string().describe("Primary analysis of the data or information"),
-  findings: z
-    .array(
-      z.object({
-        insight: z
-          .string()
-          .describe("A specific insight or pattern identified"),
-        confidence: z
-          .number()
-          .min(0)
-          .max(1)
-          .describe("Confidence level in this finding (0-1)"),
-        evidence: z
-          .string()
-          .describe("Supporting evidence or data for this insight"),
-      })
-    )
-    .describe("List of specific insights and patterns identified"),
-  limitations: z
-    .string()
-    .optional()
-    .describe("Limitations of the analysis or data"),
-  recommendations: z
-    .array(z.string())
-    .optional()
-    .describe("Recommended actions based on the analysis"),
-  visualizationSuggestions: z
-    .array(z.string())
-    .optional()
-    .describe("Suggestions for data visualization"),
-});
 
 /**
  * Type for structured responses from the Analyst agent

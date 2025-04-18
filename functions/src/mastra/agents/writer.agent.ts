@@ -32,4 +32,4 @@ export const writerAgent = createAgentFromConfig({
 });
 
 export default writerAgent;
-export type WriterAgent = typeof writerAgent;
+
