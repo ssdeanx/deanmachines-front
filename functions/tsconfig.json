@@ -1,23 +1,16 @@
 {
   "compilerOptions": {
-    "target": "es2020",
     "module": "NodeNext",
+    "esModuleInterop": true,
     "moduleResolution": "nodenext",
-    "outDir": "lib",
-    "rootDir": "src",
-    "strict": true,
-    "esModuleInterop": false,
-    "allowSyntheticDefaultImports": false,
-    "forceConsistentCasingInFileNames": true,
-    "skipLibCheck": true,
-    "resolveJsonModule": true,
     "noImplicitReturns": true,
     "noUnusedLocals": true,
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["./src/*"]
-    }
+    "outDir": "lib",
+    "sourceMap": true,
+    "strict": true,
+    "target": "ES2017",
+    "forceConsistentCasingInFileNames": true,
   },
   "compileOnSave": true,
-  "include": ["src/**/*"]
+  "include": ["src/**/*"],
 }

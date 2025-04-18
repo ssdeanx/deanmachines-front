@@ -52,7 +52,13 @@ import { mermaidWriterTool } from "./mermaid-writer";
 
 // --- Additional Tools ---
 import { analyzeContentTool, formatContentTool } from "./contentTools";
-import { searchDocumentsTool, embedDocumentTool, jsonReaderTool, extractHtmlTextTool} from "./document-tools";
+import { searchDocumentsTool, 
+  embedDocumentTool, 
+  jsonReaderTool, 
+  docxReaderTool,
+  csvReaderTool, 
+  extractHtmlTextTool
+} from "./document-tools";
 
 // --- Extra Tools (Import Helper Functions & Direct Tools) ---
 import { calculator } from "./calculator";

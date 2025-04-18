@@ -17,16 +17,26 @@ import { z } from 'zod';
 
 const logger = createLogger({ name: "rl-agent-initialization", level: "debug" });
 
+// Refactor tool resolution into a utility function
 function resolveTools(toolIds: string[]): Record<string, Tool<any, any>> {
   const tools: Record<string, Tool<any, any>> = {};
-  toolIds.forEach((id) => {
-    const tool = allToolsMap.get(id);
+  const missingTools: string[] = [];
+
+  for (const toolId of toolIds) {
+    const tool = allToolsMap.get(toolId);
     if (tool) {
-      tools[id] = tool;
+      tools[tool.id || toolId] = tool;
     } else {
-      logger.warn(`Tool with id ${id} not found`);
+      missingTools.push(toolId);
     }
-  });
+  }
+
+  if (missingTools.length > 0) {
+    const errorMsg = `Missing required tools: ${missingTools.join(', ')}`;
+    logger.error(errorMsg);
+    throw new Error(errorMsg);
+  }
+
   return tools;
 }
 

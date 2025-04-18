@@ -7,9 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [v0.0.14] ESM Import Fixes for Agentic Tools - 2025-04-18
+
+- Replaced all require('@agentic/mastra') usage with ESM named imports (import { createMastraTools } from '@agentic/mastra') in:
+  - src/mastra/tools/google-docs-client.ts
+  - src/mastra/tools/google-drive-client.ts
+  - src/mastra/tools/google-search.ts
+- Ensured all agentic tool files use named imports for createMastraTools to prevent codegen errors and ESM/CJS interop issues with mastra dev.
+- Confirmed mastra dev now works and codegen output is valid.
+
 ## [v0.0.13] - 2025-04-17
 
 ### Added
+
 - Registered all GitHub tools (user, repo, issues, pulls, branches, commits, releases, code search, etc.) in the tool registry with output schemas patched for Mastra compatibility. All are now available for agent use.
 - Registered Google Docs tools in the tool registry (pending authentication setup for production use).
 - Registered all E2B tools (execute code, read/write file, install package, list files) and ensured agent compatibility.
@@ -23,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - README and documentation updated to reflect new tool registration, agent config, and error/lint checking policies.
 
 ### Changed
+
 - Improved tool registration discipline: all new tools are now registered in tools/index.ts and output schemas are patched as needed.
 - Confirmed Google Search tool is registered and agent-compatible.
 - All agent networks now use correct agent imports and are lint/type error free.
@@ -37,6 +48,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Tool registration in tools/index.ts now ensures all tools are discoverable and type-safe.
 
 ### Fixed
+
 - Lint/type errors in tool registration, output schema patching, and agent network definitions.
 - Fixed all agent network instantiations to use only valid config properties and correct agent imports.
 - All hooks (deanInsightsHooks, dataFlowHooks) are now actually used and referenced in the code.
@@ -48,6 +60,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - All lint/type errors checked and resolved after every file edit.
 
 ### Notes
+
 - This changelog now serves as a full historical record for all tool, agent, and infrastructure changes. Always update after every significant edit.
 - If you add or change a tool, agent, or service, document the change here and in the README if it affects usage or registration patterns.
 - All error/lint checking is now mandatory after every file edit.
